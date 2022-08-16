@@ -217,6 +217,25 @@ CDbCreation::CDbCreation(const IDbDocInfo& docInfo, const SlImgDoc::CreateOption
     : docInfo(docInfo), opts(opts)
 {}
 
+//sqlite3* CDbCreation::DoCreate2()
+//{
+//    this->CheckCreateOptions(this->opts);
+//
+//    sqlite3* dbHandle;
+//    int retVal = sqlite3_open_v2(opts.dbFilename.c_str(), &dbHandle, SQLite::OPEN_CREATE | SQLite::OPEN_READWRITE | SQLite::OPEN_URI, nullptr);
+//    if (retVal != SQLITE_OK)
+//    {
+//        // TODO: error handling
+//        throw exception("TODO");
+//    }
+//
+//    CCustomQueries::SetupCustomQueries(dbHandle);
+//    CDbMasterInfoTableHelper::AddMasterTable(dbHandle, "0.0.1-alpha");
+//    CDbMasterInfoTableHelper::AddDocumentTiles2D(
+//        dbHandle,
+//        CDbDocInfo::GetDefaultTableName);
+//}
+
 SQLite::Database* CDbCreation::DoCreate()
 {
     this->CheckCreateOptions(this->opts);

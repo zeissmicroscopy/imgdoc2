@@ -37,10 +37,9 @@ add_subdirectory("${CMAKE_CURRENT_BINARY_DIR}/sqlite3-prefix/src/sqlite3")
 ]]
 
 add_subdirectory(external/sqlite3)
+add_subdirectory(external/SQLiteCpp)
 
- message(STATUS $<TARGET_FILE_NAME:sqlite3>)
-
-
+#[[
 FetchContent_Declare(
   SQLiteCpp
   GIT_REPOSITORY https://github.com/SRombauts/SQLiteCpp.git
@@ -57,13 +56,12 @@ if(NOT SQLiteCpp_POPULATED)
   set(SQLite3_INCLUDE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/external/sqlite3)
   message(STATUS "******** ${SQLite3_INCLUDE_DIR} ********")
 
-  #[[
-  get_cmake_property(_variableNames VARIABLES)
-list (SORT _variableNames)
-foreach (_variableName ${_variableNames})
-    message(STATUS "${_variableName}=${${_variableName}}")
-endforeach()
-]]
+
+#  get_cmake_property(_variableNames VARIABLES)
+#list (SORT _variableNames)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
 
   #set(SQLite3_INCLUDE_DIR 
 	set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "" FORCE)
@@ -81,6 +79,7 @@ endforeach()
   message(STATUS "SQLiteCpp_SOURCE_DIR=${sqlitecpp_SOURCE_DIR} SQLiteCpp_BINARY_DIR=${sqlitecpp_BINARY_DIR}")
 	add_subdirectory(${sqlitecpp_SOURCE_DIR} ${sqlitecpp_BINARY_DIR})
 endif()
+]]
 
 add_subdirectory(libimgdoc2)
 

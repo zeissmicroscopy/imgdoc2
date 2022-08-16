@@ -2,13 +2,13 @@ add_library(sqlite3 STATIC
                sqlite3.c
                sqlite3.h
 )
-#[[
+
 set_target_properties(sqlite3 PROPERTIES
     OUTPUT_NAME   sqlite3
     PUBLIC_HEADER sqlite3.h
     DEBUG_POSTFIX d
     )
-    ]]
+    
 
 # Configuration
 # All options are defined at:
