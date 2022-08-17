@@ -82,6 +82,7 @@ endif()
 ]]
 
 add_subdirectory(libimgdoc2)
+add_subdirectory(libimgdoc2_a)
 
 enable_testing()
 add_subdirectory(libimgdoc2_tests)
