@@ -1,4 +1,7 @@
 #include "database_configuration.h"
+#include <exception>
+
+using namespace std;
 
 void DatabaseConfigurationCommon::SetTableName(TableTypeCommon tableType, const char* name)
 {
@@ -39,6 +42,32 @@ std::string DatabaseConfigurationCommon::GetTableNameOrThrow(TableTypeCommon tt)
     return s;
 }
 
+bool DatabaseConfigurationCommon::TryGetColumnNameOfGeneralInfoTable(int columnIdentifier, std::string* column_name) const
+{
+    const char* requested_column_name = nullptr;
+    switch (columnIdentifier)
+    {
+    case kGeneralInfoTable_Column_Key:
+        requested_column_name = "Key";
+        break;
+    case kGeneralInfoTable_Column_ValueString:
+        requested_column_name = "ValueString";
+        break;
+    }
+
+    if (requested_column_name == nullptr)
+    {
+        return false;
+    }
+
+    if (column_name != nullptr)
+    {
+        *column_name = requested_column_name;
+    }
+
+    return true;
+}
+
 std::string DatabaseConfigurationCommon::GetTableNameForTilesDataOrThrow() const
 {
     return this->GetTableNameOrThrow(TableTypeCommon::TilesData);
@@ -47,6 +76,39 @@ std::string DatabaseConfigurationCommon::GetTableNameForTilesDataOrThrow() const
 std::string DatabaseConfigurationCommon::GetTableNameForTilesInfoOrThrow() const
 {
     return this->GetTableNameOrThrow(TableTypeCommon::TilesInfo);
+}
+
+std::string DatabaseConfigurationCommon::GetTableNameForGeneralTableOrThrow() const
+{
+    return this->GetTableNameOrThrow(TableTypeCommon::GeneralInfo);
+}
+
+std::string DatabaseConfigurationCommon::GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const
+{
+    string s;
+    if (!this->TryGetColumnNameOfGeneralInfoTable(columnIdentifier, &s))
+    {
+        throw std::runtime_error("column-name not present");
+    }
+
+    return s;
+}
+
+std::string DatabaseConfigurationCommon::GetGeneralTableItem(GeneralTableItems item) const
+{
+    switch (item)
+    {
+    case GeneralTableItems::kVersion:
+        return "Version";
+    case GeneralTableItems::kTilesDataTable:
+        return "TilesDataTable";
+    case GeneralTableItems::kTilesInfoTable:
+        return "TilesInfoTable";
+    case GeneralTableItems::kDocType:
+        return "DocType";
+    }
+
+    throw invalid_argument("invalid argument for 'item' specified.");
 }
 
 // ----------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <map>
 #include <algorithm>
+#include <iterator>
 #include <string>
 #include <stdexcept>
 #include <imgdoc2.h>
@@ -13,10 +14,26 @@ class DatabaseConfigurationCommon
 public:
     enum class TableTypeCommon
     {
+        GeneralInfo,
         TilesData,
         TilesInfo,
         TilesSpatialIndex
     };
+
+    /*static constexpr int kGeneralTableItems_Version = 1;
+    static constexpr int kGeneralTableItems_TilesDataTable = 2;
+    static constexpr int kGeneralTableItems_TilesInfoTable = 3;
+    static constexpr int kGeneralTableItems_DocType = 4;*/
+    enum class GeneralTableItems
+    {
+        kVersion,
+        kTilesDataTable,
+        kTilesInfoTable,
+        kDocType
+    };
+
+    static constexpr int kGeneralInfoTable_Column_Key = 1;
+    static constexpr int kGeneralInfoTable_Column_ValueString = 2;
 private:
     std::unordered_set<imgdoc2::Dimension> dimensions_;
     std::map<TableTypeCommon, std::string> map_tabletype_to_tablename_;
@@ -38,10 +55,17 @@ public:
 
     virtual bool TryGetTableName(TableTypeCommon tt, std::string* name) const;
 
+    std::string GetGeneralTableItem(GeneralTableItems item) const;
+
+    bool TryGetColumnNameOfGeneralInfoTable(int columnIdentifier, std::string* column_name) const;
+
+    virtual ~DatabaseConfigurationCommon() = default;
 public:
     std::string GetTableNameOrThrow(TableTypeCommon tt) const;
     std::string GetTableNameForTilesDataOrThrow() const;
     std::string GetTableNameForTilesInfoOrThrow() const;
+    std::string GetTableNameForGeneralTableOrThrow() const;
+    std::string GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const;
 };
 
 

@@ -28,12 +28,16 @@ void DbCreator::CreateTables(const imgdoc2::ICreateOptions* create_options)
     this->Initialize2dConfigurationFromCreateOptions(database_configuration.get(),create_options);
 
     // TODO: make those operations a transaction
-    auto sql_statement = this->GenerateSqlStatementForCreatingTilesDataTable_Sqlite(database_configuration.get());
+    auto sql_statement = this->GenerateSqlStatementForCreatingGeneralTable_Sqlite(database_configuration.get());
+    this->db_connection_->Exec(sql_statement);
 
+    sql_statement = this->GenerateSqlStatementForFillingGeneralTable_Sqlite(database_configuration.get());
+    this->db_connection_->Exec(sql_statement);
+    
+    sql_statement = this->GenerateSqlStatementForCreatingTilesDataTable_Sqlite(database_configuration.get());
     this->db_connection_->Exec(sql_statement);
 
     sql_statement = this->GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(database_configuration.get());
-
     this->db_connection_->Exec(sql_statement);
 }
 
@@ -42,7 +46,7 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesDataTable_Sqlite(cons
 {
     auto ss = stringstream();
     ss << "CREATE TABLE[" << database_configuration->GetTableNameForTilesDataOrThrow() << "]("
-        "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_Pk) << "] INTEGER NOT NULL PRIMARY KEY,"
+        "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_Pk) << "] INTEGER PRIMARY KEY,"
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth) << "] INTEGER(4),"
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight) << "] INTEGER(4),"
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType) << "] INTEGER(1)";
@@ -55,8 +59,10 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesDataTable_Sqlite(cons
 std::string DbCreator::GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
     auto ss = stringstream();
+    // Notes:
+    // * "INTEGER PRIMARY KEY" makes the column-name an alias for the RowId-column
     ss << "CREATE TABLE[" << database_configuration->GetTableNameForTilesInfoOrThrow() << "]("
-        "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk) << "] INTEGER NOT NULL PRIMARY KEY,"
+        "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk) << "] INTEGER PRIMARY KEY,"
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX) << "] DOUBLE NOT NULL,"
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY) << "] DOUBLE NOT NULL,"
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileW) << "] DOUBLE NOT NULL,"
@@ -74,9 +80,37 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(cons
     return ss.str();
 }
 
+std::string DbCreator::GenerateSqlStatementForCreatingGeneralTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
+{
+    auto ss = stringstream();
+    ss << "CREATE TABLE[" << database_configuration->GetTableNameForGeneralTableOrThrow() << "](" <<
+        "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_Key) << "] TEXT(40) UNIQUE," <<
+        "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_ValueString) << "] TEXT);";
+
+    return ss.str();
+
+/*        "INSERT INTO [" << CDbMasterInfoTableHelper::TableName_MasterTable << "] ([" << CDbMasterInfoTableHelper::TableName_MasterTableColumnName_Key << "]," <<
+        "[" << CDbMasterInfoTableHelper::TableName_MasterTableColumnName_ValueString << "]) VALUES('" << CDbMasterInfoTableHelper::FieldName_Version << "','" << version << "');";*/
+}
+
+std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
+{
+    auto ss = stringstream();
+    ss << "INSERT INTO [" << database_configuration->GetTableNameForGeneralTableOrThrow() << "]" <<
+        "([" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_Key) << "], " <<
+        "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_ValueString) << "])" <<
+        " VALUES('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kVersion) << "','" << "0.0.1-alpha" << "')," <<
+        "('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kTilesDataTable) << "','" << database_configuration->GetTableNameForTilesDataOrThrow() << "')," <<
+        "('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kTilesInfoTable) << "','" << database_configuration->GetTableNameForTilesInfoOrThrow() << "')," <<
+        "('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kDocType) << "','" << "Tiles2D" << "');";
+
+    return ss.str();
+}
+
 void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration2D* database_configuration, const imgdoc2::ICreateOptions* create_options)
 {
     database_configuration->SetDimensionColumnPrefix("Dim_");
+    database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::GeneralInfo, "GENERAL");
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesData, "TILESDATA");
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesInfo, "TILESINFO");
 
@@ -93,3 +127,4 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel, "PyramidLevel");
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId, "TileDataId");
 }
+
