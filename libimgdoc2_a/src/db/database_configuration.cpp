@@ -113,6 +113,12 @@ std::string DatabaseConfigurationCommon::GetGeneralTableItem(GeneralTableItems i
 
 // ----------------------------------------------------------------------------
 
+const std::string& DatabaseConfiguration2D::GetDocTypeConstant() const
+{
+    static string kTiles2DDocType = "Tiles2D";
+    return kTiles2DDocType;
+}
+
 void DatabaseConfiguration2D::SetColumnNameForTilesInfoTable(int columnIdentifier, const char* column_name)
 {
     SetColumnName(this->map_tilesinfotable_columnids_to_columnname_, columnIdentifier, column_name);

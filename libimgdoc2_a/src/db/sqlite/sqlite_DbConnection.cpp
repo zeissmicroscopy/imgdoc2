@@ -1,4 +1,5 @@
 #include "sqlite_DbConnection.h"
+#include "custom_functions.h"
 
 SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
 {
@@ -8,6 +9,11 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
         &database,
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
         nullptr);
+
+    // TODO - error handling
+    //  if (returnValue...)
+
+    SqliteCustomFunctions::SetupCustomQueries(database);
 
     this->database_ = database;
 }

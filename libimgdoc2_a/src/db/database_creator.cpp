@@ -41,7 +41,6 @@ void DbCreator::CreateTables(const imgdoc2::ICreateOptions* create_options)
     this->db_connection_->Exec(sql_statement);
 }
 
-
 std::string DbCreator::GenerateSqlStatementForCreatingTilesDataTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
     auto ss = stringstream();
@@ -88,9 +87,6 @@ std::string DbCreator::GenerateSqlStatementForCreatingGeneralTable_Sqlite(const 
         "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_ValueString) << "] TEXT);";
 
     return ss.str();
-
-/*        "INSERT INTO [" << CDbMasterInfoTableHelper::TableName_MasterTable << "] ([" << CDbMasterInfoTableHelper::TableName_MasterTableColumnName_Key << "]," <<
-        "[" << CDbMasterInfoTableHelper::TableName_MasterTableColumnName_ValueString << "]) VALUES('" << CDbMasterInfoTableHelper::FieldName_Version << "','" << version << "');";*/
 }
 
 std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
@@ -102,7 +98,7 @@ std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const D
         " VALUES('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kVersion) << "','" << "0.0.1-alpha" << "')," <<
         "('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kTilesDataTable) << "','" << database_configuration->GetTableNameForTilesDataOrThrow() << "')," <<
         "('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kTilesInfoTable) << "','" << database_configuration->GetTableNameForTilesInfoOrThrow() << "')," <<
-        "('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kDocType) << "','" << "Tiles2D" << "');";
+        "('" << database_configuration->GetGeneralTableItem(DatabaseConfigurationCommon::GeneralTableItems::kDocType) << "','" << database_configuration->GetDocTypeConstant() << "');";
 
     return ss.str();
 }
@@ -127,4 +123,3 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel, "PyramidLevel");
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId, "TileDataId");
 }
-

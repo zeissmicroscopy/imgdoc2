@@ -90,6 +90,12 @@ public:
     static constexpr int kTilesDataTable_Column_PixelType = 4;
     static constexpr int kTilesDataTable_Column_DataBinHdrBlob = 5;
 
+    /// Gets document type constant - the string for the row "DocType" in the general-table which identifies
+    /// the data as "tiles-2D".
+    ///
+    /// \returns    The document type constant.
+    const std::string& GetDocTypeConstant() const;
+
     void SetColumnNameForTilesInfoTable(int columnIdentifier, const char* column_name);
     bool TryGetColumnNameOfTilesInfoTable(int columnIdentifier, std::string* column_name) const;
 
