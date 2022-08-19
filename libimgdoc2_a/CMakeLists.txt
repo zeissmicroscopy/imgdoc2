@@ -4,7 +4,7 @@ src/public/ClassFactory.cpp
 src/public/CreateOptions.cpp
 
 inc/CreateOptions.h
-         "inc/ClassFactory.h" "inc/imgdoc2.h" "src/db/database_configuration.h" "src/db/database_configuration.cpp")
+         "inc/ClassFactory.h" "inc/imgdoc2.h" "src/db/database_configuration.h" "src/db/database_configuration.cpp" "src/db/database_creator.h" "src/db/database_creator.cpp" "src/db/IDbConnection.h" "src/db/IDb.h" "inc/IReader2d.h" "inc/IWriter2d.h" "src/db/DbFactory.h" "src/db/sqlite/sqlite_DbFactory.cpp" "src/db/sqlite/sqlite_DbConnection.cpp" "src/db/sqlite/sqlite_DbConnection.h" "inc/IDoc.h" "src/doc/document.h" "src/doc/document.cpp")
 
 add_library(libimgdoc2_a STATIC
                 ${LibImgDoc2_aSrcfiles}
@@ -15,3 +15,7 @@ set_target_properties(libimgdoc2_a PROPERTIES INCLUDE_DIRECTORIES "$<BUILD_INTER
 
 # this preprocessor define needs to be defined when building "SqliteImgDoc" and by users of it (if linking the static library)
 target_compile_definitions(libimgdoc2_a PUBLIC _SQLITEIMGDOCSTATICLIB=1)
+
+target_include_directories(libimgdoc2_a INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc> 
+  )
