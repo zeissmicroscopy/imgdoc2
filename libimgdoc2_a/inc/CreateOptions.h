@@ -17,6 +17,12 @@ namespace imgdoc2
 
         virtual void AddDimension(Dimension dim) = 0;
 
+        virtual void SetUseSpatialIndex(bool use_spatial_index)=0;
+
+        virtual bool GetUseSpatialIndex() const=0;
+
+        virtual void AddIndexForDimension(Dimension dim) = 0;
+
         template<class ForwardIterator>
             void AddDimensions(ForwardIterator start, ForwardIterator end)
         {
@@ -26,7 +32,7 @@ namespace imgdoc2
             }
         }
 
-        virtual const std::unordered_set<Dimension>& GetDimensions() = 0;
+        virtual const std::unordered_set<Dimension>& GetDimensions() const = 0;
 
         virtual ~ICreateOptions() = default;
     };

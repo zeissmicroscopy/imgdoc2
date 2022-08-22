@@ -83,6 +83,11 @@ std::string DatabaseConfigurationCommon::GetTableNameForGeneralTableOrThrow() co
     return this->GetTableNameOrThrow(TableTypeCommon::GeneralInfo);
 }
 
+std::string DatabaseConfigurationCommon::GetTableNameForTilesSpatialIndexTableOrThrow() const
+{
+    return this->GetTableNameOrThrow(TableTypeCommon::TilesSpatialIndex);
+}
+
 std::string DatabaseConfigurationCommon::GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const
 {
     string s;
@@ -139,6 +144,16 @@ bool DatabaseConfiguration2D::TryGetColumnNameOfTilesDataTable(int columnIdentif
     return GetColumnName(this->map_tilesdatatable_columnids_to_columnname_, columnIdentifier, column_name);
 }
 
+void DatabaseConfiguration2D::SetColumnNameForTilesSpatialIndexTable(int columnIdentifier, const char* column_name)
+{
+    SetColumnName(this->map_tilespatialindextable_columnids_to_columnname_, columnIdentifier, column_name);
+}
+
+bool DatabaseConfiguration2D::TryGetColumnNameOfTilesSpatialIndexTable(int columnIdentifier, std::string* column_name) const
+{
+    return GetColumnName(this->map_tilespatialindextable_columnids_to_columnname_, columnIdentifier, column_name);
+}
+
 /*static*/void DatabaseConfiguration2D::SetColumnName(std::map<int, std::string>& map, int columnIdentifier, const char* column_name)
 {
     if (column_name != nullptr)
@@ -182,6 +197,17 @@ std::string DatabaseConfiguration2D::GetColumnNameOfTilesInfoTableOrThrow(int co
 {
     std::string s;
     if (!this->TryGetColumnNameOfTilesInfoTable(columnIdentifier, &s))
+    {
+        throw std::runtime_error("column-name not present");
+    }
+
+    return s;
+}
+
+std::string DatabaseConfiguration2D::GetColumnNameOfTilesSpatialIndexTableOrThrow(int columnIdentifier) const
+{
+    std::string s;
+    if (!this->TryGetColumnNameOfTilesSpatialIndexTable(columnIdentifier, &s))
     {
         throw std::runtime_error("column-name not present");
     }

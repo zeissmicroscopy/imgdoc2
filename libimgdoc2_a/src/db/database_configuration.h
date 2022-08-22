@@ -66,6 +66,7 @@ public:
     std::string GetTableNameForTilesInfoOrThrow() const;
     std::string GetTableNameForGeneralTableOrThrow() const;
     std::string GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const;
+    std::string GetTableNameForTilesSpatialIndexTableOrThrow() const;
 };
 
 
@@ -75,6 +76,7 @@ class DatabaseConfiguration2D : public DatabaseConfigurationCommon
 private:
     std::map<int, std::string> map_tilesinfotable_columnids_to_columnname_;
     std::map<int, std::string> map_tilesdatatable_columnids_to_columnname_;
+    std::map<int, std::string> map_tilespatialindextable_columnids_to_columnname_;
 public:
     static constexpr int kTilesInfoTable_Column_Pk = 1;
     static constexpr int kTilesInfoTable_Column_TileX = 2;
@@ -90,6 +92,12 @@ public:
     static constexpr int kTilesDataTable_Column_PixelType = 4;
     static constexpr int kTilesDataTable_Column_DataBinHdrBlob = 5;
 
+    static constexpr int kTilesSpatialIndexTable_Column_Pk = 1;
+    static constexpr int kTilesSpatialIndexTable_Column_Minx = 2;
+    static constexpr int kTilesSpatialIndexTable_Column_MaxX = 3;
+    static constexpr int kTilesSpatialIndexTable_Column_MinY = 4;
+    static constexpr int kTilesSpatialIndexTable_Column_MaxY = 5;
+
     /// Gets document type constant - the string for the row "DocType" in the general-table which identifies
     /// the data as "tiles-2D".
     ///
@@ -102,10 +110,13 @@ public:
     void SetColumnNameForTilesDataTable(int columnIdentifier, const char* column_name);
     bool TryGetColumnNameOfTilesDataTable(int columnIdentifier, std::string* column_name) const;
 
+    void SetColumnNameForTilesSpatialIndexTable(int columnIdentifier, const char* column_name);
+    bool TryGetColumnNameOfTilesSpatialIndexTable(int columnIdentifier, std::string* column_name) const;
+
 public:
     std::string GetColumnNameOfTilesInfoTableOrThrow(int columnIdentifier) const;
     std::string GetColumnNameOfTilesDataTableOrThrow(int columnIdentifier) const;
-
+    std::string GetColumnNameOfTilesSpatialIndexTableOrThrow(int columnIdentifier) const;
 private:
     static void SetColumnName(std::map<int, std::string>& map, int columnIdentifier, const char* column_name);
     static bool GetColumnName(const std::map<int, std::string>& map, int columnIdentifier, std::string* column_name);

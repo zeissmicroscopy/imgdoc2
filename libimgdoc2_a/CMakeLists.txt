@@ -12,8 +12,8 @@ inc/CreateOptions.h
          "src/db/database_creator.cpp" 
          "src/db/IDbConnection.h" 
          "src/db/IDb.h" 
-         "inc/IReader2d.h" 
-         "inc/IWriter2d.h" 
+         "inc/IDocRead2d.h" 
+         "inc/IDocWrite2d.h" 
          "src/db/DbFactory.h" 
          "src/db/sqlite/sqlite_DbFactory.cpp" 
          "src/db/sqlite/sqlite_DbConnection.cpp" 
@@ -22,7 +22,7 @@ inc/CreateOptions.h
          "src/doc/document.h" 
          "src/doc/document.cpp" 
          "src/db/sqlite/custom_functions.cpp"
-         "src/db/sqlite/custom_functions.h" "inc/types.h")
+         "src/db/sqlite/custom_functions.h" "inc/types.h"  "inc/IDbWriteTransaction.h" "inc/IDbIndexManagement.h" "src/doc/documentRead2d.h" "src/doc/documentRead2d.cpp")
 
 add_library(libimgdoc2_a STATIC
                 ${LibImgDoc2_aSrcfiles}

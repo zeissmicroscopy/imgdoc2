@@ -16,12 +16,18 @@ using namespace std;
     // tweak settings
 
     DbCreator db_creator(db_connection);
-    db_creator.CreateTables(create_options);
+    const auto configuration = db_creator.CreateTables(create_options);
 
-    return make_shared<Document>(db_connection);
+    const auto database_configuration_2d = std::dynamic_pointer_cast<DatabaseConfiguration2D>(configuration);
+    if (database_configuration_2d)
+    {
+        return make_shared<Document>(db_connection, database_configuration_2d);
+    }
+
+    // TODO: 3d version should follow here
 }
 
-void DbCreator::CreateTables(const imgdoc2::ICreateOptions* create_options)
+std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgdoc2::ICreateOptions* create_options)
 {
     // construct the "database configuration" based on the the create_options
     auto database_configuration = make_shared<DatabaseConfiguration2D>();
@@ -39,6 +45,14 @@ void DbCreator::CreateTables(const imgdoc2::ICreateOptions* create_options)
 
     sql_statement = this->GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(database_configuration.get());
     this->db_connection_->Exec(sql_statement);
+
+    if (create_options->GetUseSpatialIndex())
+    {
+        sql_statement = this->GenerateSqlStatementForCreatingSpatialTilesIndex_Sqlite(database_configuration.get());
+        this->db_connection_->Exec(sql_statement);
+    }
+
+    return database_configuration;
 }
 
 std::string DbCreator::GenerateSqlStatementForCreatingTilesDataTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
@@ -122,4 +136,26 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileH, "TileH");
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel, "PyramidLevel");
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId, "TileDataId");
+
+    if (create_options->GetUseSpatialIndex())
+    {
+        database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesSpatialIndex, "TILESSPATIALINDEX");
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk, "id");
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Minx, "minX");
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX, "maxX");
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY, "minY");
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY, "maxY");
+    }
+}
+
+std::string DbCreator::GenerateSqlStatementForCreatingSpatialTilesIndex_Sqlite(const DatabaseConfiguration2D* database_configuration)
+{
+    auto ss = stringstream();
+    ss << "CREATE VIRTUAL TABLE " << database_configuration->GetTableNameForTilesSpatialIndexTableOrThrow() << " USING rtree(" <<
+        database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << "," <<         // Integer primary key
+        database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Minx) << "," <<       // Minimum X coordinate"
+        database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX) << "," <<       // Maximum X coordinate"
+        database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY) << "," <<       // Minimum Y coordinate"
+        database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY) << ");";        // Maximum Y coordinate"
+    return ss.str();
 }
