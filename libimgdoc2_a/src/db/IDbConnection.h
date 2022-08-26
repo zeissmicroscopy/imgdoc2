@@ -3,22 +3,7 @@
 #include <memory>
 #include <string>
 #include <cstdint>
-
-class IDbStatement
-{
-public:
-    virtual void Reset() = 0;
-
-    virtual void BindInt32(int index, std::int32_t value) = 0;
-    virtual void BindInt64(int index, std::int64_t value) = 0;
-    virtual void BindDouble(int index, double value) = 0;
-
-    virtual int GetResultInt32(int column) = 0;
-    virtual std::int64_t GetResultInt64(int column) = 0;
-    virtual double GetResultDouble(int column) = 0;
-
-    virtual ~IDbStatement() = default;
-};
+#include "IDbStatement.h"
 
 class IDbConnection
 {
@@ -34,7 +19,15 @@ public:
     virtual ~IDbConnection() = default;
 
 public:
-    void Exec(const std::string& sql_statement)
+    // no copy and no move (-> https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c21-if-you-define-or-delete-any-copy-move-or-destructor-function-define-or-delete-them-all )
+    IDbConnection() = default;
+    IDbConnection(const IDbConnection&) = delete;             // copy constructor
+    IDbConnection& operator=(const IDbConnection&) = delete;  // copy assignment
+    IDbConnection(IDbConnection&&) = delete;                  // move constructor
+    IDbConnection& operator=(IDbConnection&&) = delete;       // move assignment
+
+public:
+    void Execute(const std::string& sql_statement)
     {
         this->Execute(sql_statement.c_str());
     }

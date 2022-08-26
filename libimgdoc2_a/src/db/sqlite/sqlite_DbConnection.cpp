@@ -69,14 +69,19 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
 
 /*virtual*/std::shared_ptr<IDbStatement> SqliteDbConnection::PrepareStatement(const std::string& sql_statement)
 {
-    sqlite3_stmt* statement;
-    int return_value = sqlite3_prepare_v2(
+    sqlite3_stmt* statement = nullptr;
+
+    // https://www.sqlite.org/c3ref/prepare.html
+    const int return_value = sqlite3_prepare_v2(
         this->database_,
         sql_statement.c_str(),
         -1,
         &statement,
         nullptr);
-    // TODO: error handling
+    if (return_value != SQLITE_OK || statement == nullptr)
+    {
+        throw database_exception("Error from 'sqlite3_prepare_v2'", return_value);
+    }
 
     return make_shared<SqliteDbStatement>(statement);
 }
@@ -85,7 +90,7 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
 {
     // try to cast "statement" to ISqliteStatement
     auto sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
-    if (sqlite_statement==nullptr)
+    if (sqlite_statement == nullptr)
     {
         throw runtime_error("incorrect type");
     }
@@ -102,5 +107,5 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
         return false;
     }
 
-    throw runtime_error("");
+    throw database_exception("Error from 'sqlite3_step'.", return_value);
 }

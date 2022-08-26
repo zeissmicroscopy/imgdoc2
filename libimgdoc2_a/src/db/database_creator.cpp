@@ -35,21 +35,21 @@ std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgd
 
     // TODO: make those operations a transaction
     auto sql_statement = this->GenerateSqlStatementForCreatingGeneralTable_Sqlite(database_configuration.get());
-    this->db_connection_->Exec(sql_statement);
+    this->db_connection_->Execute(sql_statement);
 
     sql_statement = this->GenerateSqlStatementForFillingGeneralTable_Sqlite(database_configuration.get());
-    this->db_connection_->Exec(sql_statement);
+    this->db_connection_->Execute(sql_statement);
 
     sql_statement = this->GenerateSqlStatementForCreatingTilesDataTable_Sqlite(database_configuration.get());
-    this->db_connection_->Exec(sql_statement);
+    this->db_connection_->Execute(sql_statement);
 
     sql_statement = this->GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(database_configuration.get());
-    this->db_connection_->Exec(sql_statement);
+    this->db_connection_->Execute(sql_statement);
 
     if (create_options->GetUseSpatialIndex())
     {
         sql_statement = this->GenerateSqlStatementForCreatingSpatialTilesIndex_Sqlite(database_configuration.get());
-        this->db_connection_->Exec(sql_statement);
+        this->db_connection_->Execute(sql_statement);
     }
 
     return database_configuration;

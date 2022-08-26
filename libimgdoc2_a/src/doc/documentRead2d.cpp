@@ -4,7 +4,7 @@ using namespace std;
 
 /*virtual*/void DocumentRead2d::ReadTileInfo(imgdoc2::dbIndex idx, imgdoc2::ITileCoordinateMutate* coord, imgdoc2::LogicalPositionInfo* info)
 {
-    auto statement = this->GetReadTileInfo_Statement(coord != nullptr, info != nullptr);
+    const auto statement = this->GetReadTileInfo_Statement(coord != nullptr, info != nullptr);
     statement->BindInt64(1, idx);
 
     this->document_->GetDatabase_connection()->StepStatement(statement.get());
