@@ -5,6 +5,10 @@
 
 namespace imgdoc2
 {
+    typedef long long dbIndex;
+
+    typedef char Dimension;
+
     template <typename t>
     struct PointT
     {

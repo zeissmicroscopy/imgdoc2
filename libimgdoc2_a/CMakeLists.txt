@@ -22,7 +22,25 @@ inc/CreateOptions.h
          "src/doc/document.h" 
          "src/doc/document.cpp" 
          "src/db/sqlite/custom_functions.cpp"
-         "src/db/sqlite/custom_functions.h" "inc/types.h"  "inc/IDbWriteTransaction.h" "inc/IDbIndexManagement.h" "src/doc/documentRead2d.h" "src/doc/documentRead2d.cpp")
+         "src/db/sqlite/custom_functions.h" 
+         "inc/types.h"  
+         "inc/IDbWriteTransaction.h" 
+         "inc/IDbIndexManagement.h" 
+         "src/doc/documentRead2d.h" 
+         "src/doc/documentRead2d.cpp" 
+         "inc/LogicalPositionInfo.h" 
+         "inc/utilities.h" 
+         "inc/TileCoordinate.h" 
+         "inc/ITileCoordinate.h" 
+         "src/db/sqlite/sqlite_DbStatement.h" 
+         "src/db/sqlite/sqlite_DbStatement.cpp" 
+         "src/db/sqlite/ISqlite_DbStatement.h" 
+         "src/doc/documentWrite2d.h"
+         "src/doc/documentWrite2d.cpp"
+         "inc/DataTypes.h" 
+         "inc/IDataObj.h" 
+         "src/db/utilities.h" 
+         "src/db/utilities.cpp")
 
 add_library(libimgdoc2_a STATIC
                 ${LibImgDoc2_aSrcfiles}

@@ -6,3 +6,4 @@
 #include "IDocRead2d.h"
 #include "IDocWrite2d.h"
 #include "IDoc.h"
+#include "TileCoordinate.h"

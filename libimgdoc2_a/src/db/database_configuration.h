@@ -43,7 +43,10 @@ public:
     void SetTileDimensions(ForwardIterator begin, ForwardIterator end)
     {
         this->dimensions_.clear();
-        std::copy(begin, end, std::back_inserter(this->dimensions_));
+        for (auto it = begin; it != end; ++it)
+        {
+            this->dimensions_.insert(*it);
+        }
     }
 
     const std::unordered_set<imgdoc2::Dimension>& GetTileDimensions() const { return this->dimensions_; }
@@ -90,7 +93,8 @@ public:
     static constexpr int kTilesDataTable_Column_PixelWidth = 2;
     static constexpr int kTilesDataTable_Column_PixelHeight = 3;
     static constexpr int kTilesDataTable_Column_PixelType = 4;
-    static constexpr int kTilesDataTable_Column_DataBinHdrBlob = 5;
+    static constexpr int kTilesDataTable_Column_TileDataType = 5;
+    //static constexpr int kTilesDataTable_Column_DataBinHdrBlob = 6;
 
     static constexpr int kTilesSpatialIndexTable_Column_Pk = 1;
     static constexpr int kTilesSpatialIndexTable_Column_Minx = 2;
