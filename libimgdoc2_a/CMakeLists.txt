@@ -40,7 +40,7 @@ inc/CreateOptions.h
          "inc/DataTypes.h" 
          "inc/IDataObj.h" 
          "src/db/utilities.h" 
-         "src/db/utilities.cpp")
+         "src/db/utilities.cpp" "inc/exceptions.h" "src/public/exceptions.cpp")
 
 add_library(libimgdoc2_a STATIC
                 ${LibImgDoc2_aSrcfiles}

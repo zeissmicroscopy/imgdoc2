@@ -1,8 +1,10 @@
 #include "sqlite_DbConnection.h"
 #include "sqlite_DbStatement.h"
 #include "custom_functions.h"
+#include <exceptions.h>
 
 using namespace std;
+using namespace imgdoc2;
 
 SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
 {
@@ -27,22 +29,40 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
     sqlite3_close_v2(this->database_);
 }
 
-/*virtual*/void SqliteDbConnection::Exec(const char* sql_statement)
+/*virtual*/void SqliteDbConnection::Execute(const char* sql_statement)
 {
     int return_value = sqlite3_exec(this->database_, sql_statement, nullptr, nullptr, nullptr);
 }
 
-/*virtual*/std::int64_t SqliteDbConnection::ExecuteAndGetLastRowId(IDbStatement* statement)
+/*virtual*/void SqliteDbConnection::Execute(IDbStatement* statement)
 {
+    if (statement == nullptr)
+    {
+        throw invalid_argument("The argument 'statement' must not be null.");
+    }
+
     auto sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
     if (sqlite_statement == nullptr)
     {
-        throw runtime_error("incorrect type");
+        throw imgdoc2_exception("Incorrect type encountered - object does not implement 'ISqliteDbStatement'-interface.");
     }
 
-    // https://www.sqlite.org/c3ref/last_insert_rowid.html
-    int return_value = sqlite3_step(sqlite_statement->GetSqliteSqlStatement());
+    const int return_value = sqlite3_step(sqlite_statement->GetSqliteSqlStatement());
 
+    // see https://www.sqlite.org/c3ref/step.html
+    // Note that we intend that Execute-methods are used only for commands which do not return data,
+    //  so this means that we do not expect 'SQLITE_ROW" here
+    if (return_value != SQLITE_DONE)
+    {
+        throw database_exception("Error from 'sqlite3_step'", return_value);
+    }
+}
+
+/*virtual*/std::int64_t SqliteDbConnection::ExecuteAndGetLastRowId(IDbStatement* statement)
+{
+    this->Execute(statement);
+
+    // https://www.sqlite.org/c3ref/last_insert_rowid.html
     std::int64_t last_row_id = sqlite3_last_insert_rowid(this->database_);
     return last_row_id;
 }

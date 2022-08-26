@@ -23,12 +23,10 @@ public:
 class IDbConnection
 {
 public:
-
-    virtual void Exec(const char* sql_statement) = 0;
-
+    virtual void Execute(const char* sql_statement) = 0;
+    virtual void Execute(IDbStatement* statement) = 0;
     virtual std::int64_t ExecuteAndGetLastRowId(IDbStatement* statement) = 0;
 
-    //virtual std::unique_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) = 0;
     virtual std::shared_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) = 0;
 
     virtual bool StepStatement(IDbStatement* statement) = 0;
@@ -38,6 +36,6 @@ public:
 public:
     void Exec(const std::string& sql_statement)
     {
-        this->Exec(sql_statement.c_str());
+        this->Execute(sql_statement.c_str());
     }
 };
