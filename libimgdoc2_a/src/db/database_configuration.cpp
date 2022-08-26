@@ -116,6 +116,12 @@ std::string DatabaseConfigurationCommon::GetGeneralTableItem(GeneralTableItems i
     throw invalid_argument("invalid argument for 'item' specified.");
 }
 
+bool DatabaseConfigurationCommon::GetUsingSpatialIndex() const
+{
+    const auto it = this->map_tabletype_to_tablename_.find(TableTypeCommon::TilesSpatialIndex);
+    return it != this->map_tabletype_to_tablename_.cend();
+}
+
 // ----------------------------------------------------------------------------
 
 const std::string& DatabaseConfiguration2D::GetDocTypeConstant() const
@@ -214,3 +220,4 @@ std::string DatabaseConfiguration2D::GetColumnNameOfTilesSpatialIndexTableOrThro
 
     return s;
 }
+

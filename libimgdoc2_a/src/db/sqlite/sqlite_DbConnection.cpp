@@ -47,7 +47,7 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
     return last_row_id;
 }
 
-/*virtual*/std::unique_ptr<IDbStatement> SqliteDbConnection::PrepareStatement(const std::string& sql_statement)
+/*virtual*/std::shared_ptr<IDbStatement> SqliteDbConnection::PrepareStatement(const std::string& sql_statement)
 {
     sqlite3_stmt* statement;
     int return_value = sqlite3_prepare_v2(
@@ -58,7 +58,7 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
         nullptr);
     // TODO: error handling
 
-    return make_unique<SqliteDbStatement>(statement);
+    return make_shared<SqliteDbStatement>(statement);
 }
 
 /*virtual*/bool SqliteDbConnection::StepStatement(IDbStatement* statement)

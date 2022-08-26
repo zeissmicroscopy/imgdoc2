@@ -70,6 +70,8 @@ public:
     std::string GetTableNameForGeneralTableOrThrow() const;
     std::string GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const;
     std::string GetTableNameForTilesSpatialIndexTableOrThrow() const;
+
+    bool GetUsingSpatialIndex() const;
 };
 
 
@@ -97,7 +99,7 @@ public:
     //static constexpr int kTilesDataTable_Column_DataBinHdrBlob = 6;
 
     static constexpr int kTilesSpatialIndexTable_Column_Pk = 1;
-    static constexpr int kTilesSpatialIndexTable_Column_Minx = 2;
+    static constexpr int kTilesSpatialIndexTable_Column_MinX = 2;
     static constexpr int kTilesSpatialIndexTable_Column_MaxX = 3;
     static constexpr int kTilesSpatialIndexTable_Column_MinY = 4;
     static constexpr int kTilesSpatialIndexTable_Column_MaxY = 5;

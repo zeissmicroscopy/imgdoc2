@@ -21,4 +21,5 @@ public:
 
 private:
     imgdoc2::dbIndex AddTileData(std::uint32_t width, std::uint32_t height, std::uint8_t pixeltype, imgdoc2::DataTypes datatype);
+    void AddToSpatialIndex(imgdoc2::dbIndex index, const imgdoc2::LogicalPositionInfo& logical_position_info);
 };

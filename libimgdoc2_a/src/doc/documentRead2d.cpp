@@ -7,7 +7,7 @@ using namespace std;
     auto statement = this->GetReadTileInfo_Statement(coord != nullptr, info != nullptr);
     statement->BindInt64(1, idx);
 
-    this->document_->GetDatabase_connection()->StepStatement(statement);
+    this->document_->GetDatabase_connection()->StepStatement(statement.get());
 
     int no_of_tile_dimension_columns_in_result = 0;
     if (coord != nullptr)
@@ -30,8 +30,7 @@ using namespace std;
     }
 }
 
-
-IDbStatement* DocumentRead2d::GetReadTileInfo_Statement(bool include_tile_coordinates, bool include_logical_position_info)
+shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_tile_coordinates, bool include_logical_position_info)
 {
     stringstream ss;
     ss << "SELECT ";
@@ -65,5 +64,5 @@ IDbStatement* DocumentRead2d::GetReadTileInfo_Statement(bool include_tile_coordi
         << "WHERE [" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId) << "] = ?1;";
 
     auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
-    return statement.release();
+    return statement;
 }

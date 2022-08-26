@@ -55,6 +55,11 @@ using namespace imgdoc2;
 
     auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
 
+    if (this->document_->GetDataBaseConfiguration2d()->GetUsingSpatialIndex())
+    {
+        this->AddToSpatialIndex(row_id, *info);
+    }
+
     return row_id;
 }
 
@@ -62,10 +67,10 @@ imgdoc2::dbIndex DocumentWrite2d::AddTileData(std::uint32_t width, std::uint32_t
 {
     stringstream ss;
     ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesDataOrThrow() << " ("
-        << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth) << ","
-        << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight) << ","
-        << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType) << ","
-        << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_TileDataType) <<
+        <<"["<< this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth) << "],"
+        <<"["<< this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight) << "],"
+        <<"["<< this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType) << "],"
+        <<"["<< this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_TileDataType) << "]"
         ") VALUES( ?1, ?2, ?3, ?4);";
 
     auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
@@ -76,4 +81,25 @@ imgdoc2::dbIndex DocumentWrite2d::AddTileData(std::uint32_t width, std::uint32_t
 
     auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
     return row_id;
+}
+
+void DocumentWrite2d::AddToSpatialIndex(imgdoc2::dbIndex index, const imgdoc2::LogicalPositionInfo& logical_position_info)
+{
+    stringstream ss;
+    ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesSpatialIndexTableOrThrow() << " ("
+        <<"["<<this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << "],"
+        <<"["<<this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX) << "],"
+        <<"["<<this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX) << "],"
+        <<"["<<this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY) << "],"
+        <<"["<<this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY) << "]"
+        ") VALUES(?1,?2,?3,?4,?5);";
+
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
+    statement->BindInt64(1, index);
+    statement->BindDouble(2, logical_position_info.posX);
+    statement->BindDouble(3, logical_position_info.posX + logical_position_info.width);
+    statement->BindDouble(4, logical_position_info.posY);
+    statement->BindDouble(5, logical_position_info.posY + logical_position_info.height);
+
+    this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
 }

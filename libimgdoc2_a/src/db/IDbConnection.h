@@ -16,6 +16,8 @@ public:
     virtual int GetResultInt32(int column) = 0;
     virtual std::int64_t GetResultInt64(int column) = 0;
     virtual double GetResultDouble(int column) = 0;
+
+    virtual ~IDbStatement() = default;
 };
 
 class IDbConnection
@@ -26,7 +28,8 @@ public:
 
     virtual std::int64_t ExecuteAndGetLastRowId(IDbStatement* statement) = 0;
 
-    virtual std::unique_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) = 0;
+    //virtual std::unique_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) = 0;
+    virtual std::shared_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) = 0;
 
     virtual bool StepStatement(IDbStatement* statement) = 0;
 

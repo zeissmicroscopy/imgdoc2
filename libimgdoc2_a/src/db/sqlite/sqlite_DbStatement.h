@@ -10,7 +10,7 @@ private:
     sqlite3_stmt* sql_statement_;
 public:
     SqliteDbStatement(sqlite3_stmt* sql_statement);
-    virtual ~SqliteDbStatement();
+    virtual ~SqliteDbStatement() override;
 
     virtual void Reset() override;
     virtual void BindInt32(int index, std::int32_t value) override;
