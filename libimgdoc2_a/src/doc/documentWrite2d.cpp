@@ -53,9 +53,9 @@ using namespace imgdoc2;
         i++;
     }
 
-    this->document_->GetDatabase_connection()->StepStatement(statement.get());
+    auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
 
-    return 0;
+    return row_id;
 }
 
 imgdoc2::dbIndex DocumentWrite2d::AddTileData(std::uint32_t width, std::uint32_t height, std::uint8_t pixeltype, imgdoc2::DataTypes datatype)
