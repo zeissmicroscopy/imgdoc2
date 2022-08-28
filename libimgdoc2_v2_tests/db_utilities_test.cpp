@@ -36,8 +36,8 @@ TEST(Db_Utilities, CreateConditionForDimQueryClauseCheckCorrectness2)
     EXPECT_TRUE(holds_alternative<int>(get<1>(query_statement_and_binding_value)[1].value));
     EXPECT_EQ(get<int>(get<1>(query_statement_and_binding_value)[1].value), 3);
     EXPECT_TRUE(holds_alternative<int>(get<1>(query_statement_and_binding_value)[2].value));
-    EXPECT_EQ(get<int>(get<1>(query_statement_and_binding_value)[0].value), 5);
+    EXPECT_EQ(get<int>(get<1>(query_statement_and_binding_value)[2].value), 5);
     EXPECT_TRUE(holds_alternative<int>(get<1>(query_statement_and_binding_value)[3].value));
-    EXPECT_EQ(get<int>(get<1>(query_statement_and_binding_value)[1].value), 8);
+    EXPECT_EQ(get<int>(get<1>(query_statement_and_binding_value)[3].value), 8);
 
 }
