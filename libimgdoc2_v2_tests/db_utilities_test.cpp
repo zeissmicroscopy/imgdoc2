@@ -1,5 +1,3 @@
-#pragma once
-
 #include <gtest/gtest.h>
 #include "../libimgdoc2_a/inc/imgdoc2.h"
 #include "../libimgdoc2_a/src/db/utilities.h"
