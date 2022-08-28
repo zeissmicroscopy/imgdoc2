@@ -58,3 +58,14 @@ TEST(Db_Utilities, CreateConditionForDimQueryClauseCheckCorrectness3)
     EXPECT_TRUE(holds_alternative<int>(get<1>(query_statement_and_binding_value)[3].value));
     EXPECT_EQ(get<int>(get<1>(query_statement_and_binding_value)[3].value), 15);
 }
+
+TEST(Db_Utilities, CreateConditionForDimQueryClauseCheckCorrectness4)
+{
+    CDimCoordinateQueryClause dim_query_clause;
+    dim_query_clause.AddRangeClause('Z', IDimCoordinateQueryClause::RangeClause{ 1,1 });
+    auto query_statement_and_binding_value = Utilities::CreateWhereConditionForDimQueryClause(&dim_query_clause, GetColumnNameForDimension);
+    EXPECT_STREQ(get<0>(query_statement_and_binding_value).c_str(), "(([Dim_Z] = ?))");
+    ASSERT_EQ(get<1>(query_statement_and_binding_value).size(), 1);
+    EXPECT_TRUE(holds_alternative<int>(get<1>(query_statement_and_binding_value)[0].value));
+    EXPECT_EQ(get<int>(get<1>(query_statement_and_binding_value)[0].value), 1);
+}
