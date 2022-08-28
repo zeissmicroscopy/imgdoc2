@@ -8,3 +8,4 @@
 #include "IDoc.h"
 #include "TileCoordinate.h"
 #include "exceptions.h"
+#include "DimCoordinateQueryClause.h"

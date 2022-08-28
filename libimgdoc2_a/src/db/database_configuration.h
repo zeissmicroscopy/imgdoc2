@@ -96,6 +96,7 @@ public:
     static constexpr int kTilesDataTable_Column_PixelHeight = 3;
     static constexpr int kTilesDataTable_Column_PixelType = 4;
     static constexpr int kTilesDataTable_Column_TileDataType = 5;
+    static constexpr int kTilesDataTable_Column_BinDataStorageType = 6;
     //static constexpr int kTilesDataTable_Column_DataBinHdrBlob = 6;
 
     static constexpr int kTilesSpatialIndexTable_Column_Pk = 1;

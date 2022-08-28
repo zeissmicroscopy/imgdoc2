@@ -89,13 +89,13 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
 /*virtual*/bool SqliteDbConnection::StepStatement(IDbStatement* statement)
 {
     // try to cast "statement" to ISqliteStatement
-    auto sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
+    const auto sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
     if (sqlite_statement == nullptr)
     {
         throw runtime_error("incorrect type");
     }
 
-    int return_value = sqlite3_step(sqlite_statement->GetSqliteSqlStatement());
+    const int return_value = sqlite3_step(sqlite_statement->GetSqliteSqlStatement());
 
     // https://www.sqlite.org/c3ref/step.html
     if (return_value == SQLITE_ROW)

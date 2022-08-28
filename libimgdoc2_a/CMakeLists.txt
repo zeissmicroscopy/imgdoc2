@@ -1,9 +1,10 @@
+
+
+
 set(LibImgDoc2_aSrcfiles 
-
-src/public/ClassFactory.cpp
-src/public/CreateOptions.cpp
-
-inc/CreateOptions.h
+         "src/public/ClassFactory.cpp"
+         "src/public/CreateOptions.cpp"
+         "inc/CreateOptions.h"
          "inc/ClassFactory.h" 
          "inc/imgdoc2.h" 
          "src/db/database_configuration.h" 
@@ -40,13 +41,24 @@ inc/CreateOptions.h
          "inc/DataTypes.h" 
          "inc/IDataObj.h" 
          "src/db/utilities.h" 
-         "src/db/utilities.cpp" "inc/exceptions.h" "src/public/exceptions.cpp" "src/db/IDbStatement.h")
+         "src/db/utilities.cpp" 
+         "inc/exceptions.h" 
+         "src/public/exceptions.cpp" 
+         "src/db/IDbStatement.h" 
+         "inc/IDimCoordinateQueryClause.h" 
+         "inc/ITIleInfoQueryClause.h"
+         "inc/DimCoordinateQueryClause.h"
+)
 
 add_library(libimgdoc2_a STATIC
                 ${LibImgDoc2_aSrcfiles}
 )
 
 target_link_libraries(libimgdoc2_a PUBLIC SQLiteCpp sqlite3)
+
+# Link against the GSL interface library (i.e. header only library)
+target_link_libraries(libimgdoc2_a PRIVATE GSL)
+
 set_target_properties(libimgdoc2_a PROPERTIES INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/sqlite3>;${CMAKE_CURRENT_SOURCE_DIR}/inc")
 
 # this preprocessor define needs to be defined when building "SqliteImgDoc" and by users of it (if linking the static library)

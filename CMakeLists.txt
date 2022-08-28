@@ -7,7 +7,21 @@ include(FetchContent)
 
 project("imgdoc2")
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include(ExternalProject)
+
+include(FetchContent)
+
+# In this example we are picking a specific tag.
+# You can also pick a specific commit, if you need to.
+FetchContent_Declare(GSL
+    GIT_REPOSITORY "https://github.com/microsoft/GSL"
+    GIT_TAG "v4.0.0"
+)
+
+FetchContent_MakeAvailable(GSL)
 
 
 # Include sub-projects.
@@ -87,6 +101,8 @@ add_subdirectory(libimgdoc2_a)
 add_subdirectory(imgdoc2cmd)
 
 enable_testing()
+
+add_subdirectory(libimgdoc2_v2_tests)
 #add_subdirectory(libimgdoc2_tests)
 
 

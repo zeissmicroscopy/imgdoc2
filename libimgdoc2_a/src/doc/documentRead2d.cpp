@@ -30,6 +30,11 @@ using namespace std;
     }
 }
 
+/*virtual*/void DocumentRead2d::Query(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, const std::function<bool(imgdoc2::dbIndex)>& func)
+{
+    string query_statement = this->CreateQueryStatement(clause, tileInfoQuery);
+}
+
 shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_tile_coordinates, bool include_logical_position_info)
 {
     stringstream ss;
@@ -37,9 +42,9 @@ shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_
 
     if (include_tile_coordinates)
     {
-        auto tile_dimension = this->document_->GetDataBaseConfiguration2d()->GetTileDimensions();
+        const auto tile_dimension = this->document_->GetDataBaseConfiguration2d()->GetTileDimensions();
         bool is_first = true;
-        for (auto d : tile_dimension)
+        for (const auto d : tile_dimension)
         {
             if (!is_first)
             {
@@ -65,4 +70,15 @@ shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_
 
     auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
     return statement;
+}
+
+std::string DocumentRead2d::CreateQueryStatement(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery)
+{
+    stringstream ss;
+    ss << "SELECT [" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk) << "]," <<
+        "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId) << "] " <<
+        "FROM [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << "] " <<
+        "WHERE ";
+
+    return ss.str();
 }

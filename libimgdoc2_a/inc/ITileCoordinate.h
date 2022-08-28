@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <vector>
+#include "types.h"
 
 namespace imgdoc2
 {
