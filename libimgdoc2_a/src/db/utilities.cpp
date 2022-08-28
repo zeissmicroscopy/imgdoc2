@@ -26,6 +26,7 @@ using namespace imgdoc2;
                 ss << " AND ";
             }
 
+            ss << "(";
             bool first_iteration = true;
             funcGetColumnNameForDimension(d, column_name_for_dimension);
             for (const auto rangeClause : *rangeClauses)
@@ -50,7 +51,6 @@ using namespace imgdoc2;
                         databind_info.emplace_back(DataBindInfo(rangeClause.start));
                         first_iteration = false;
                     }
-
                 }
                 else if (rangeClause.start == numeric_limits<int>::min() && rangeClause.end != numeric_limits<int>::max())
                 {
@@ -65,6 +65,8 @@ using namespace imgdoc2;
                     first_iteration = false;
                 }
             }
+
+            ss << ")";
 
             first_dimension_iteration = false;
         }

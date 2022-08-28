@@ -25,7 +25,7 @@ include(FetchContent)
 		    set(GTEST_INCLUDE_DIRS ${googletest_SOURCE_DIR}/googletest/include)
 		    set(GTEST_BOTH_LIBRARIES ${CMAKE_BINARY_DIR}/lib/libgtest.a ${CMAKE_BINARY_DIR}/lib/libgtest_main.a)    
     endif()
-endif()
+endif() 
 
 
 # Add source to this project's executable.
