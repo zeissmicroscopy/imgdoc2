@@ -1,4 +1,6 @@
+#include <variant>
 #include "documentRead2d.h"
+#include "../db/utilities.h"
 
 using namespace std;
 
@@ -32,7 +34,17 @@ using namespace std;
 
 /*virtual*/void DocumentRead2d::Query(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, const std::function<bool(imgdoc2::dbIndex)>& func)
 {
-    string query_statement = this->CreateQueryStatement(clause, tileInfoQuery);
+    auto query_statement = this->CreateQueryStatement(clause, tileInfoQuery);
+
+    while (this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
+    {
+        imgdoc2::dbIndex index = query_statement->GetResultInt64(0);
+        bool b = func(index);
+        if (!b)
+        {
+            break;
+        }
+    }
 }
 
 shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_tile_coordinates, bool include_logical_position_info)
@@ -72,13 +84,40 @@ shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_
     return statement;
 }
 
-std::string DocumentRead2d::CreateQueryStatement(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery)
+shared_ptr<IDbStatement> DocumentRead2d::CreateQueryStatement(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery)
 {
-    stringstream ss;
+    ostringstream ss;
     ss << "SELECT [" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk) << "]," <<
         "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId) << "] " <<
         "FROM [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << "] " <<
         "WHERE ";
 
-    return ss.str();
+    auto query_statement_and_binding_info = Utilities::CreateWhereStatement(clause, tileInfoQuery, *this->document_->GetDataBaseConfiguration2d().get());
+    ss << get<0>(query_statement_and_binding_info);
+
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
+    int i = 1;
+    for (const auto& bind_info : get<1>(query_statement_and_binding_info))
+    {
+        if (holds_alternative<int>(bind_info.value))
+        {
+            statement->BindInt32(i, get<int>(bind_info.value));
+        }
+        else if (holds_alternative<int64_t>(bind_info.value))
+        {
+            statement->BindInt64(i, get<int64_t>(bind_info.value));
+        }
+        else if (holds_alternative<double>(bind_info.value))
+        {
+            statement->BindDouble(i, get<double>(bind_info.value));
+        }
+        else
+        {
+            throw logic_error("invalid variant");
+        }
+
+        ++i;
+    }
+
+    return statement;
 }

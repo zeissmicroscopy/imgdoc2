@@ -6,8 +6,8 @@ using namespace imgdoc2;
 int main(int argc, char** argv)
 {
     auto create_options = ClassFactory::CreateCreateOptions();
-     create_options->SetFilename(":memory:");
-    //create_options->SetFilename("d:\\test.db");
+    // create_options->SetFilename(":memory:");
+    create_options->SetFilename("d:\\test.db");
     create_options->SetUseSpatialIndex(true);
     create_options->AddDimension('C');
     create_options->AddDimension('Z');
@@ -29,6 +29,11 @@ int main(int argc, char** argv)
     tileInfo.pixelType = 0;
     writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, nullptr);
 
+    tc.Set('C', 1235);
+    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, nullptr);
+    tc.Set('C', 1236);
+    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, nullptr);
+
     writer.reset();
 
     auto reader = doc->GetReader2d();
@@ -36,6 +41,18 @@ int main(int argc, char** argv)
     LogicalPositionInfo position_info_out;
     TileCoordinate tcRead;
     reader->ReadTileInfo(1, &tcRead, &position_info_out);
+
+    CDimCoordinateQueryClause dimension_query_clause;
+    dimension_query_clause.AddRangeClause('C', IDimCoordinateQueryClause::RangeClause{ 1233, 1238 });
+
+    vector<dbIndex> resulting_indices;
+    reader->Query(
+        &dimension_query_clause, 
+        nullptr, 
+        [&](dbIndex index)->bool 
+        {
+            resulting_indices.emplace_back(index); return true; 
+        });
 
     return 0;
 }
