@@ -47,6 +47,29 @@ using namespace std;
     }
 }
 
+/*virtual*/void DocumentRead2d::GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const std::function<bool(imgdoc2::dbIndex)>& func)
+{
+    shared_ptr<IDbStatement> query_statement;
+    if (this->document_->GetDataBaseConfiguration2d()->GetUsingSpatialIndex())
+    {
+        query_statement = this->GetTilesIntersectingRectQueryWithSpatialIndex(rect);
+    }
+    else
+    {
+        query_statement = this->GetTilesIntersectingRectQuery(rect);
+    }
+
+    while (this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
+    {
+        imgdoc2::dbIndex index = query_statement->GetResultInt64(0);
+        bool b = func(index);
+        if (!b)
+        {
+            break;
+        }
+    }
+}
+
 shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_tile_coordinates, bool include_logical_position_info)
 {
     stringstream ss;
@@ -93,9 +116,10 @@ shared_ptr<IDbStatement> DocumentRead2d::CreateQueryStatement(const imgdoc2::IDi
         "WHERE ";
 
     auto query_statement_and_binding_info = Utilities::CreateWhereStatement(clause, tileInfoQuery, *this->document_->GetDataBaseConfiguration2d().get());
-    ss << get<0>(query_statement_and_binding_info);
+    ss << get<0>(query_statement_and_binding_info) << ";";
 
     auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
+
     int i = 1;
     for (const auto& bind_info : get<1>(query_statement_and_binding_info))
     {
@@ -119,5 +143,43 @@ shared_ptr<IDbStatement> DocumentRead2d::CreateQueryStatement(const imgdoc2::IDi
         ++i;
     }
 
+    return statement;
+}
+
+std::shared_ptr<IDbStatement> DocumentRead2d::GetTilesIntersectingRectQueryWithSpatialIndex(const imgdoc2::RectangleD& rect)
+{
+    ostringstream ss;
+    ss << "SELECT " << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << " FROM " <<
+        this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesSpatialIndexTableOrThrow() << " WHERE " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX) << ">=?1 AND " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX) << "<=?2 AND " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY) << ">=?3 AND " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY) << "<=?4";
+    
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
+    statement->BindDouble(1, rect.x);
+    statement->BindDouble(2, rect.x + rect.w);
+    statement->BindDouble(3, rect.y);
+    statement->BindDouble(4, rect.y + rect.h);
+    return statement;
+}
+
+std::shared_ptr<IDbStatement> DocumentRead2d::GetTilesIntersectingRectQuery(const imgdoc2::RectangleD& rect)
+{
+    ostringstream ss;   
+    ss << "SELECT " << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk) << " FROM " <<
+        this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << " WHERE " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX) << '+' << 
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileW) << ">=?1 AND " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX) << "<=?2 AND " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY) << '+' <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileH) << ">=?3 AND " <<
+        this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY) << "<=?4";
+
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
+    statement->BindDouble(1, rect.x);
+    statement->BindDouble(2, rect.x + rect.w);
+    statement->BindDouble(3, rect.y);
+    statement->BindDouble(4, rect.y + rect.h);
     return statement;
 }

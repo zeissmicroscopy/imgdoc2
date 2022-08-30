@@ -30,8 +30,8 @@ endif()
 
 # Add source to this project's executable.
 add_executable( libimgdoc2_v2_tests 
-                    db_utilities_test.cpp
-)
+ "db_utilities_test.cpp" 
+ "query2d_test.cpp")
 
 target_include_directories(libimgdoc2_v2_tests PRIVATE ${GTEST_INCLUDE_DIRS})
 

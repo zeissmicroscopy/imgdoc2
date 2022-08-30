@@ -13,8 +13,10 @@ public:
 
     virtual void ReadTileInfo(imgdoc2::dbIndex idx, imgdoc2::ITileCoordinateMutate* coord, imgdoc2::LogicalPositionInfo* info) override;
     virtual void Query(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, const std::function<bool(imgdoc2::dbIndex)>& func) override;
-
+    virtual void GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const std::function<bool(imgdoc2::dbIndex)>& func);
 private:
     std::shared_ptr<IDbStatement> GetReadTileInfo_Statement(bool include_tile_coordinates, bool include_logical_position_info);
     std::shared_ptr<IDbStatement> CreateQueryStatement(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery);
+    std::shared_ptr<IDbStatement> GetTilesIntersectingRectQueryWithSpatialIndex(const imgdoc2::RectangleD& rect);
+    std::shared_ptr<IDbStatement> GetTilesIntersectingRectQuery(const imgdoc2::RectangleD& rect);
 };

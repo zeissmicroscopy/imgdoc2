@@ -21,6 +21,8 @@ namespace imgdoc2
        ///                      more calls to the functor will occur any more.
         virtual void Query(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, const std::function<bool(imgdoc2::dbIndex)>& func) = 0;
 
+
+        virtual void GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const std::function<bool(imgdoc2::dbIndex)>& func) = 0;
     public:
         // no copy and no move (-> https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c21-if-you-define-or-delete-any-copy-move-or-destructor-function-define-or-delete-them-all )
         IDocRead2d() = default;
