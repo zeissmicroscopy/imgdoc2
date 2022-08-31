@@ -33,7 +33,7 @@ shared_ptr<IDoc> CreateCheckerboardDocument()
             tileInfo.pixelWidth = 10; 
             tileInfo.pixelHeight = 10;
             tileInfo.pixelType = 0;
-            writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, nullptr);
+            writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, TileDataStorageType::Invalid, nullptr);
         }
     }
 

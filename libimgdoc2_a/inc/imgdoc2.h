@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "TileDataStorageType.h"
 #include "CreateOptions.h"
 #include "ClassFactory.h"
 #include "IDocRead2d.h"

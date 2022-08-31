@@ -17,6 +17,12 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
 {
 }
 
+/*virtual*/void SqliteDbStatement::BindNull(int index)
+{
+    // TODO: error handling (https://www.sqlite.org/c3ref/bind_blob.html)
+    int return_code = sqlite3_bind_null(this->sql_statement_, index);
+}
+
 /*virtual*/void SqliteDbStatement::BindInt32(int index, std::int32_t value)
 {
     // TODO: error handling (https://www.sqlite.org/c3ref/bind_blob.html)
@@ -32,6 +38,11 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
 /*virtual*/void SqliteDbStatement::BindDouble(int index, double value)
 {
     int return_code = sqlite3_bind_double(this->sql_statement_, index, value);
+}
+
+/*virtual*/void SqliteDbStatement::BindBlob_Static(int index, const void* data, size_t size)
+{
+    int return_code = sqlite3_bind_blob64(this->sql_statement_, index, data, size, nullptr);
 }
 
 /*virtual*/sqlite3_stmt* SqliteDbStatement::GetSqliteSqlStatement() 

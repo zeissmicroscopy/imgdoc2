@@ -16,6 +16,7 @@ namespace imgdoc2
             const imgdoc2::LogicalPositionInfo* info,
             const imgdoc2::TileBaseInfo* tileInfo,
             imgdoc2::DataTypes datatype,
+            imgdoc2::TileDataStorageType storage_type,
             const imgdoc2::IDataObjBase* data) = 0;
 
     public:

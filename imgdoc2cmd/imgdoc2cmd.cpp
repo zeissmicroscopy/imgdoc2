@@ -3,8 +3,56 @@
 using namespace  std;
 using namespace imgdoc2;
 
+class TestDataObj : public IDataObjBase
+{
+public:
+    virtual void GetData(const void** p, size_t* s) const override
+    {
+        static const uint8_t data[]{ 1,2,3,4,5,6,7,8 };
+        *p = data;
+        *s = sizeof(data);
+    }
+};
+
+static void Test1()
+{
+    auto create_options = ClassFactory::CreateCreateOptions();
+    // create_options->SetFilename(":memory:");
+    create_options->SetFilename("d:\\test.db");
+    create_options->SetUseSpatialIndex(true);
+    create_options->SetCreateBlobTable(true);
+    create_options->AddDimension('M');
+
+    auto doc = ClassFactory::CreateNew(create_options);
+
+    auto writer = doc->GetWriter2d();
+
+    TestDataObj test_data_object;
+    for (int column = 0; column < 10; ++column)
+    {
+        for (int row = 0; row < 10; ++row)
+        {
+            LogicalPositionInfo position_info;
+            TileBaseInfo tileInfo;
+            TileCoordinate tc({ { 'M',column * 10 + row + 1 } });
+            position_info.posX = column * 10;
+            position_info.posY = row * 10;
+            position_info.width = 10;
+            position_info.height = 10;
+            position_info.pyrLvl = 0;
+            tileInfo.pixelWidth = 10;
+            tileInfo.pixelHeight = 10;
+            tileInfo.pixelType = 0;
+            writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::UNCOMPRESSED_BITMAP, TileDataStorageType::BlobInDatabase, &test_data_object);
+        }
+    }
+}
+
 int main(int argc, char** argv)
 {
+    Test1();
+    return 0;
+
     auto create_options = ClassFactory::CreateCreateOptions();
     // create_options->SetFilename(":memory:");
     create_options->SetFilename("d:\\test.db");
@@ -27,12 +75,12 @@ int main(int argc, char** argv)
     tileInfo.pixelWidth = 100;
     tileInfo.pixelHeight = 101;
     tileInfo.pixelType = 0;
-    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, nullptr);
+    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, TileDataStorageType::Invalid, nullptr);
 
     tc.Set('C', 1235);
-    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, nullptr);
+    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, TileDataStorageType::Invalid, nullptr);
     tc.Set('C', 1236);
-    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, nullptr);
+    writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::ZERO, TileDataStorageType::Invalid, nullptr);
 
     writer.reset();
 
@@ -47,11 +95,11 @@ int main(int argc, char** argv)
 
     vector<dbIndex> resulting_indices;
     reader->Query(
-        &dimension_query_clause, 
-        nullptr, 
-        [&](dbIndex index)->bool 
+        &dimension_query_clause,
+        nullptr,
+        [&](dbIndex index)->bool
         {
-            resulting_indices.emplace_back(index); return true; 
+            resulting_indices.emplace_back(index); return true;
         });
 
     return 0;

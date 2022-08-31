@@ -40,4 +40,14 @@ namespace imgdoc2
 
         std::string GetSqliteErrorMessage() const;
     };
+
+    class invalid_operation_exception : public std::runtime_error
+    {
+        public:
+        /// Constructor.
+        /// \param szErrMsg Message describing the error.
+        explicit invalid_operation_exception(const char* szErrMsg)
+            : std::runtime_error(szErrMsg)
+        {}
+    };
 }
