@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdexcept>
-#include <ctgmath>
+#include <cmath>
 
 namespace imgdoc2
 {

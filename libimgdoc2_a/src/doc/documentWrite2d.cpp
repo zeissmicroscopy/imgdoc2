@@ -1,3 +1,4 @@
+#include <sstream>
 #include "documentWrite2d.h"
 
 using namespace std;
@@ -12,7 +13,7 @@ using namespace imgdoc2;
 {
     auto tiles_data_id = this->AddTileData(tileInfo->pixelWidth, tileInfo->pixelHeight, tileInfo->pixelType, datatype);
 
-    stringstream ss;
+    ostringstream ss;
     ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << " ("
         << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX) << ","
         << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY) << ","
@@ -65,7 +66,7 @@ using namespace imgdoc2;
 
 imgdoc2::dbIndex DocumentWrite2d::AddTileData(std::uint32_t width, std::uint32_t height, std::uint8_t pixeltype, imgdoc2::DataTypes datatype)
 {
-    stringstream ss;
+    ostringstream ss;
     ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesDataOrThrow() << " ("
         <<"["<< this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth) << "],"
         <<"["<< this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight) << "],"
@@ -85,7 +86,7 @@ imgdoc2::dbIndex DocumentWrite2d::AddTileData(std::uint32_t width, std::uint32_t
 
 void DocumentWrite2d::AddToSpatialIndex(imgdoc2::dbIndex index, const imgdoc2::LogicalPositionInfo& logical_position_info)
 {
-    stringstream ss;
+    ostringstream ss;
     ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesSpatialIndexTableOrThrow() << " ("
         <<"["<<this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << "],"
         <<"["<<this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX) << "],"
