@@ -1,4 +1,5 @@
 #include <sstream>
+#include <gsl/gsl>
 #include <imgdoc2.h>
 #include "database_creator.h"
 #include "database_configuration.h"
@@ -54,6 +55,12 @@ std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgd
         this->db_connection_->Execute(sql_statement);
     }
 
+    if (create_options->GetCreateBlobTable())
+    {
+        sql_statement = GenerateSqlStatementForCreatingBlobTable_Sqlite(database_configuration.get());
+        this->db_connection_->Execute(sql_statement);
+    }
+
     return database_configuration;
 }
 
@@ -66,7 +73,8 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesDataTable_Sqlite(cons
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight) << "] INTEGER(4) NOT NULL," <<
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType) << "] INTEGER(1) NOT NULL," <<
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_TileDataType) << "] INTEGER(1) NOT NULL," <<
-        "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataStorageType) << "] INTEGER(1)";
+        "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataStorageType) << "] INTEGER(1)," <<
+        "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataId) << "] INTEGER(8)";
     ss << ");";
 
     return ss.str();
@@ -140,6 +148,7 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
     database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType, "PixelType");
     database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_TileDataType, "TileDataType");
     database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataStorageType, "BinDataStorageType");
+    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataId, "BinDataId");
 
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk, "Pk");
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX, "TileX");
@@ -159,16 +168,37 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
         database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY, "minY");
         database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY, "maxY");
     }
+
+    if (create_options->GetCreateBlobTable())
+    {
+        database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::Blobs, "BLOBS");
+        database_configuration->SetColumnNameForBlobTable(DatabaseConfiguration2D::kBlobTable_Column_Pk, "Pk");
+        database_configuration->SetColumnNameForBlobTable(DatabaseConfiguration2D::kBlobTable_Column_Data, "Data");
+    }
 }
 
 std::string DbCreator::GenerateSqlStatementForCreatingSpatialTilesIndex_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
-    auto ss = stringstream();
+    Expects(database_configuration != nullptr && database_configuration->GetIsUsingSpatialIndex() == true);
+
+    auto ss = ostringstream();
     ss << "CREATE VIRTUAL TABLE " << database_configuration->GetTableNameForTilesSpatialIndexTableOrThrow() << " USING rtree(" <<
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << "," <<         // Integer primary key
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX) << "," <<       // Minimum X coordinate"
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX) << "," <<       // Maximum X coordinate"
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY) << "," <<       // Minimum Y coordinate"
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY) << ");";        // Maximum Y coordinate"
+    return ss.str();
+}
+
+std::string DbCreator::GenerateSqlStatementForCreatingBlobTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
+{
+    Expects(database_configuration != nullptr && database_configuration->GetHasBlobsTable() == true);
+
+    auto ss = ostringstream();
+    ss << "CREATE TABLE [" << database_configuration->GetTableNameForBlobTableOrThrow() << "] (" <<
+        "[" << database_configuration->GetColumnNameOfBlobTableOrThrow(DatabaseConfiguration2D::kBlobTable_Column_Pk) << "] INTEGER PRIMARY KEY,"
+        "[" << database_configuration->GetColumnNameOfBlobTableOrThrow(DatabaseConfiguration2D::kBlobTable_Column_Data) << "] BLOB );";
+
     return ss.str();
 }

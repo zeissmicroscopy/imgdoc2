@@ -48,7 +48,7 @@ set(LibImgDoc2_aSrcfiles
          "inc/IDimCoordinateQueryClause.h" 
          "inc/ITIleInfoQueryClause.h"
          "inc/DimCoordinateQueryClause.h"
-)
+ "inc/IBlob.h")
 
 add_library(libimgdoc2_a STATIC
                 ${LibImgDoc2_aSrcfiles}

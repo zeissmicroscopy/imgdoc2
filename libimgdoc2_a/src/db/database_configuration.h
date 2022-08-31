@@ -17,7 +17,8 @@ public:
         GeneralInfo,
         TilesData,
         TilesInfo,
-        TilesSpatialIndex
+        TilesSpatialIndex,
+        Blobs
     };
 
     /*static constexpr int kGeneralTableItems_Version = 1;
@@ -34,10 +35,14 @@ public:
 
     static constexpr int kGeneralInfoTable_Column_Key = 1;
     static constexpr int kGeneralInfoTable_Column_ValueString = 2;
+
+    static constexpr int kBlobTable_Column_Pk = 1;
+    static constexpr int kBlobTable_Column_Data = 2;
 private:
     std::unordered_set<imgdoc2::Dimension> dimensions_;
     std::map<TableTypeCommon, std::string> map_tabletype_to_tablename_;
     std::string dimension_column_prefix_;
+    std::map<int, std::string> map_blobtable_columnids_to_columnname_;
 public:
     template<typename ForwardIterator>
     void SetTileDimensions(ForwardIterator begin, ForwardIterator end)
@@ -62,6 +67,9 @@ public:
 
     bool TryGetColumnNameOfGeneralInfoTable(int columnIdentifier, std::string* column_name) const;
 
+    void SetColumnNameForBlobTable(int column_identifier, const char* column_name);
+    bool TryGetColumnNameOfBlobTable(int column_identifier, std::string* column_name) const;
+
     virtual ~DatabaseConfigurationCommon() = default;
 public:
     std::string GetTableNameOrThrow(TableTypeCommon tt) const;
@@ -69,9 +77,16 @@ public:
     std::string GetTableNameForTilesInfoOrThrow() const;
     std::string GetTableNameForGeneralTableOrThrow() const;
     std::string GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const;
+    std::string GetColumnNameOfBlobTableOrThrow(int columnIdentifier) const;
     std::string GetTableNameForTilesSpatialIndexTableOrThrow() const;
+    std::string GetTableNameForBlobTableOrThrow() const;
 
-    bool GetUsingSpatialIndex() const;
+    bool GetIsUsingSpatialIndex() const;
+    bool GetHasBlobsTable() const;
+
+protected:
+    static void SetColumnName(std::map<int, std::string>& map, int columnIdentifier, const char* column_name);
+    static bool GetColumnName(const std::map<int, std::string>& map, int columnIdentifier, std::string* column_name);
 };
 
 
@@ -97,7 +112,7 @@ public:
     static constexpr int kTilesDataTable_Column_PixelType = 4;
     static constexpr int kTilesDataTable_Column_TileDataType = 5;
     static constexpr int kTilesDataTable_Column_BinDataStorageType = 6;
-    //static constexpr int kTilesDataTable_Column_DataBinHdrBlob = 6;
+    static constexpr int kTilesDataTable_Column_BinDataId = 7;
 
     static constexpr int kTilesSpatialIndexTable_Column_Pk = 1;
     static constexpr int kTilesSpatialIndexTable_Column_MinX = 2;
@@ -124,7 +139,5 @@ public:
     std::string GetColumnNameOfTilesInfoTableOrThrow(int columnIdentifier) const;
     std::string GetColumnNameOfTilesDataTableOrThrow(int columnIdentifier) const;
     std::string GetColumnNameOfTilesSpatialIndexTableOrThrow(int columnIdentifier) const;
-private:
-    static void SetColumnName(std::map<int, std::string>& map, int columnIdentifier, const char* column_name);
-    static bool GetColumnName(const std::map<int, std::string>& map, int columnIdentifier, std::string* column_name);
+
 };

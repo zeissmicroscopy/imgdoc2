@@ -13,6 +13,7 @@ shared_ptr<IDoc> CreateCheckerboardDocument()
     //create_options->SetFilename("d:\\test.db");
     create_options->AddDimension('M');
     create_options->SetUseSpatialIndex(true);
+    create_options->SetCreateBlobTable(true);
 
     auto doc = ClassFactory::CreateNew(create_options);
     auto writer = doc->GetWriter2d();

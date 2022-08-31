@@ -12,6 +12,7 @@ private:
     std::unordered_set<Dimension> dimensions_;
     std::unordered_set<Dimension> dimensionsToIndex_;
     bool            use_spatial_index_;
+    bool            create_blob_table_;
 public:
     CreateOptions() : use_spatial_index_(false)
     {}
@@ -29,6 +30,11 @@ public:
     void SetUseSpatialIndex(bool use_spatial_index) override
     {
         this->use_spatial_index_ = use_spatial_index;
+    }
+
+    void SetCreateBlobTable(bool create_blob_table) override
+    {
+        this->create_blob_table_ = create_blob_table;
     }
 
     bool GetUseSpatialIndex() const override
@@ -49,6 +55,11 @@ public:
     const std::unordered_set<Dimension>& GetDimensions() const override
     {
         return this->dimensions_;
+    }
+
+    bool GetCreateBlobTable() const override
+    {
+        return this->create_blob_table_;
     }
 };
 

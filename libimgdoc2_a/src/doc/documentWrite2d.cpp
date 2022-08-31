@@ -56,7 +56,7 @@ using namespace imgdoc2;
 
     auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
 
-    if (this->document_->GetDataBaseConfiguration2d()->GetUsingSpatialIndex())
+    if (this->document_->GetDataBaseConfiguration2d()->GetIsUsingSpatialIndex())
     {
         this->AddToSpatialIndex(row_id, *info);
     }

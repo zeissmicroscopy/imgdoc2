@@ -51,7 +51,7 @@ using namespace std;
 /*virtual*/void DocumentRead2d::GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, std::function<bool(imgdoc2::dbIndex)> func)
 {
     shared_ptr<IDbStatement> query_statement;
-    if (this->document_->GetDataBaseConfiguration2d()->GetUsingSpatialIndex())
+    if (this->document_->GetDataBaseConfiguration2d()->GetIsUsingSpatialIndex())
     {
         query_statement = this->GetTilesIntersectingRectQueryAndCoordinateAndInfoQueryClauseWithSpatialIndex(rect, clause, tileInfoQuery);
     }
