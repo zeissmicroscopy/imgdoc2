@@ -48,29 +48,6 @@ using namespace std;
     }
 }
 
-/*virtual*/void DocumentRead2d::GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const std::function<bool(imgdoc2::dbIndex)>& func)
-{
-    shared_ptr<IDbStatement> query_statement;
-    if (this->document_->GetDataBaseConfiguration2d()->GetUsingSpatialIndex())
-    {
-        query_statement = this->GetTilesIntersectingRectQueryWithSpatialIndex(rect);
-    }
-    else
-    {
-        query_statement = this->GetTilesIntersectingRectQuery(rect);
-    }
-
-    while (this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
-    {
-        imgdoc2::dbIndex index = query_statement->GetResultInt64(0);
-        bool b = func(index);
-        if (!b)
-        {
-            break;
-        }
-    }
-}
-
 /*virtual*/void DocumentRead2d::GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, std::function<bool(imgdoc2::dbIndex)> func)
 {
     shared_ptr<IDbStatement> query_statement;
