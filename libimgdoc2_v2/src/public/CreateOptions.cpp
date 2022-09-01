@@ -2,7 +2,6 @@
 #include <unordered_set>
 #include <imgdoc2.h>
 
-
 using namespace imgdoc2;
 
 class CreateOptions: public imgdoc2::ICreateOptions

@@ -4,7 +4,7 @@
 set(LibImgDoc2_v2_Srcfiles 
          "src/public/ClassFactory.cpp"
          "src/public/CreateOptions.cpp"
-         "inc/CreateOptions.h"
+         "inc/ICreateOptions.h"
          "inc/ClassFactory.h" 
          "inc/imgdoc2.h" 
          "src/db/database_configuration.h" 

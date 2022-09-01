@@ -7,6 +7,7 @@
 
 namespace imgdoc2
 {
+    /// This interface is providing read-only access to a 2D-document.
     class IDocRead2d
     {
     public:

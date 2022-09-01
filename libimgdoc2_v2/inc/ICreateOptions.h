@@ -17,12 +17,23 @@ namespace imgdoc2
         /// \param  sz  The filename (in UTF8-encoding).
         virtual void SetFilename(const char* sz) = 0;
 
+        /// Adds a dimension.
+        /// TODO: 
+        /// - What happens if it already exists?   
+        /// - should we limit "valid dimensions" (e.g. to a-z A-Z)?
+        /// \param  {imgdoc2::Dimension} dim The dimension to add.
         virtual void AddDimension(imgdoc2::Dimension dim) = 0;
 
+        /// Sets a flag indicating whether the database should be created containing a spatial index.
+        /// \param  {bool} use_spatial_index True if to construct with a spatial index.
         virtual void SetUseSpatialIndex(bool use_spatial_index) = 0;
 
+        /// Adds a dimension for which an index is to be created.
+        /// \param  {imgdoc2::Dimension} dim The dimension for which to create an index.
         virtual void AddIndexForDimension(imgdoc2::Dimension dim) = 0;
 
+        /// Sets a flag indicating whehter a BLOB table is to be constructed. Only if a BLOB table is present, the storage-type "BlobInDatabase" can be used.
+        /// \param  {bool} create_blob_table True to create BLOB table.
         virtual void SetCreateBlobTable(bool create_blob_table) = 0;
 
         

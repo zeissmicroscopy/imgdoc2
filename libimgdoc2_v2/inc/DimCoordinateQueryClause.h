@@ -6,6 +6,7 @@
 
 namespace imgdoc2
 {
+  /// A simple implementation of the IDimCoordinateQueryClause interface.
   class CDimCoordinateQueryClause : public IDimCoordinateQueryClause
   {
   private:

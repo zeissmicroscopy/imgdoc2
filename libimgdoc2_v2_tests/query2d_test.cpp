@@ -6,6 +6,9 @@ using namespace std;
 using namespace imgdoc2;
 using namespace testing;
 
+/// Creates a new in-memory document with the following charactersitics: We have 10x10 tiles, each width=height=10, in
+/// a checkerboard-arrangement of 10 row and 10 columns. Each tile has an M-index, starting to count from 1.
+/// \returns {shared_ptr{IDoc}} The newly created in-memory "checkerboard document".
 shared_ptr<IDoc> CreateCheckerboardDocument()
 {
     auto create_options = ClassFactory::CreateCreateOptions();
@@ -40,6 +43,10 @@ shared_ptr<IDoc> CreateCheckerboardDocument()
     return doc;
 }
 
+/// Utility for retrieving the M-coordinate from a list of tiles. No error handling is done here.
+/// \param [in]     {IDocRead2d*} reader          The reader object.
+/// \param          {const vector{dbIndex}&} keys The PKs of the tiles to query.
+/// \returns {vector{int}} The m index of items.
 vector<int> GetMIndexOfItems(IDocRead2d* reader, const vector<dbIndex>& keys)
 {
     vector<int> m_indices;
@@ -57,6 +64,8 @@ vector<int> GetMIndexOfItems(IDocRead2d* reader, const vector<dbIndex>& keys)
 
 TEST(Query2d, QueryForRectAndCheckResult1)
 {
+    // Using the 10x10 checkerboard-document, we query for tiles overlapping with the ROI (0,0,15,15).
+    // We expect to find 4 tiles, with M=1, 2, 11, 12.
     auto doc = CreateCheckerboardDocument();
     auto reader = doc->GetReader2d();
 
@@ -81,7 +90,6 @@ TEST(Query2d, QueryForRectAndCheckResult2)
 
     CDimCoordinateQueryClause coordinate_query_clause;
     coordinate_query_clause.AddRangeClause('M', IDimCoordinateQueryClause::RangeClause{ 0, 5 });
-
 
     vector<dbIndex> result_indices;
     reader->GetTilesIntersectingRect(RectangleD{ 0,0,15,15 },
