@@ -27,6 +27,7 @@ static void Test1()
 
     auto writer = doc->GetWriter2d();
 
+    writer->BeginTransaction();
     TestDataObj test_data_object;
     for (int column = 0; column < 10; ++column)
     {
@@ -46,6 +47,8 @@ static void Test1()
             writer->AddTile(&tc, &position_info, &tileInfo, DataTypes::UNCOMPRESSED_BITMAP, TileDataStorageType::BlobInDatabase, &test_data_object);
         }
     }
+
+    writer->CommitTransaction();
 }
 
 int main(int argc, char** argv)

@@ -3,10 +3,11 @@
 #include "TileBaseInfo.h"
 #include "DataTypes.h"
 #include "IDataObj.h"
+#include "IDatabaseTransaction.h"
 
 namespace imgdoc2
 {
-    class IDocWrite2d
+    class IDocWrite2d : public IDatabaseTransaction
     {
     public:
         virtual ~IDocWrite2d() = default;

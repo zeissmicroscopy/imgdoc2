@@ -7,6 +7,7 @@ using namespace std;
 using namespace imgdoc2;
 
 SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
+    : transaction_count_(0)
 {
     sqlite3* database;
     int returnValue = sqlite3_open_v2(
@@ -108,4 +109,33 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
     }
 
     throw database_exception("Error from 'sqlite3_step'.", return_value);
+}
+
+/*virtual*/void SqliteDbConnection::BeginTransaction()
+{
+    if (this->IsTransactionPending())
+    {
+        throw database_exception("Call to 'BeginTransaction' where there is already a pending transaction.");
+    }
+
+    this->Execute("BEGIN;");
+    this->transaction_count_++;
+}
+
+/*virtual*/void SqliteDbConnection::EndTransaction(bool commit)
+{
+    if (!this->IsTransactionPending())
+    {
+        throw database_exception("Call to 'EndTransaction' where there is no pending transaction.");
+    }
+
+    const char* sql_command = commit == true ? "COMMIT;" : "ROLLBACK;";
+
+    this->Execute(sql_command);
+    this->transaction_count_--;
+}
+
+/*virtual*/bool SqliteDbConnection::IsTransactionPending() const
+{
+    return this->transaction_count_ > 0;
 }

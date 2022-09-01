@@ -25,7 +25,7 @@ set(LibImgDoc2_v2_Srcfiles
          "src/db/sqlite/custom_functions.cpp"
          "src/db/sqlite/custom_functions.h" 
          "inc/types.h"  
-         "inc/IDbWriteTransaction.h" 
+         "inc/IDatabaseTransaction.h" 
          "inc/IDbIndexManagement.h" 
          "src/doc/documentRead2d.h" 
          "src/doc/documentRead2d.cpp" 
@@ -48,7 +48,7 @@ set(LibImgDoc2_v2_Srcfiles
          "inc/IDimCoordinateQueryClause.h" 
          "inc/ITIleInfoQueryClause.h"
          "inc/DimCoordinateQueryClause.h"
- "inc/IBlob.h")
+ "inc/IBlob.h" "src/doc/transactionHelper.h")
 
 add_library(libimgdoc2_v2 STATIC
                 ${LibImgDoc2_v2_Srcfiles}

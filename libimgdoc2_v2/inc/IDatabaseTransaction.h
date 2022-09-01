@@ -2,13 +2,12 @@
 
 namespace imgdoc2
 {
-    class IDbWriteTransaction
+    class IDatabaseTransaction
     {
     public:
         virtual void BeginTransaction() = 0;
         virtual void CommitTransaction() = 0;
         virtual void RollbackTransaction() = 0;
-        virtual ~IDbWriteTransaction() = default;
+        virtual ~IDatabaseTransaction() = default;
     };
-
 }

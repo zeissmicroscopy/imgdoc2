@@ -16,6 +16,10 @@ public:
 
     virtual bool StepStatement(IDbStatement* statement) = 0;
 
+    virtual void BeginTransaction() = 0;
+    virtual void EndTransaction(bool commit) = 0;
+    virtual bool IsTransactionPending() const = 0;
+
     virtual ~IDbConnection() = default;
 
 public:

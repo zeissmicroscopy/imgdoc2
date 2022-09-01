@@ -18,6 +18,10 @@ public:
         imgdoc2::TileDataStorageType storage_type,
         const imgdoc2::IDataObjBase* data) override;
 
+    virtual void BeginTransaction() override;
+    virtual void CommitTransaction() override;
+    virtual void RollbackTransaction() override;
+
     virtual ~DocumentWrite2d() = default;
 
 private:
