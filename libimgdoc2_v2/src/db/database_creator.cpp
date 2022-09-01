@@ -10,9 +10,12 @@ using namespace std;
 
 /*static*/std::shared_ptr<imgdoc2::IDoc> imgdoc2::ClassFactory::CreateNew(imgdoc2::ICreateOptions* create_options)
 {
+    // TODO: here would be the place where we'd allow for "other databases than Sqlite", for the time being,
+    //        we just deal with Sqlite here
     auto db_connection = DbFactory::SqliteCreateNewDatabase(create_options->GetFilename().c_str());
 
     // check pre-conditions
+    // TODO
 
     // tweak settings
 
