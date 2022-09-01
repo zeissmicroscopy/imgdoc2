@@ -51,7 +51,7 @@ add_subdirectory("${CMAKE_CURRENT_BINARY_DIR}/sqlite3-prefix/src/sqlite3")
 ]]
 
 add_subdirectory(external/sqlite3)
-add_subdirectory(external/SQLiteCpp)
+#add_subdirectory(external/SQLiteCpp)
 
 #[[
 FetchContent_Declare(

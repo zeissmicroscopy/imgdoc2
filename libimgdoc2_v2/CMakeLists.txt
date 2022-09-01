@@ -54,7 +54,7 @@ add_library(libimgdoc2_v2 STATIC
                 ${LibImgDoc2_v2_Srcfiles}
 )
 
-target_link_libraries(libimgdoc2_v2 PUBLIC SQLiteCpp sqlite3)
+target_link_libraries(libimgdoc2_v2 PUBLIC sqlite3)
 
 # Link against the GSL interface library (i.e. header only library)
 target_link_libraries(libimgdoc2_v2 PRIVATE GSL)
