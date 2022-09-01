@@ -96,7 +96,7 @@ endif()
 ]]
 
 #add_subdirectory(libimgdoc2)
-add_subdirectory(libimgdoc2_a)
+add_subdirectory(libimgdoc2_v2)
 
 add_subdirectory(imgdoc2cmd)
 

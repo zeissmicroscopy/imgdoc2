@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
-#include "../libimgdoc2_a/inc/imgdoc2.h"
+#include "../libimgdoc2_v2/inc/imgdoc2.h"
 
 using namespace std;
 using namespace imgdoc2;
