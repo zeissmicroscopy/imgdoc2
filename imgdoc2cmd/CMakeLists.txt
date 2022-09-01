@@ -5,12 +5,15 @@ add_executable(imgdoc2cmd
 
 if(UNIX AND NOT APPLE)
    # Linux
+   find_package(Threads REQUIRED)
    message(STATUS "****** UNIX AND NOT APPLE ******")
    message(STATUS "CMAKE_THREAD_LIBS_INIT=${CMAKE_THREAD_LIBS_INIT}  CMAKE_DL_LIBS=${CMAKE_DL_LIBS}")
    target_link_libraries(imgdoc2cmd PRIVATE libimgdoc2_v2 ${CMAKE_THREAD_LIBS_INIT}  ${CMAKE_DL_LIBS})
 elseif(UNIX AND APPLE)
    # Mac OS
+   find_package(Threads REQUIRED)
    target_link_libraries(imgdoc2cmd PRIVATE libimgdoc2_v2 pthread dl)
 else()
+   find_package(Threads REQUIRED)
    target_link_libraries(imgdoc2cmd PRIVATE  libimgdoc2_v2 )
 endif()

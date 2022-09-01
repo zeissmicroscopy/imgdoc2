@@ -45,12 +45,15 @@ target_compile_definitions(libimgdoc2_v2_tests PUBLIC _SQLITEIMGDOCSTATICLIB=1)
 
 if(UNIX AND NOT APPLE)
    # Linux
+   find_package(Threads REQUIRED)
    message(STATUS "****** UNIX AND NOT APPLE ******")
    target_link_libraries(libimgdoc2_v2_tests PRIVATE gtest gmock gtest_main libimgdoc2_v2 ${CMAKE_THREAD_LIBS_INIT}  ${CMAKE_DL_LIBS})
 elseif(UNIX AND APPLE)
    # Mac OS
+   find_package(Threads REQUIRED)
    target_link_libraries(libimgdoc2_v2_tests PRIVATE gtest gmock gtest_main libimgdoc2_v2 pthread dl)
 else()
+   find_package(Threads REQUIRED)
    target_link_libraries(libimgdoc2_v2_tests PRIVATE gtest gmock gtest_main libimgdoc2_v2 )
 endif()
 
