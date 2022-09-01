@@ -25,7 +25,14 @@ public:
     virtual ~DocumentWrite2d() = default;
 
 private:
-    //imgdoc2::dbIndex AddTileData(std::uint32_t width, std::uint32_t height, std::uint8_t pixeltype, imgdoc2::DataTypes datatype);
+    imgdoc2::dbIndex AddTileInternal(
+        const imgdoc2::ITileCoordinate* coord,
+        const imgdoc2::LogicalPositionInfo* info,
+        const imgdoc2::TileBaseInfo* tileInfo,
+        imgdoc2::DataTypes datatype,
+        imgdoc2::TileDataStorageType storage_type,
+        const imgdoc2::IDataObjBase* data);
+    
     void AddToSpatialIndex(imgdoc2::dbIndex index, const imgdoc2::LogicalPositionInfo& logical_position_info);
 
     imgdoc2::dbIndex AddTileData(const imgdoc2::TileBaseInfo* tile_info, imgdoc2::DataTypes datatype, imgdoc2::TileDataStorageType storage_type, const imgdoc2::IDataObjBase* data);
