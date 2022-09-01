@@ -10,18 +10,11 @@ namespace imgdoc2
   {
   private:
     std::map<imgdoc2::Dimension, std::vector<RangeClause>> rangeClauses;
-    std::map<imgdoc2::Dimension, std::vector<ListClause>> listClauses;
     std::set<imgdoc2::Dimension> dims;
   public:
     void AddRangeClause(imgdoc2::Dimension d, const RangeClause& clause)
     {
       this->rangeClauses[d].push_back(clause);
-      this->dims.insert(d);
-    }
-
-    void AddListClause(imgdoc2::Dimension d, const ListClause& clause)
-    {
-      this->listClauses[d].push_back(clause);
       this->dims.insert(d);
     }
 
@@ -40,16 +33,5 @@ namespace imgdoc2
 
       return nullptr;
     }
-
-    /*const std::vector<ListClause>* GetListClause(imgdoc2::Dimension d) const override
-    {
-      const auto& c = this->listClauses.find(d);
-      if (c != this->listClauses.cend())
-      {
-        return &c->second;
-      }
-
-      return nullptr;
-    }*/
   };
 }

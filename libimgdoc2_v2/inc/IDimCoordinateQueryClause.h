@@ -23,10 +23,10 @@ namespace imgdoc2
             int end;
         };
 
-        struct ListClause
+    /*    struct ListClause
         {
             std::vector<int> list;
-        };
+        };*/
 
         /// Gets the set of dimensions for which there is a clause present. It is important that the order
         /// of elements is idempotent (as of course the content itself).

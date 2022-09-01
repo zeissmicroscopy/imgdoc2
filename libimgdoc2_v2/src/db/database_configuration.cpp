@@ -143,6 +143,11 @@ bool DatabaseConfigurationCommon::GetHasBlobsTable() const
     return it != this->map_tabletype_to_tablename_.cend();
 }
 
+bool DatabaseConfigurationCommon::IsDimensionIndexed(imgdoc2::Dimension dimension) const
+{
+    return this->indexed_dimensions_.find(dimension) != this->indexed_dimensions_.cend();
+}
+
 std::string DatabaseConfigurationCommon::GetColumnNameOfBlobTableOrThrow(int column_identifier) const
 {
     std::string s;

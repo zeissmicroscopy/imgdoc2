@@ -30,8 +30,11 @@ public:
         {
             t_return_value return_value = this->action_();
 
-            // TODO: I guess we need to think about how to deal with "execption from the next line"
-            this->database_connection_->EndTransaction(true);
+            if (transaction_initiated)
+            {
+                // TODO: I guess we need to think about how to deal with "execption from the next line"
+                this->database_connection_->EndTransaction(true);
+            }
 
             return return_value;
         }

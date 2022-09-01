@@ -93,12 +93,6 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(cons
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileH) << "] DOUBLE NOT NULL,"
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel) << "] INTEGER(1) NOT NULL,";
 
-    //const auto tile_dimension = database_configuration->GetTileDimensions();
-    //for (auto d : tile_dimension)
-    //{
-    //    ss << "[" << database_configuration->GetDimensionsColumnPrefix() << d << "] INTEGER(4) NOT NULL,";
-    //}
-
     ss << "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId) << "] INTEGER(8) NOT NULL";
 
     for (const auto dim : database_configuration->GetTileDimensions())
@@ -108,6 +102,15 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(cons
     }
 
     ss << ");";
+
+    // create the indices for the "dimension tables"
+    for (const auto dim : database_configuration->GetIndexedTileDimensions())
+    {
+        ss << "CREATE INDEX [" << database_configuration->GetIndexForDimensionColumnPrefix() << dim << "] ON "
+            << "["<<database_configuration->GetTableNameForTilesInfoOrThrow()<<"] "
+            << "( [" << database_configuration->GetDimensionsColumnPrefix() << dim << "]);";
+    }
+
     return ss.str();
 }
 
@@ -138,6 +141,7 @@ std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const D
 void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration2D* database_configuration, const imgdoc2::ICreateOptions* create_options)
 {
     database_configuration->SetDimensionColumnPrefix("Dim_");
+    database_configuration->SetIndexForDimensionColumnPrefix("IndexForDim_");
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::GeneralInfo, "GENERAL");
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesData, "TILESDATA");
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesInfo, "TILESINFO");
@@ -158,6 +162,7 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel, "PyramidLevel");
     database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId, "TileDataId");
     database_configuration->SetTileDimensions(create_options->GetDimensions().cbegin(), create_options->GetDimensions().cend());
+    database_configuration->SetIndexedTileDimensions(create_options->GetIndexedDimensions().cbegin(), create_options->GetIndexedDimensions().cend());
 
     if (create_options->GetUseSpatialIndex())
     {

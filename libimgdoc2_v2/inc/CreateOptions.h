@@ -19,7 +19,7 @@ namespace imgdoc2
 
         virtual void AddDimension(imgdoc2::Dimension dim) = 0;
 
-        virtual void SetUseSpatialIndex(bool use_spatial_index)=0;
+        virtual void SetUseSpatialIndex(bool use_spatial_index) = 0;
 
         virtual void AddIndexForDimension(imgdoc2::Dimension dim) = 0;
 
@@ -31,6 +31,8 @@ namespace imgdoc2
         virtual const std::string& GetFilename() const = 0;
 
         virtual const std::unordered_set<imgdoc2::Dimension>& GetDimensions() const = 0;
+
+        virtual const std::unordered_set<imgdoc2::Dimension>& GetIndexedDimensions() const = 0;
 
         virtual bool GetCreateBlobTable() const = 0;
 

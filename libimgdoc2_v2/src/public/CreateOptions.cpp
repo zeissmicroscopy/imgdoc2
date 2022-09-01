@@ -57,6 +57,11 @@ public:
         return this->dimensions_;
     }
 
+    const std::unordered_set<imgdoc2::Dimension>& GetIndexedDimensions() const override
+    {
+        return this->dimensionsToIndex_;
+    }
+
     bool GetCreateBlobTable() const override
     {
         return this->create_blob_table_;

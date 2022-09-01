@@ -40,8 +40,10 @@ public:
     static constexpr int kBlobTable_Column_Data = 2;
 private:
     std::unordered_set<imgdoc2::Dimension> dimensions_;
+    std::unordered_set<imgdoc2::Dimension> indexed_dimensions_;
     std::map<TableTypeCommon, std::string> map_tabletype_to_tablename_;
     std::string dimension_column_prefix_;
+    std::string index_for_dimension_prefix_;
     std::map<int, std::string> map_blobtable_columnids_to_columnname_;
 public:
     template<typename ForwardIterator>
@@ -54,10 +56,25 @@ public:
         }
     }
 
+    template<typename ForwardIterator>
+    void SetIndexedTileDimensions(ForwardIterator begin, ForwardIterator end)
+    {
+        this->indexed_dimensions_.clear();
+        for (auto it = begin; it != end; ++it)
+        {
+            this->indexed_dimensions_.insert(*it);
+        }
+    }
+
     const std::unordered_set<imgdoc2::Dimension>& GetTileDimensions() const { return this->dimensions_; }
+    const std::unordered_set<imgdoc2::Dimension>& GetIndexedTileDimensions() const { return this->indexed_dimensions_; }
+
+    bool IsDimensionIndexed(imgdoc2::Dimension) const;
 
     void SetDimensionColumnPrefix(const char* prefix) { this->dimension_column_prefix_ = prefix; };
+    void SetIndexForDimensionColumnPrefix(const char* prefix) { this->index_for_dimension_prefix_ = prefix; }
     const std::string& GetDimensionsColumnPrefix() const { return this->dimension_column_prefix_; }
+    const std::string& GetIndexForDimensionColumnPrefix() const { return this->index_for_dimension_prefix_; }
 
     void SetTableName(TableTypeCommon tableType, const char* name);
 

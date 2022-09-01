@@ -22,6 +22,7 @@ static void Test1()
     create_options->SetUseSpatialIndex(true);
     create_options->SetCreateBlobTable(true);
     create_options->AddDimension('M');
+    create_options->AddIndexForDimension('M');
 
     auto doc = ClassFactory::CreateNew(create_options);
 
