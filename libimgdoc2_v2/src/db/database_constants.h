@@ -10,4 +10,6 @@ public:
 
     static const char* kTilesInfoTable_DefaultName;         // = "TILESINFO"
     static const char* kTilesDataTable_DefaultName;         // = "TILESDATA"
+
+    static const char* kGeneralPropBag_TileInfoTableKey;    // "
 };

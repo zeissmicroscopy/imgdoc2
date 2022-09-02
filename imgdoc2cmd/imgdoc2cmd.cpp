@@ -52,9 +52,18 @@ static void Test1()
     writer->CommitTransaction();
 }
 
+static void Test2()
+{
+    unique_ptr<imgdoc2::IOpenExistingOptions> open_existing_options( ClassFactory::CreateOpenExistingOptions() );
+    open_existing_options->SetFilename("D:\\test.db");
+
+    auto doc = ClassFactory::OpenExisting(open_existing_options.get());
+}
+
 int main(int argc, char** argv)
 {
-    Test1();
+    //Test1();
+    Test2();
     return 0;
 
     auto create_options = ClassFactory::CreateCreateOptions();

@@ -5,5 +5,10 @@ using namespace std;
 
 /*static*/std::shared_ptr<IDbConnection> DbFactory::SqliteCreateNewDatabase(const char* filename)
 {
-    return make_shared<SqliteDbConnection>(filename);
+    return SqliteDbConnection::SqliteCreateNewDatabase(filename);
+}
+
+/*static*/std::shared_ptr<IDbConnection> DbFactory::SqliteOpenExistingDatabase(const char* filename, bool readonly)
+{
+    return SqliteDbConnection::SqliteOpenExistingDatabase(filename, readonly);
 }

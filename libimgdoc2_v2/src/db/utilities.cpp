@@ -141,3 +141,23 @@ using namespace imgdoc2;
 
     return make_tuple(" () ", std::vector<Utilities::DataBindInfo>{});
 }
+
+/*static*/bool Utilities::TryReadStringFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key, std::string* output)
+{
+    ostringstream ss;
+    ss << "SELECT [" << value_column_name << "] FROM [" << table_name << "] WHERE [" << key_column_name << "]='" << key << "';";
+    const auto statement = db_connection->PrepareStatement(ss.str());
+    if (!db_connection->StepStatement(statement.get()))
+    {
+        return false;
+    }
+    else
+    {
+        if (output!=nullptr)
+        {
+            *output = statement->GetResultString(0);
+        }
+
+        return true;
+    }
+}

@@ -9,12 +9,15 @@ private:
     sqlite3* database_;
     int transaction_count_;
 public:
+    SqliteDbConnection(sqlite3* database);
     SqliteDbConnection() = delete;
-    SqliteDbConnection(const char* dbFilename);
+
+    static std::shared_ptr<IDbConnection> SqliteCreateNewDatabase(const char* filename);
+    static std::shared_ptr<IDbConnection> SqliteOpenExistingDatabase(const char* filename, bool readonly);
 
     virtual void Execute(const char* sql_statement) override;
     virtual void Execute(IDbStatement* statement) override;
-    virtual std::int64_t ExecuteAndGetLastRowId(IDbStatement* statement) ;
+    virtual std::int64_t ExecuteAndGetLastRowId(IDbStatement* statement) override;
     virtual std::shared_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) override;
     virtual bool StepStatement(IDbStatement* statement) override;
 

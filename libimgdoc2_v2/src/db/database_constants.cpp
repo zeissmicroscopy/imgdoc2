@@ -7,3 +7,4 @@
 
 /*static*/const char* DbConstants::kTilesInfoTable_DefaultName = "TILESINFO";
 /*static*/const char* DbConstants::kTilesDataTable_DefaultName = "TILESDATA";
+

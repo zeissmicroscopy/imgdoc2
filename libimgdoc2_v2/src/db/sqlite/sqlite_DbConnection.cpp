@@ -7,21 +7,40 @@
 using namespace std;
 using namespace imgdoc2;
 
-SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
-    : transaction_count_(0)
+/*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteCreateNewDatabase(const char* filename)
 {
     sqlite3* database;
     int returnValue = sqlite3_open_v2(
-        dbFilename,
+        filename,
         &database,
-        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE,
+        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI |SQLITE_OPEN_EXRESCODE,
         nullptr);
 
     // TODO - error handling
     //  if (returnValue...)
 
-    SqliteCustomFunctions::SetupCustomQueries(database);
+    return make_shared<SqliteDbConnection>(database);
+}
 
+/*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteOpenExistingDatabase(const char* filename, bool readonly)
+{
+    sqlite3* database;
+    int returnValue = sqlite3_open_v2(
+        filename,
+        &database,
+        (readonly ? SQLITE_OPEN_READONLY: SQLITE_OPEN_READWRITE) | SQLITE_OPEN_URI | SQLITE_OPEN_EXRESCODE,
+        nullptr);
+
+    // TODO - error handling
+    //  if (returnValue...)
+
+    return make_shared<SqliteDbConnection>(database);
+}
+
+SqliteDbConnection::SqliteDbConnection(sqlite3* database)
+    : transaction_count_(0)
+{
+    SqliteCustomFunctions::SetupCustomQueries(database);
     this->database_ = database;
 }
 

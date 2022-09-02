@@ -7,6 +7,7 @@
 #include "IDimCoordinateQueryClause.h"
 #include "ITIleInfoQueryClause.h"
 #include "database_configuration.h"
+#include "IDbConnection.h"
 
 class Utilities
 {
@@ -31,6 +32,21 @@ public:
 
     static std::tuple<std::string, std::vector<DataBindInfo>> CreateWhereConditionForTileInfoQueryClause(const imgdoc2::ITileInfoQueryClause* clause, const std::string& column_name_pyramidlevel);
 
+    /// Attempts to read from the table with the specified name the value of the column 'value_common_name' from the row
+    /// where the value in 'key_column_name' is equal to 'key'. If successful, the string (from column 'value_common_name') is put
+    /// into 'output' (if 'output' is non-null) and true is returned. If the key is not found, the method returns false.
+    /// It is not checked whether there are multiple hits, in such case an arbitrary hit is returned.
+    /// Note that in case of an database-error, this method will throw an exception.
+    ///
+    /// \param [in]  db_connection       The database connection.
+    /// \param       table_name          Name of the table.
+    /// \param       key_column_name     Name of the key column.
+    /// \param       value_column_name   Name of the value column.
+    /// \param       key                 The key to search for.
+    /// \param [out] output              If non-null and successful, the result is put here.
+    ///
+    /// \returns    True if it succeeds, false if it fails.
+    static [[nodiscard]] bool TryReadStringFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key, std::string* output);
 private:
     static const char* ConditionalOperatorToString(imgdoc2::ConditionalOperator op);
 };

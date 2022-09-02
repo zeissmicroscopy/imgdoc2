@@ -52,8 +52,10 @@ set(LibImgDoc2_v2_Srcfiles
          "src/doc/transactionHelper.h"
          "src/db/database_discovery.h"
          "src/db/database_discovery.cpp"
-
- "src/db/database_constants.h" "src/db/database_constants.cpp")
+         "src/db/database_constants.h" 
+         "src/db/database_constants.cpp"
+         "inc/IOpenExistingOptions.h"
+ "src/public/OpenExistingOptions.cpp")
 
 add_library(libimgdoc2_v2 STATIC
                 ${LibImgDoc2_v2_Srcfiles}

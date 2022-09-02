@@ -20,10 +20,12 @@ private:
 
 public:
     DbDiscovery(std::shared_ptr<IDbConnection> dbConnection) :
-        db_connection_(dbConnection)
+        db_connection_(std::move(dbConnection))
     {}
 
     void DoDiscovery();
+
+    std::shared_ptr<DatabaseConfigurationCommon> GetDatabaseConfiguration();
 
 private:
     GeneralDataDiscoveryResult DiscoverGeneralTable();

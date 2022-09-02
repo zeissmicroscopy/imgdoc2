@@ -4,6 +4,7 @@
 #include "database_creator.h"
 #include "database_configuration.h"
 #include "DbFactory.h"
+#include "database_discovery.h"
 #include "../doc/document.h"
 
 using namespace std;
@@ -209,4 +210,26 @@ std::string DbCreator::GenerateSqlStatementForCreatingBlobTable_Sqlite(const Dat
         "[" << database_configuration->GetColumnNameOfBlobTableOrThrow(DatabaseConfiguration2D::kBlobTable_Column_Data) << "] BLOB );";
 
     return ss.str();
+}
+
+// ----------------------------------------------------------------------------
+
+/*static*/std::shared_ptr<imgdoc2::IDoc> imgdoc2::ClassFactory::OpenExisting(imgdoc2::IOpenExistingOptions* create_options)
+{
+    // TODO: here would be the place where we'd allow for "other databases than Sqlite", for the time being,
+    //        we just deal with Sqlite here
+    auto db_connection = DbFactory::SqliteCreateNewDatabase(create_options->GetFilename().c_str());
+
+    DbDiscovery database_discovery{ db_connection };
+    database_discovery.DoDiscovery();
+
+    const auto database_configuration_2d = std::dynamic_pointer_cast<DatabaseConfiguration2D>(database_discovery.GetDatabaseConfiguration());
+    if (database_configuration_2d)
+    {
+        return make_shared<Document>(db_connection, database_configuration_2d);
+    }
+
+    // TODO: 3d version should follow here
+
+    return shared_ptr<imgdoc2::IDoc>();
 }
