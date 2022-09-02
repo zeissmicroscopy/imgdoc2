@@ -15,6 +15,9 @@ void DbDiscovery::DoDiscovery()
 {
     // first step - find the "GENERAL" table and see if we can make sense of it
     GeneralDataDiscoveryResult general_table_discovery_result = this->DiscoverGeneralTable();
+
+    // now, check whether those tables exists and are useable
+    this->Check_Tables(general_table_discovery_result);
 }
 
 std::shared_ptr<DatabaseConfigurationCommon> DbDiscovery::GetDatabaseConfiguration()
@@ -50,7 +53,7 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
         DbConstants::kGeneralTable_Name,
         DbConstants::kGeneralTable_KeyColumnName,
         DbConstants::kGeneralTable_ValueStringColumnName,
-        "DocType",
+        DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kDocType),  // "DocType",
         &str))
     {
         throw discovery_exception("Property 'DocType' not present, refusing to open this database.");
@@ -70,7 +73,7 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
         DbConstants::kGeneralTable_Name, 
         DbConstants::kGeneralTable_KeyColumnName, 
         DbConstants::kGeneralTable_ValueStringColumnName,
-        "TilesInfoTable",
+        DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kTilesInfoTable), //  "TilesInfoTable",
         &str))
     {
         general_discovery_result.tileinfotable_name = str;
@@ -85,7 +88,7 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
         DbConstants::kGeneralTable_Name,
         DbConstants::kGeneralTable_KeyColumnName,
         DbConstants::kGeneralTable_ValueStringColumnName,
-        "TilesDataTable",
+        DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kTilesDataTable), // "TilesDataTable",
         &str))
     {
         general_discovery_result.tilesdatatable_name = str;
@@ -95,34 +98,73 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
         general_discovery_result.tilesdatatable_name = DbConstants::kTilesDataTable_DefaultName;
     }
 
-    //ostringstream ss;
-    //ss << "SELECT [" << DbConstants::kGeneralTable_ValueStringColumnName << "] FROM [" << DbConstants::kGeneralTable_Name << "] WHERE [" << DbConstants::kGeneralTable_KeyColumnName << "]='" << "TilesInfoTable" << "';";
-    //auto statement = this->db_connection_->PrepareStatement(ss.str());
-    //if (!this->db_connection_->StepStatement(statement.get()))
-    //{
-    //    // ok, if the "TilesInfoTable"-item is not present, in the property-bag, then we fall back to "default name"
-    //    general_discovery_result.tileinfotable_name = DbConstants::kTilesInfoTable_DefaultName;    
-    //}
-    //else
-    //{
-    //    general_discovery_result.tileinfotable_name = statement->GetResultString(0);
-    //}
-
-
-    //ss = ostringstream();
-    //ss << "SELECT [" << DbConstants::kGeneralTable_ValueStringColumnName << "] FROM [" << DbConstants::kGeneralTable_Name << "] WHERE [" << DbConstants::kGeneralTable_KeyColumnName << "]='" << "TilesDataTable" << "';";
-    //statement = this->db_connection_->PrepareStatement(ss.str());
-    //if (!this->db_connection_->StepStatement(statement.get()))
-    //{
-    //    // ok, if the "TilesDataTable"-item is not present, in the property-bag, then we fall back to "default name"
-    //    general_discovery_result.tilesdatatable_name= DbConstants::kTilesDataTable_DefaultName;
-    //}
-    //else
-    //{
-    //    general_discovery_result.tilesdatatable_name = statement->GetResultString(0);
-    //}
-
-
-
+    if (Utilities::TryReadStringFromPropertyBag(
+        this->db_connection_.get(),
+        DbConstants::kGeneralTable_Name,
+        DbConstants::kGeneralTable_KeyColumnName,
+        DbConstants::kGeneralTable_ValueStringColumnName,
+        DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kBlobTable), //"BlobTable",
+        &str))
+    {
+        general_discovery_result.blobtable_name = str;
+    }
+   
     return general_discovery_result;
+}
+
+void DbDiscovery::Check_Tables(const GeneralDataDiscoveryResult& general_table_discovery_result)
+{
+    vector<ExpectedColumnsInfo> expected_row_for_table
+    {
+        ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_Pk_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_PixelWidth_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_PixelHeight_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_PixelType_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_TileDataType_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_BinDataStorageType_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_BinDataId_DefaultName),
+    };
+
+    auto columns_of_table = this->db_connection_->GetTableInfo(general_table_discovery_result.tilesdatatable_name.c_str());
+
+    for (const auto& i : expected_row_for_table)
+    {
+        if (!any_of(
+            columns_of_table.cbegin(), 
+            columns_of_table.cend(), 
+            [&](const IDbConnection::ColumnInfo& column_info)->bool
+            {
+                return column_info.column_name == i.column_name;
+            }))
+        {
+            throw discovery_exception("Column not found or column is inappropriate.");
+        }
+    }
+
+    expected_row_for_table = vector<ExpectedColumnsInfo>
+    {
+        ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_Pk_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_TileX_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_TileY_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_TileW_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_TileH_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_PyramidLevel_DefaultName),
+        ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_TileDataId_DefaultName),
+    };
+
+    columns_of_table = this->db_connection_->GetTableInfo(general_table_discovery_result.tileinfotable_name.c_str());
+
+    for (const auto& i : expected_row_for_table)
+    {
+        if (!any_of(
+            columns_of_table.cbegin(),
+            columns_of_table.cend(),
+            [&](const IDbConnection::ColumnInfo& column_info)->bool
+            {
+                return column_info.column_name == i.column_name;
+            }))
+        {
+            throw discovery_exception("Column not found or column is inappropriate.");
+        }
+    }
 }

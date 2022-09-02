@@ -16,6 +16,7 @@ private:
         imgdoc2::DocumentType document_type;
         std::string tilesdatatable_name;
         std::string tileinfotable_name;
+        std::string blobtable_name;
     };
 
 public:
@@ -29,4 +30,11 @@ public:
 
 private:
     GeneralDataDiscoveryResult DiscoverGeneralTable();
+    void Check_Tables(const GeneralDataDiscoveryResult& general_table_discovery_result);
+
+    struct ExpectedColumnsInfo
+    {
+        ExpectedColumnsInfo(const char* sz) : column_name(sz) {}
+        std::string column_name;
+    };
 };

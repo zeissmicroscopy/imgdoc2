@@ -25,13 +25,16 @@ public:
     static constexpr int kGeneralTableItems_TilesDataTable = 2;
     static constexpr int kGeneralTableItems_TilesInfoTable = 3;
     static constexpr int kGeneralTableItems_DocType = 4;*/
-    enum class GeneralTableItems
-    {
-        kVersion,
-        kTilesDataTable,
-        kTilesInfoTable,
-        kDocType
-    };
+
+    ///// Values that represent "well known items" in the 'GENERAL'-table.
+    //enum class GeneralTableItems
+    //{
+    //    kVersion,
+    //    kTilesDataTable,    ///< An enum constant representing "Name of the 'TILESDATA'-table.
+    //    kTilesInfoTable,
+    //    kDocType,
+    //    kBlobTable          ///< An enum constant representing "Name of the 'BLOB'-table.
+    //};
 
     static constexpr int kGeneralInfoTable_Column_Key = 1;
     static constexpr int kGeneralInfoTable_Column_ValueString = 2;
@@ -80,7 +83,7 @@ public:
 
     virtual bool TryGetTableName(TableTypeCommon tt, std::string* name) const;
 
-    std::string GetGeneralTableItem(GeneralTableItems item) const;
+    //std::string GetGeneralTableItem(GeneralTableItems item) const;
 
     bool TryGetColumnNameOfGeneralInfoTable(int columnIdentifier, std::string* column_name) const;
 
