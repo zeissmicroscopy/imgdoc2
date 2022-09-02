@@ -48,7 +48,12 @@ set(LibImgDoc2_v2_Srcfiles
          "inc/IDimCoordinateQueryClause.h" 
          "inc/ITIleInfoQueryClause.h"
          "inc/DimCoordinateQueryClause.h"
- "inc/IBlob.h" "src/doc/transactionHelper.h")
+         "inc/IBlob.h" 
+         "src/doc/transactionHelper.h"
+         "src/db/database_discovery.h"
+         "src/db/database_discovery.cpp"
+
+ "src/db/database_constants.h" "src/db/database_constants.cpp")
 
 add_library(libimgdoc2_v2 STATIC
                 ${LibImgDoc2_v2_Srcfiles}

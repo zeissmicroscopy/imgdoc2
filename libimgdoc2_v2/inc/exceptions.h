@@ -50,4 +50,15 @@ namespace imgdoc2
             : std::runtime_error(szErrMsg)
         {}
     };
+
+    /// Exception for signalling logical errors during database-discovery.
+    class discovery_exception : public std::runtime_error
+    {
+    public:
+        /// Constructor.
+        /// \param szErrMsg Message describing the error.
+        explicit discovery_exception(const char* szErrMsg)
+            : std::runtime_error(szErrMsg)
+        {}
+    };
 }

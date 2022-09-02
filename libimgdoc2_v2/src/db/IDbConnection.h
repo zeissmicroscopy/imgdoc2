@@ -3,10 +3,17 @@
 #include <memory>
 #include <string>
 #include <cstdint>
+#include <vector>
 #include "IDbStatement.h"
 
 class IDbConnection
 {
+public:
+    struct ColumnInfo
+    {
+        std::string column_name;
+        std::string column_type;
+    };
 public:
     virtual void Execute(const char* sql_statement) = 0;
     virtual void Execute(IDbStatement* statement) = 0;
@@ -19,6 +26,8 @@ public:
     virtual void BeginTransaction() = 0;
     virtual void EndTransaction(bool commit) = 0;
     virtual bool IsTransactionPending() const = 0;
+
+    virtual std::vector<ColumnInfo> GetTableInfo(const char* table_name) = 0;
 
     virtual ~IDbConnection() = default;
 

@@ -67,3 +67,11 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
     double value = sqlite3_column_double(this->sql_statement_, column);
     return value;
 }
+
+/*virtual*/std::string SqliteDbStatement::GetResultString(int column)
+{
+    // TODO: this method is creating a copy of the string, it might be a good idea to have a method
+    //        which returns a "dangereous pointer"
+    const unsigned char* str = sqlite3_column_text(this->sql_statement_, column);
+    return string{ (const char*)str };
+}

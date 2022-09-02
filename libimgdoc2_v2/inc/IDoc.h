@@ -5,6 +5,13 @@ namespace imgdoc2
     class IDocWrite2d;
     class IDocRead2d;
 
+    enum class DocumentType
+    {
+        Invalid,
+        Image2d,
+        Image3d
+    };
+
     /// This interface is representing a 'document'. The discovery phase of the document has been completed successfully.
     /// Depending on the type of the document, objects for interacting with it can be created.
     class IDoc

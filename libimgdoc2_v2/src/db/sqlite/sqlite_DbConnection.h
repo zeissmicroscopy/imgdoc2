@@ -22,5 +22,7 @@ public:
     virtual void EndTransaction(bool commit) override;
     virtual bool IsTransactionPending() const override;
 
+    virtual std::vector<IDbConnection::ColumnInfo> GetTableInfo(const char* table_name) override;
+
     virtual ~SqliteDbConnection() override;
 };

@@ -13,7 +13,7 @@ public:
         db_connection_(dbConnection)
     {}
 
-    std::shared_ptr< DatabaseConfigurationCommon> CreateTables(const imgdoc2::ICreateOptions* create_options);
+    std::shared_ptr<DatabaseConfigurationCommon> CreateTables(const imgdoc2::ICreateOptions* create_options);
 
 private:
     void Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration2D* database_configuration, const imgdoc2::ICreateOptions* create_options);

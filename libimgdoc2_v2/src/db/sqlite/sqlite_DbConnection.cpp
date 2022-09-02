@@ -1,7 +1,8 @@
+#include <exceptions.h>
+#include <sstream>
 #include "sqlite_DbConnection.h"
 #include "sqlite_DbStatement.h"
 #include "custom_functions.h"
-#include <exceptions.h>
 
 using namespace std;
 using namespace imgdoc2;
@@ -138,4 +139,22 @@ SqliteDbConnection::SqliteDbConnection(const char* dbFilename)
 /*virtual*/bool SqliteDbConnection::IsTransactionPending() const
 {
     return this->transaction_count_ > 0;
+}
+
+/*virtual*/std::vector<IDbConnection::ColumnInfo> SqliteDbConnection::GetTableInfo(const char* table_name)
+{
+    ostringstream ss;
+    ss << "SELECT name, type FROM pragma_table_info('" << table_name << "')";
+    auto statement = this->PrepareStatement(ss.str());
+
+    vector<SqliteDbConnection::ColumnInfo> result;
+    while (this->StepStatement(statement.get()))
+    {
+        ColumnInfo column_info;
+        column_info.column_name = statement->GetResultString(0);
+        column_info.column_type = statement->GetResultString(1);
+        result.emplace_back(column_info);
+    }
+
+    return result;
 }

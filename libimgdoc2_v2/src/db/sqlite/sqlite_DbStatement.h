@@ -24,4 +24,5 @@ public:
     virtual int GetResultInt32(int column) override;
     virtual std::int64_t GetResultInt64(int column) override;
     virtual double GetResultDouble(int column) override;
+    virtual std::string GetResultString(int column) override;
 };

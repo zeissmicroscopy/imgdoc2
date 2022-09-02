@@ -23,6 +23,7 @@ public:
     virtual int GetResultInt32(int column) = 0;
     virtual std::int64_t GetResultInt64(int column) = 0;
     virtual double GetResultDouble(int column) = 0;
+    virtual std::string GetResultString(int column) = 0;
 
     virtual ~IDbStatement() = default;
 
