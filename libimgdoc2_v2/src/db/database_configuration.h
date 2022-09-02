@@ -83,8 +83,6 @@ public:
 
     virtual bool TryGetTableName(TableTypeCommon tt, std::string* name) const;
 
-    //std::string GetGeneralTableItem(GeneralTableItems item) const;
-
     bool TryGetColumnNameOfGeneralInfoTable(int columnIdentifier, std::string* column_name) const;
 
     void SetColumnNameForBlobTable(int column_identifier, const char* column_name);
@@ -96,8 +94,8 @@ public:
     std::string GetTableNameForTilesDataOrThrow() const;
     std::string GetTableNameForTilesInfoOrThrow() const;
     std::string GetTableNameForGeneralTableOrThrow() const;
-    std::string GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const;
-    std::string GetColumnNameOfBlobTableOrThrow(int columnIdentifier) const;
+    std::string GetColumnNameOfGeneralInfoTableOrThrow(int column_identifier) const;
+    std::string GetColumnNameOfBlobTableOrThrow(int column_identifier) const;
     std::string GetTableNameForTilesSpatialIndexTableOrThrow() const;
     std::string GetTableNameForBlobTableOrThrow() const;
 

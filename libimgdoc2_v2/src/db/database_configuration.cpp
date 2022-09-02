@@ -114,25 +114,6 @@ std::string DatabaseConfigurationCommon::GetColumnNameOfGeneralInfoTableOrThrow(
     return s;
 }
 
-//std::string DatabaseConfigurationCommon::GetGeneralTableItem(GeneralTableItems item) const
-//{
-//    switch (item)
-//    {
-//    case GeneralTableItems::kVersion:
-//        return "Version";
-//    case GeneralTableItems::kTilesDataTable:
-//        return "TilesDataTable";
-//    case GeneralTableItems::kTilesInfoTable:
-//        return "TilesInfoTable";
-//    case GeneralTableItems::kDocType:
-//        return "DocType";
-//    case GeneralTableItems::kBlobTable:
-//        return "BlobTable";
-//    }
-//
-//    throw invalid_argument("invalid argument for 'item' specified.");
-//}
-
 bool DatabaseConfigurationCommon::GetIsUsingSpatialIndex() const
 {
     const auto it = this->map_tabletype_to_tablename_.find(TableTypeCommon::TilesSpatialIndex);
