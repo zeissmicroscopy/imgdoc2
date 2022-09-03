@@ -46,7 +46,7 @@ public:
     /// \param [out] output              If non-null and successful, the result is put here.
     ///
     /// \returns    True if it succeeds, false if it fails.
-    static [[nodiscard]] bool TryReadStringFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key, std::string* output);
+    [[nodiscard]] static bool TryReadStringFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key, std::string* output);
 private:
     static const char* ConditionalOperatorToString(imgdoc2::ConditionalOperator op);
 };
