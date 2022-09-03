@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <cstring>
 #include "database_discovery.h"
 #include "database_constants.h"
 #include "IDbConnection.h"
