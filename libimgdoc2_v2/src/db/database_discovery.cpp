@@ -45,6 +45,7 @@ void DbDiscovery::FillInformationForConfiguration2D(const GeneralDataDiscoveryRe
 
     database_configuration_2d.SetDefaultColumnNamesForTilesInfoTable();
     database_configuration_2d.SetTileDimensions(general_data_discovery_result.dimensions.cbegin(), general_data_discovery_result.dimensions.cend());
+    database_configuration_2d.SetIndexedTileDimensions(general_data_discovery_result.indexed_dimensions.cbegin(), general_data_discovery_result.indexed_dimensions.cend());
     database_configuration_2d.SetDefaultColumnNamesForTilesDataTable();
 }
 
@@ -186,12 +187,29 @@ void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResu
     }
 
     // now we look for columns where the name is starting with "Dim_" - this gives us the list of dimensions
-    auto length_of_column_prefix_string = strlen(DbConstants::kDimensionColumnPrefix_Default);
+    const size_t length_of_column_prefix_string = strlen(DbConstants::kDimensionColumnPrefix_Default);
     for (const auto& i : columns_of_table)
     {
         if (i.column_name.find(DbConstants::kDimensionColumnPrefix_Default) == 0 && i.column_name.length() == length_of_column_prefix_string + 1)
         {
             general_table_discovery_result.dimensions.push_back(i.column_name[length_of_column_prefix_string]);
+        }
+    }
+
+    // Ok, and now we find out which of the dimensions are indexed.
+    auto list_of_indices = this->db_connection_->GetIndicesOfTable(general_table_discovery_result.tileinfotable_name.c_str());
+    const size_t length_of_dimension_index = strlen(DbConstants::kIndexForDimensionColumnPrefix_Default);
+    for (const auto& i : list_of_indices)
+    {
+        if (i.index_name.find(DbConstants::kIndexForDimensionColumnPrefix_Default) == 0 && i.index_name.length() == length_of_dimension_index + 1)
+        {
+            // we better make sure that the indices we get here are actually listed as 'dimensions'
+            // TODO: maybe we should report some warning (if this is not the case)
+            Dimension d = i.index_name[length_of_dimension_index];
+            if (any_of(general_table_discovery_result.dimensions.cbegin(), general_table_discovery_result.dimensions.cend(), [d](Dimension dimension)->bool {return dimension = d; }))
+            {
+                general_table_discovery_result.indexed_dimensions.push_back(i.index_name[length_of_dimension_index]);
+            }
         }
     }
 }

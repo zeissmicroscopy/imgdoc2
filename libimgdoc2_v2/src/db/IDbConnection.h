@@ -9,10 +9,21 @@
 class IDbConnection
 {
 public:
+    /// Information about a database column.
     struct ColumnInfo
     {
-        std::string column_name;
-        std::string column_type;
+        std::string column_name;    ///< Name of the column.
+
+        /// Type of the column. Currently, this is a string, an no effort so far has been done to
+        /// 'canonicalize" this information.
+        std::string column_type;    
+    };
+
+    /// Information about an index. Currently, we just report the name, if would be desirable to query
+    /// what is indexed.
+    struct IndexInfo
+    {
+        std::string index_name; ///< Name of the index
     };
 public:
     virtual void Execute(const char* sql_statement) = 0;
@@ -28,6 +39,13 @@ public:
     virtual bool IsTransactionPending() const = 0;
 
     virtual std::vector<ColumnInfo> GetTableInfo(const char* table_name) = 0;
+
+    /// Gets a list of existing indices for the specified table.
+    ///
+    /// \param  table_name  Name of the table.
+    ///
+    /// \returns    The indices which exist for the specified table.
+    virtual std::vector<IDbConnection::IndexInfo> GetIndicesOfTable(const char* table_name) = 0;
 
     virtual ~IDbConnection() = default;
 

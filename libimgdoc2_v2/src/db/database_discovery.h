@@ -18,6 +18,7 @@ private:
         std::string tileinfotable_name;
         std::string blobtable_name;
         std::vector<imgdoc2::Dimension> dimensions;
+        std::vector<imgdoc2::Dimension> indexed_dimensions;
     };
 
 public:
@@ -29,11 +30,10 @@ public:
 
     std::shared_ptr<DatabaseConfigurationCommon> GetDatabaseConfiguration();
 
-    void FillInformationForConfiguration2D(const GeneralDataDiscoveryResult general_data_discovery_result, DatabaseConfiguration2D& configuration_2d);
-
 private:
     GeneralDataDiscoveryResult DiscoverGeneralTable();
     void Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResult& general_table_discovery_result);
+    void FillInformationForConfiguration2D(const GeneralDataDiscoveryResult general_data_discovery_result, DatabaseConfiguration2D& configuration_2d);
 
     struct ExpectedColumnsInfo
     {

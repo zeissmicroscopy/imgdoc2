@@ -177,3 +177,19 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
 
     return result;
 }
+
+/*virtual*/std::vector<IDbConnection::IndexInfo> SqliteDbConnection::GetIndicesOfTable(const char* table_name)
+{
+    ostringstream ss;
+    ss << "SELECT name FROM pragma_index_list('" << table_name << "')";
+    auto statement = this->PrepareStatement(ss.str());
+    vector<SqliteDbConnection::IndexInfo> result;
+    while (this->StepStatement(statement.get()))
+    {
+        IndexInfo index_info;
+        index_info.index_name = statement->GetResultString(0);
+        result.emplace_back(index_info);
+    }
+
+    return result;
+}
