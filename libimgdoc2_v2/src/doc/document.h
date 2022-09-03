@@ -39,8 +39,8 @@ public:
     virtual std::shared_ptr<IDbRead3D> GetReader3D() = 0;
     */
 
-    virtual ~Document() = default;
+    virtual ~Document() override = default;
 public:
-    const std::shared_ptr<IDbConnection>& GetDatabase_connection() const { return this->database_connection_; }
-    const std::shared_ptr<DatabaseConfiguration2D>& GetDataBaseConfiguration2d() const { return this->database_configuration_2d_; }
+    [[nodiscard]] const std::shared_ptr<IDbConnection>& GetDatabase_connection() const { return this->database_connection_; }
+    [[nodiscard]] const std::shared_ptr<DatabaseConfiguration2D>& GetDataBaseConfiguration2d() const { return this->database_configuration_2d_; }
 };
