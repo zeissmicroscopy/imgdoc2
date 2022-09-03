@@ -11,14 +11,14 @@ using namespace testing;
 /// \returns {shared_ptr{IDoc}} The newly created in-memory "checkerboard document".
 shared_ptr<IDoc> CreateCheckerboardDocument()
 {
-    auto create_options = ClassFactory::CreateCreateOptions();
+    auto create_options = ClassFactory::CreateCreateOptionsUp();
     create_options->SetFilename(":memory:");
     //create_options->SetFilename("d:\\test.db");
     create_options->AddDimension('M');
     create_options->SetUseSpatialIndex(true);
     create_options->SetCreateBlobTable(true);
 
-    auto doc = ClassFactory::CreateNew(create_options);
+    auto doc = ClassFactory::CreateNew(create_options.get());
     auto writer = doc->GetWriter2d();
 
     for (int column = 0; column < 10; ++column)

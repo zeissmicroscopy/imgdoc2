@@ -2,9 +2,10 @@
 #include <unordered_set>
 #include <imgdoc2.h>
 
+using namespace std;
 using namespace imgdoc2;
 
-class CreateOptions: public imgdoc2::ICreateOptions
+class CreateOptions : public imgdoc2::ICreateOptions
 {
 private:
     std::string     filename_;
@@ -67,7 +68,17 @@ public:
     }
 };
 
-/*static*/ICreateOptions* imgdoc2::ClassFactory::CreateCreateOptions()
+/*static*/ICreateOptions* imgdoc2::ClassFactory::CreateCreateOptionsPtr()
 {
     return new CreateOptions();
+}
+
+/*static*/std::unique_ptr<imgdoc2::ICreateOptions> imgdoc2::ClassFactory::CreateCreateOptionsUp()
+{
+    return make_unique<CreateOptions>();
+}
+
+/*static*/std::shared_ptr<imgdoc2::ICreateOptions> imgdoc2::ClassFactory::CreateCreateOptionsSp()
+{
+    return make_shared<CreateOptions>();
 }

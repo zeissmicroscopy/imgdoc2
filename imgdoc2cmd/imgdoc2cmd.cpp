@@ -16,7 +16,7 @@ public:
 
 static void Test1()
 {
-    auto create_options = ClassFactory::CreateCreateOptions();
+    auto create_options = ClassFactory::CreateCreateOptionsUp();
     // create_options->SetFilename(":memory:");
     create_options->SetFilename("d:\\test.db");
     create_options->SetUseSpatialIndex(true);
@@ -24,7 +24,7 @@ static void Test1()
     create_options->AddDimension('M');
     create_options->AddIndexForDimension('M');
 
-    auto doc = ClassFactory::CreateNew(create_options);
+    auto doc = ClassFactory::CreateNew(create_options.get());
 
     auto writer = doc->GetWriter2d();
 
@@ -66,14 +66,14 @@ int main(int argc, char** argv)
     Test2();
     return 0;
 
-    auto create_options = ClassFactory::CreateCreateOptions();
+    auto create_options = ClassFactory::CreateCreateOptionsUp();
     // create_options->SetFilename(":memory:");
     create_options->SetFilename("d:\\test.db");
     create_options->SetUseSpatialIndex(true);
     create_options->AddDimension('C');
     create_options->AddDimension('Z');
 
-    auto doc = ClassFactory::CreateNew(create_options);
+    auto doc = ClassFactory::CreateNew(create_options.get());
 
     auto writer = doc->GetWriter2d();
 

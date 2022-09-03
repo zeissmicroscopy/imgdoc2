@@ -15,9 +15,16 @@ namespace imgdoc2
     public:
 
         /// Creates an options-object for creating a new imgdoc2-document.
-        ///
         /// \returns    Pointer to a newly create options-object.
-        static imgdoc2::ICreateOptions* CreateCreateOptions();
+        static imgdoc2::ICreateOptions* CreateCreateOptionsPtr();
+
+        /// Creates an options-object for creating a new imgdoc2-document.
+        /// \returns    Unique-pointer of a newly create options-object.
+        static std::unique_ptr<imgdoc2::ICreateOptions> CreateCreateOptionsUp();
+
+        /// Creates an options-object for creating a new imgdoc2-document.
+        /// \returns    Shared-pointer of a newly create options-object.
+        static std::shared_ptr<imgdoc2::ICreateOptions> CreateCreateOptionsSp();
 
         static imgdoc2::IOpenExistingOptions* CreateOpenExistingOptions();
 
