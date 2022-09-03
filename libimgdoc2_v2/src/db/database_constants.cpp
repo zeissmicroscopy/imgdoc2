@@ -27,6 +27,9 @@ using namespace std;
 /*static*/const char* DbConstants::kTilesInfoTable_Column_PyramidLevel_DefaultName = "PyramidLevel";
 /*static*/const char* DbConstants::kTilesInfoTable_Column_TileDataId_DefaultName = "TileDataId";
 
+/*static*/const char* DbConstants::kDimensionColumnPrefix_Default = "Dim_";
+/*static*/const char* DbConstants::kIndexForDimensionColumnPrefix_Default = "IndexForDim_";
+
 /*static*/const char* DbConstants::GetGeneralTable_ItemKey(GeneralTableItems item)
 {
     switch (item)

@@ -38,6 +38,9 @@ public:
     static const char* kTilesInfoTable_Column_PyramidLevel_DefaultName;
     static const char* kTilesInfoTable_Column_TileDataId_DefaultName;
 
+    static const char* kDimensionColumnPrefix_Default;  // = "Dim_"
+    static const char* kIndexForDimensionColumnPrefix_Default; // = "IndexForDim_"
+
 
     static const char* GetGeneralTable_ItemKey(GeneralTableItems item);
 };

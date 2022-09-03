@@ -153,9 +153,11 @@ public:
     void SetColumnNameForTilesSpatialIndexTable(int columnIdentifier, const char* column_name);
     bool TryGetColumnNameOfTilesSpatialIndexTable(int columnIdentifier, std::string* column_name) const;
 
+    void SetDefaultColumnNamesForTilesInfoTable();
+    void SetDefaultColumnNamesForTilesDataTable();
 public:
-    std::string GetColumnNameOfTilesInfoTableOrThrow(int columnIdentifier) const;
-    std::string GetColumnNameOfTilesDataTableOrThrow(int columnIdentifier) const;
-    std::string GetColumnNameOfTilesSpatialIndexTableOrThrow(int columnIdentifier) const;
+    [[nodiscard]] std::string GetColumnNameOfTilesInfoTableOrThrow(int columnIdentifier) const;
+    [[nodiscard]] std::string GetColumnNameOfTilesDataTableOrThrow(int columnIdentifier) const;
+    [[nodiscard]] std::string GetColumnNameOfTilesSpatialIndexTableOrThrow(int columnIdentifier) const;
 
 };

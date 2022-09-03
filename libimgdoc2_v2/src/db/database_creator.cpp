@@ -146,27 +146,29 @@ std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const D
 
 void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration2D* database_configuration, const imgdoc2::ICreateOptions* create_options)
 {
-    database_configuration->SetDimensionColumnPrefix("Dim_");
-    database_configuration->SetIndexForDimensionColumnPrefix("IndexForDim_");
+    database_configuration->SetDimensionColumnPrefix(DbConstants::kDimensionColumnPrefix_Default/*"Dim_"*/);
+    database_configuration->SetIndexForDimensionColumnPrefix(DbConstants::kIndexForDimensionColumnPrefix_Default/*"IndexForDim_"*/);
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::GeneralInfo, DbConstants::kGeneralTable_Name/*"GENERAL"*/);
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesData, DbConstants::kTilesDataTable_DefaultName/*"TILESDATA"*/);
     database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesInfo, DbConstants::kTilesInfoTable_DefaultName/*"TILESINFO"*/);
 
-    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_Pk, DbConstants::kTilesDataTable_Column_Pk_DefaultName/*"Pk"*/);
-    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth, DbConstants::kTilesDataTable_Column_PixelWidth_DefaultName/*"PixelWidth"*/);
-    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight, DbConstants::kTilesDataTable_Column_PixelHeight_DefaultName/*"PixelHeight"*/);
-    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType, DbConstants::kTilesDataTable_Column_PixelType_DefaultName/*"PixelType"*/);
-    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_TileDataType, DbConstants::kTilesDataTable_Column_TileDataType_DefaultName/*"TileDataType"*/);
-    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataStorageType, DbConstants::kTilesDataTable_Column_BinDataStorageType_DefaultName/*"BinDataStorageType"*/);
-    database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataId, DbConstants::kTilesDataTable_Column_BinDataId_DefaultName/*"BinDataId"*/);
+    //database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_Pk, DbConstants::kTilesDataTable_Column_Pk_DefaultName/*"Pk"*/);
+    //database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth, DbConstants::kTilesDataTable_Column_PixelWidth_DefaultName/*"PixelWidth"*/);
+    //database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight, DbConstants::kTilesDataTable_Column_PixelHeight_DefaultName/*"PixelHeight"*/);
+    //database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType, DbConstants::kTilesDataTable_Column_PixelType_DefaultName/*"PixelType"*/);
+    //database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_TileDataType, DbConstants::kTilesDataTable_Column_TileDataType_DefaultName/*"TileDataType"*/);
+    //database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataStorageType, DbConstants::kTilesDataTable_Column_BinDataStorageType_DefaultName/*"BinDataStorageType"*/);
+    //database_configuration->SetColumnNameForTilesDataTable(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataId, DbConstants::kTilesDataTable_Column_BinDataId_DefaultName/*"BinDataId"*/);
+    database_configuration->SetDefaultColumnNamesForTilesDataTable();
 
-    database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk, DbConstants::kTilesInfoTable_Column_Pk_DefaultName/*"Pk"*/);
-    database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX, DbConstants::kTilesInfoTable_Column_TileX_DefaultName/*"TileX"*/);
-    database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY, DbConstants::kTilesInfoTable_Column_TileY_DefaultName/*"TileY"*/);
-    database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileW, DbConstants::kTilesInfoTable_Column_TileW_DefaultName /*"TileW"*/);
-    database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileH, DbConstants::kTilesInfoTable_Column_TileH_DefaultName/*"TileH"*/);
-    database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel, DbConstants::kTilesInfoTable_Column_PyramidLevel_DefaultName/*"PyramidLevel"*/);
-    database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId, DbConstants::kTilesInfoTable_Column_TileDataId_DefaultName/*"TileDataId"*/);
+    //database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk, DbConstants::kTilesInfoTable_Column_Pk_DefaultName/*"Pk"*/);
+    //database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX, DbConstants::kTilesInfoTable_Column_TileX_DefaultName/*"TileX"*/);
+    //database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY, DbConstants::kTilesInfoTable_Column_TileY_DefaultName/*"TileY"*/);
+    //database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileW, DbConstants::kTilesInfoTable_Column_TileW_DefaultName /*"TileW"*/);
+    //database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileH, DbConstants::kTilesInfoTable_Column_TileH_DefaultName/*"TileH"*/);
+    //database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel, DbConstants::kTilesInfoTable_Column_PyramidLevel_DefaultName/*"PyramidLevel"*/);
+    //database_configuration->SetColumnNameForTilesInfoTable(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId, DbConstants::kTilesInfoTable_Column_TileDataId_DefaultName/*"TileDataId"*/);
+    database_configuration->SetDefaultColumnNamesForTilesInfoTable();
     database_configuration->SetTileDimensions(create_options->GetDimensions().cbegin(), create_options->GetDimensions().cend());
     database_configuration->SetIndexedTileDimensions(create_options->GetIndexedDimensions().cbegin(), create_options->GetIndexedDimensions().cend());
 

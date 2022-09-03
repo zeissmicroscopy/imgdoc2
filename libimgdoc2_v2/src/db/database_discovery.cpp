@@ -17,7 +17,11 @@ void DbDiscovery::DoDiscovery()
     GeneralDataDiscoveryResult general_table_discovery_result = this->DiscoverGeneralTable();
 
     // now, check whether those tables exists and are useable
-    this->Check_Tables(general_table_discovery_result);
+    this->Check_Tables_And_Determine_Dimensions(general_table_discovery_result);
+
+    auto configuration2d = make_shared<DatabaseConfiguration2D>();
+    this->FillInformationForConfiguration2D(general_table_discovery_result, *configuration2d);
+    this->configuration_ = configuration2d;
 }
 
 std::shared_ptr<DatabaseConfigurationCommon> DbDiscovery::GetDatabaseConfiguration()
@@ -29,6 +33,19 @@ std::shared_ptr<DatabaseConfigurationCommon> DbDiscovery::GetDatabaseConfigurati
     }
 
     return configuration;
+}
+
+void DbDiscovery::FillInformationForConfiguration2D(const GeneralDataDiscoveryResult general_data_discovery_result, DatabaseConfiguration2D& database_configuration_2d)
+{
+    database_configuration_2d.SetDimensionColumnPrefix(DbConstants::kDimensionColumnPrefix_Default/*"Dim_"*/);
+    database_configuration_2d.SetIndexForDimensionColumnPrefix(DbConstants::kIndexForDimensionColumnPrefix_Default/*"IndexForDim_"*/);
+    database_configuration_2d.SetTableName(DatabaseConfigurationCommon::TableTypeCommon::GeneralInfo, DbConstants::kGeneralTable_Name/*"GENERAL"*/);
+    database_configuration_2d.SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesData, general_data_discovery_result.tilesdatatable_name.c_str());
+    database_configuration_2d.SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesInfo, general_data_discovery_result.tileinfotable_name.c_str());
+
+    database_configuration_2d.SetDefaultColumnNamesForTilesInfoTable();
+    database_configuration_2d.SetTileDimensions(general_data_discovery_result.dimensions.cbegin(), general_data_discovery_result.dimensions.cend());
+    database_configuration_2d.SetDefaultColumnNamesForTilesDataTable();
 }
 
 DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
@@ -69,9 +86,9 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
     // ok, so now get the content for key=TilesInfoTable and key=TilesDataTable. Those will give us the name of the tables we are
     // to use. If the values are not present, we go with default-values.
     if (Utilities::TryReadStringFromPropertyBag(
-        this->db_connection_.get(), 
-        DbConstants::kGeneralTable_Name, 
-        DbConstants::kGeneralTable_KeyColumnName, 
+        this->db_connection_.get(),
+        DbConstants::kGeneralTable_Name,
+        DbConstants::kGeneralTable_KeyColumnName,
         DbConstants::kGeneralTable_ValueStringColumnName,
         DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kTilesInfoTable), //  "TilesInfoTable",
         &str))
@@ -108,11 +125,11 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
     {
         general_discovery_result.blobtable_name = str;
     }
-   
+
     return general_discovery_result;
 }
 
-void DbDiscovery::Check_Tables(const GeneralDataDiscoveryResult& general_table_discovery_result)
+void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResult& general_table_discovery_result)
 {
     vector<ExpectedColumnsInfo> expected_row_for_table
     {
@@ -130,8 +147,8 @@ void DbDiscovery::Check_Tables(const GeneralDataDiscoveryResult& general_table_d
     for (const auto& i : expected_row_for_table)
     {
         if (!any_of(
-            columns_of_table.cbegin(), 
-            columns_of_table.cend(), 
+            columns_of_table.cbegin(),
+            columns_of_table.cend(),
             [&](const IDbConnection::ColumnInfo& column_info)->bool
             {
                 return column_info.column_name == i.column_name;
@@ -165,6 +182,16 @@ void DbDiscovery::Check_Tables(const GeneralDataDiscoveryResult& general_table_d
             }))
         {
             throw discovery_exception("Column not found or column is inappropriate.");
+        }
+    }
+
+    // now we look for columns where the name is starting with "Dim_" - this gives us the list of dimensions
+    auto length_of_column_prefix_string = strlen(DbConstants::kDimensionColumnPrefix_Default);
+    for (const auto& i : columns_of_table)
+    {
+        if (i.column_name.find(DbConstants::kDimensionColumnPrefix_Default) == 0 && i.column_name.length() == length_of_column_prefix_string + 1)
+        {
+            general_table_discovery_result.dimensions.push_back(i.column_name[length_of_column_prefix_string]);
         }
     }
 }
