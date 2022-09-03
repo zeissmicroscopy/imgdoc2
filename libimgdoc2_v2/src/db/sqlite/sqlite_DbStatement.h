@@ -9,7 +9,12 @@ class SqliteDbStatement : public IDbStatement, public ISqliteDbStatement
 private:
     sqlite3_stmt* sql_statement_;
 public:
+
+    /// Constructor - this class takes ownership of the specified sql_statement.
+    ///
+    /// \param [in] sql_statement   The SQL statement, this object takes ownership of it.
     SqliteDbStatement(sqlite3_stmt* sql_statement);
+
     virtual ~SqliteDbStatement() override;
 
     virtual void Reset() override;

@@ -3,6 +3,9 @@
 #include <functional>
 #include <utility>
 
+/// A utility in order to wrap a piece of code into a database-transaction.
+///
+/// \tparam t_return_value  Type of the return value.
 template <typename t_return_value>
 class TransactionHelper
 {
@@ -11,10 +14,10 @@ private:
     std::shared_ptr<IDbConnection> database_connection_;
 public:
     TransactionHelper(
-        const std::shared_ptr<IDbConnection>& database_connection,
-        const std::function<t_return_value()>& action) :
-        database_connection_(database_connection),
-        action_(action)
+        std::shared_ptr<IDbConnection> database_connection,
+        std::function<t_return_value()> action) :
+        action_(std::move(action)),
+        database_connection_(std::move(database_connection))
     {}
 
     t_return_value Execute()
@@ -32,7 +35,7 @@ public:
 
             if (transaction_initiated)
             {
-                // TODO: I guess we need to think about how to deal with "execption from the next line"
+                // TODO: I guess we need to think about how to deal with "exception from the next line"
                 this->database_connection_->EndTransaction(true);
             }
 

@@ -22,7 +22,7 @@ public:
     virtual void CommitTransaction() override;
     virtual void RollbackTransaction() override;
 
-    virtual ~DocumentWrite2d() = default;
+    virtual ~DocumentWrite2d() override = default;
 
 private:
     imgdoc2::dbIndex AddTileInternal(
@@ -39,4 +39,12 @@ private:
     imgdoc2::dbIndex AddBlobData(imgdoc2::TileDataStorageType storage_type, const imgdoc2::IDataObjBase* data);
 
     std::shared_ptr<IDbStatement> CreateInsertDataStatement(const imgdoc2::IDataObjBase* data);
+
+public:
+    // no copy and no move (-> https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c21-if-you-define-or-delete-any-copy-move-or-destructor-function-define-or-delete-them-all )
+    DocumentWrite2d() = default;
+    DocumentWrite2d(const DocumentWrite2d&) = delete;             // copy constructor
+    DocumentWrite2d& operator=(const DocumentWrite2d&) = delete;  // copy assignment
+    DocumentWrite2d(DocumentWrite2d&&) = delete;                  // move constructor
+    DocumentWrite2d& operator=(DocumentWrite2d&&) = delete;       // move assignment
 };

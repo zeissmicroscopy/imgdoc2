@@ -7,11 +7,9 @@
 
 namespace imgdoc2
 {
-    class IDocWrite2d : public IDatabaseTransaction
+    class IDocWrite2d : public imgdoc2::IDatabaseTransaction
     {
     public:
-        virtual ~IDocWrite2d() = default;
-
         virtual imgdoc2::dbIndex AddTile(
             const imgdoc2::ITileCoordinate* coord,
             const imgdoc2::LogicalPositionInfo* info,
@@ -20,6 +18,7 @@ namespace imgdoc2
             imgdoc2::TileDataStorageType storage_type,
             const imgdoc2::IDataObjBase* data) = 0;
 
+        virtual ~IDocWrite2d() override = default;
     public:
         // no copy and no move (-> https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c21-if-you-define-or-delete-any-copy-move-or-destructor-function-define-or-delete-them-all )
         IDocWrite2d() = default;
