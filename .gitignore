@@ -33,4 +33,5 @@
 
 out/
 build/
+wslbuild/
 .vs/

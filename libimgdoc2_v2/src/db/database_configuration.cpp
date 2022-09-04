@@ -1,6 +1,6 @@
 #include "database_configuration.h"
 #include "database_constants.h"
-#include <exception>
+#include <stdexcept>
 
 using namespace std;
 

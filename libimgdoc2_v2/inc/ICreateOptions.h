@@ -14,8 +14,8 @@ namespace imgdoc2
         /// (like an in-memory database) - cf. https://sqlite.org/inmemorydb.html, https://sqlite.org/uri.html.
         /// The string must be given in UTF-8 encoding.
         ///
-        /// \param  sz  The filename (in UTF8-encoding).
-        virtual void SetFilename(const char* sz) = 0;
+        /// \param  filename  The filename (in UTF8-encoding).
+        virtual void SetFilename(const char* filename) = 0;
 
         /// Adds a dimension.
         /// TODO: 

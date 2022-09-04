@@ -1,6 +1,6 @@
+#include <imgdoc2.h>
 #include <string>
 #include <unordered_set>
-#include <imgdoc2.h>
 
 using namespace std;
 using namespace imgdoc2;
@@ -11,15 +11,14 @@ private:
     std::string     filename_;
     std::unordered_set<Dimension> dimensions_;
     std::unordered_set<Dimension> dimensionsToIndex_;
-    bool            use_spatial_index_;
-    bool            create_blob_table_;
+    bool            use_spatial_index_ = false;
+    bool            create_blob_table_ = false;
 public:
-    CreateOptions() : use_spatial_index_(false)
-    {}
+    CreateOptions() = default;
 
-    void SetFilename(const char* sz) override
+    void SetFilename(const char* filename) override
     {
-        this->filename_ = sz;
+        this->filename_ = filename;
     }
 
     const std::string& GetFilename() const override
