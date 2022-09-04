@@ -30,6 +30,13 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
+    - name: Configure CMake for 'Clang-Tidy' build
+      run: cmake -B ${{github.workspace}}/clangtidybuild -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DIMGDOC2_BUILD_CLANGTIDY=ON
+
+    - name: Build 'Clang-Tidy'
+      # Build your program with the given configuration
+      run: cmake --build ${{github.workspace}}/clangtidybuild --config ${{env.BUILD_TYPE}}
+
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Execute tests defined by the CMake configuration.  

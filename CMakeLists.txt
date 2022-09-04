@@ -10,6 +10,13 @@ project("imgdoc2")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(IMGDOC2_BUILD_CLANGTIDY "Build with Clang-Tidy" OFF)
+
+if (IMGDOC2_BUILD_CLANGTIDY)
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*")
+  #set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*")
+endif()
+
 include(ExternalProject)
 
 include(FetchContent)
