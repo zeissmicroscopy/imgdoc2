@@ -12,12 +12,12 @@ using namespace std;
 
 /*static*/std::shared_ptr<imgdoc2::IDoc> imgdoc2::ClassFactory::CreateNew(imgdoc2::ICreateOptions* create_options)
 {
-    // TODO: here would be the place where we'd allow for "other databases than Sqlite", for the time being,
-    //        we just deal with Sqlite here
+    // TODO(JBL): here would be the place where we'd allow for "other databases than Sqlite", for the time being,
+    //            we just deal with Sqlite here
     auto db_connection = DbFactory::SqliteCreateNewDatabase(create_options->GetFilename().c_str());
 
     // check pre-conditions
-    // TODO
+    // TODO(JBL)
 
     // tweak settings
 
@@ -30,9 +30,9 @@ using namespace std;
         return make_shared<Document>(db_connection, database_configuration_2d);
     }
 
-    // TODO: 3d version should follow here
+    // TODO(JBL): 3D version should follow here
 
-    return shared_ptr<imgdoc2::IDoc>();
+    return {};
 }
 
 std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgdoc2::ICreateOptions* create_options)
@@ -41,7 +41,7 @@ std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgd
     auto database_configuration = make_shared<DatabaseConfiguration2D>();
     this->Initialize2dConfigurationFromCreateOptions(database_configuration.get(), create_options);
 
-    // TODO: make those operations a transaction
+    // TODO(JBL): make those operations a transaction
     auto sql_statement = this->GenerateSqlStatementForCreatingGeneralTable_Sqlite(database_configuration.get());
     this->db_connection_->Execute(sql_statement);
 
@@ -72,8 +72,8 @@ std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgd
 
 std::string DbCreator::GenerateSqlStatementForCreatingTilesDataTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
-    auto ss = stringstream();
-    ss << "CREATE TABLE[" << database_configuration->GetTableNameForTilesDataOrThrow() << "]("
+    auto string_stream = stringstream();
+    string_stream << "CREATE TABLE[" << database_configuration->GetTableNameForTilesDataOrThrow() << "]("
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_Pk) << "] INTEGER PRIMARY KEY," <<
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth) << "] INTEGER(4) NOT NULL," <<
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight) << "] INTEGER(4) NOT NULL," <<
@@ -81,17 +81,17 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesDataTable_Sqlite(cons
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_TileDataType) << "] INTEGER(1) NOT NULL," <<
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataStorageType) << "] INTEGER(1)," <<
         "[" << database_configuration->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataId) << "] INTEGER(8)";
-    ss << ");";
+    string_stream << ");";
 
-    return ss.str();
+    return string_stream.str();
 }
 
 std::string DbCreator::GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
-    auto ss = stringstream();
+    auto string_stream = stringstream();
     // Notes:
     // * "INTEGER PRIMARY KEY" makes the column-name an alias for the RowId-column
-    ss << "CREATE TABLE[" << database_configuration->GetTableNameForTilesInfoOrThrow() << "]("
+    string_stream << "CREATE TABLE[" << database_configuration->GetTableNameForTilesInfoOrThrow() << "]("
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk) << "] INTEGER PRIMARY KEY,"
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX) << "] DOUBLE NOT NULL,"
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY) << "] DOUBLE NOT NULL,"
@@ -99,41 +99,41 @@ std::string DbCreator::GenerateSqlStatementForCreatingTilesInfoTable_Sqlite(cons
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileH) << "] DOUBLE NOT NULL,"
         "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_PyramidLevel) << "] INTEGER(1) NOT NULL,";
 
-    ss << "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId) << "] INTEGER(8) NOT NULL";
+    string_stream << "[" << database_configuration->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileDataId) << "] INTEGER(8) NOT NULL";
 
     for (const auto dim : database_configuration->GetTileDimensions())
     {
         string colName = database_configuration->GetDimensionsColumnPrefix() + dim;
-        ss << ", [" << colName << "] INTEGER(4) NOT NULL";
+        string_stream << ", [" << colName << "] INTEGER(4) NOT NULL";
     }
 
-    ss << ");";
+    string_stream << ");";
 
     // create the indices for the "dimension tables"
     for (const auto dim : database_configuration->GetIndexedTileDimensions())
     {
-        ss << "CREATE INDEX [" << database_configuration->GetIndexForDimensionColumnPrefix() << dim << "] ON "
+        string_stream << "CREATE INDEX [" << database_configuration->GetIndexForDimensionColumnPrefix() << dim << "] ON "
             << "["<<database_configuration->GetTableNameForTilesInfoOrThrow()<<"] "
             << "( [" << database_configuration->GetDimensionsColumnPrefix() << dim << "]);";
     }
 
-    return ss.str();
+    return string_stream.str();
 }
 
 std::string DbCreator::GenerateSqlStatementForCreatingGeneralTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
-    auto ss = stringstream();
-    ss << "CREATE TABLE[" << database_configuration->GetTableNameForGeneralTableOrThrow() << "](" <<
+    auto string_stream = stringstream();
+    string_stream << "CREATE TABLE[" << database_configuration->GetTableNameForGeneralTableOrThrow() << "](" <<
         "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_Key) << "] TEXT(40) UNIQUE," <<
         "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_ValueString) << "] TEXT);";
 
-    return ss.str();
+    return string_stream.str();
 }
 
 std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
-    auto ss = stringstream();
-    ss << "INSERT INTO [" << database_configuration->GetTableNameForGeneralTableOrThrow() << "]" <<
+    auto string_stream = stringstream();
+    string_stream << "INSERT INTO [" << database_configuration->GetTableNameForGeneralTableOrThrow() << "]" <<
         "([" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_Key) << "], " <<
         "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_ValueString) << "])" <<
         " VALUES('" << DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kVersion) << "','" << "0.0.1-alpha" << "')," <<
@@ -141,7 +141,7 @@ std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const D
         "('" << DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kTilesInfoTable) << "','" << database_configuration->GetTableNameForTilesInfoOrThrow() << "')," <<
         "('" << DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kDocType) << "','" << database_configuration->GetDocTypeConstant() << "');";
 
-    return ss.str();
+    return string_stream.str();
 }
 
 void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration2D* database_configuration, const imgdoc2::ICreateOptions* create_options)
@@ -180,45 +180,45 @@ std::string DbCreator::GenerateSqlStatementForCreatingSpatialTilesIndex_Sqlite(c
 {
     Expects(database_configuration != nullptr && database_configuration->GetIsUsingSpatialIndex() == true);
 
-    auto ss = ostringstream();
-    ss << "CREATE VIRTUAL TABLE " << database_configuration->GetTableNameForTilesSpatialIndexTableOrThrow() << " USING rtree(" <<
+    auto string_stream = ostringstream();
+    string_stream << "CREATE VIRTUAL TABLE " << database_configuration->GetTableNameForTilesSpatialIndexTableOrThrow() << " USING rtree(" <<
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << "," <<         // Integer primary key
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX) << "," <<       // Minimum X coordinate"
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX) << "," <<       // Maximum X coordinate"
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY) << "," <<       // Minimum Y coordinate"
         database_configuration->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY) << ");";        // Maximum Y coordinate"
-    return ss.str();
+    return string_stream.str();
 }
 
 std::string DbCreator::GenerateSqlStatementForCreatingBlobTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
     Expects(database_configuration != nullptr && database_configuration->GetHasBlobsTable() == true);
 
-    auto ss = ostringstream();
-    ss << "CREATE TABLE [" << database_configuration->GetTableNameForBlobTableOrThrow() << "] (" <<
+    auto string_stream = ostringstream();
+    string_stream << "CREATE TABLE [" << database_configuration->GetTableNameForBlobTableOrThrow() << "] (" <<
         "[" << database_configuration->GetColumnNameOfBlobTableOrThrow(DatabaseConfiguration2D::kBlobTable_Column_Pk) << "] INTEGER PRIMARY KEY,"
         "[" << database_configuration->GetColumnNameOfBlobTableOrThrow(DatabaseConfiguration2D::kBlobTable_Column_Data) << "] BLOB );";
 
-    return ss.str();
+    return string_stream.str();
 }
 
 void DbCreator::SetBlobTableNameInGeneralTable(const DatabaseConfiguration2D* database_configuration)
 {
-    auto ss = stringstream();
-    ss << "INSERT INTO [" << database_configuration->GetTableNameForGeneralTableOrThrow() << "]" <<
+    auto string_stream = stringstream();
+    string_stream << "INSERT INTO [" << database_configuration->GetTableNameForGeneralTableOrThrow() << "]" <<
         "([" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_Key) << "], " <<
         "[" << database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_ValueString) << "])" <<
         " VALUES('" << "BlobTable" << "','" << database_configuration->GetTableNameForBlobTableOrThrow() << "');";
-    this->db_connection_->Execute(ss.str());
+    this->db_connection_->Execute(string_stream.str());
 }
 
 // ----------------------------------------------------------------------------
 
-/*static*/std::shared_ptr<imgdoc2::IDoc> imgdoc2::ClassFactory::OpenExisting(imgdoc2::IOpenExistingOptions* create_options)
+/*static*/std::shared_ptr<imgdoc2::IDoc> imgdoc2::ClassFactory::OpenExisting(imgdoc2::IOpenExistingOptions* open_existing_options)
 {
-    // TODO: here would be the place where we'd allow for "other databases than Sqlite", for the time being,
-    //        we just deal with Sqlite here
-    auto db_connection = DbFactory::SqliteCreateNewDatabase(create_options->GetFilename().c_str());
+    // TODO(JBL): here would be the place where we'd allow for "other databases than Sqlite", for the time being,
+    //            we just deal with Sqlite here
+    auto db_connection = DbFactory::SqliteCreateNewDatabase(open_existing_options->GetFilename().c_str());
 
     DbDiscovery database_discovery{ db_connection };
     database_discovery.DoDiscovery();
@@ -229,7 +229,7 @@ void DbCreator::SetBlobTableNameInGeneralTable(const DatabaseConfiguration2D* da
         return make_shared<Document>(db_connection, database_configuration_2d);
     }
 
-    // TODO: 3d version should follow here
+    // TODO(JBL): 3d version should follow here
 
-    return shared_ptr<imgdoc2::IDoc>();
+    return {};
 }

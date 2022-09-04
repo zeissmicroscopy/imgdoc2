@@ -1,61 +1,71 @@
 #include "custom_functions.h"
 #include <stdexcept> 
-#include "custom_functions.h"
+
+#include "exceptions.h"
 
 using namespace imgdoc2;
 
-/*static*/const std::string SqliteCustomFunctions::queryFunctionName_rtree_linesegment2d = "LineThroughPoints2d";
-/*static*/const std::string SqliteCustomFunctions::queryFunctionName_rtree_plane3d = "PlaneNormalDistance3d";
-/*static*/const std::string SqliteCustomFunctions::queryFunctionName_scalar_doesintersectwithline = "IntersectsWithLine";
-
-/*static*/const std::string& SqliteCustomFunctions::GetQueryFunctionName(Query q)
+/*static*/const char* SqliteCustomFunctions::GetQueryFunctionName(Query query)
 {
-    switch (q)
+    switch (query)
     {
     case Query::RTree_LineSegment2D:
-        return SqliteCustomFunctions::queryFunctionName_rtree_linesegment2d;
+        return  "LineThroughPoints2d";
     case Query::RTree_PlaneAabb3D:
-        return SqliteCustomFunctions::queryFunctionName_rtree_plane3d;
+        return "PlaneNormalDistance3d";
     case Query::Scalar_DoesIntersectWithLine:
-        return SqliteCustomFunctions::queryFunctionName_scalar_doesintersectwithline;
+        return "IntersectsWithLine";
     }
 
     throw std::invalid_argument("Unknown enumeration");
 }
 
-/*static*/void SqliteCustomFunctions::SetupCustomQueries(sqlite3* db)
+/*static*/void SqliteCustomFunctions::SetupCustomQueries(sqlite3* database)
 {
-    // TODO: 
+    // TODO(JBL): 
     // * May consider this https://www.sqlite.org/c3ref/auto_extension.html instead of registering this stuff here by hand.
     // * It would also be nice to have a loadable extension with this functionality (https://www.sqlite.org/loadext.html).
-    auto rc = sqlite3_rtree_query_callback(
-        db,
-        SqliteCustomFunctions::GetQueryFunctionName(SqliteCustomFunctions::Query::RTree_LineSegment2D).c_str(),
+    auto return_code = sqlite3_rtree_query_callback(
+        database,
+        SqliteCustomFunctions::GetQueryFunctionName(SqliteCustomFunctions::Query::RTree_LineSegment2D),
         SqliteCustomFunctions::LineThrough2Points2d_Query,
         nullptr,
         nullptr);
+    if (return_code != SQLITE_OK)
+    {
+        throw database_exception("Error registering \"RTree_LineSegment2D\".", return_code);
+    }
 
-    rc = sqlite3_rtree_query_callback(
-        db,
-        SqliteCustomFunctions::GetQueryFunctionName(SqliteCustomFunctions::Query::RTree_PlaneAabb3D).c_str(),
+    return_code = sqlite3_rtree_query_callback(
+        database,
+        SqliteCustomFunctions::GetQueryFunctionName(SqliteCustomFunctions::Query::RTree_PlaneAabb3D),
         SqliteCustomFunctions::Plane3d_Query,
         nullptr,
         nullptr);
-    rc = sqlite3_create_function_v2(
-        db,
-        SqliteCustomFunctions::GetQueryFunctionName(SqliteCustomFunctions::Query::Scalar_DoesIntersectWithLine).c_str(),
-        8,
+    if (return_code != SQLITE_OK)
+    {
+        throw database_exception("Error registering \"RTree_PlaneAabb3D\".", return_code);
+    }
+
+    return_code = sqlite3_create_function_v2(
+        database,
+        SqliteCustomFunctions::GetQueryFunctionName(SqliteCustomFunctions::Query::Scalar_DoesIntersectWithLine),
+        kNumberOfArgumentsForScalarFunctionDoesIntersectWithLine,
         SQLITE_UTF8 | SQLITE_DETERMINISTIC | SQLITE_DIRECTONLY,
         nullptr,
         SqliteCustomFunctions::ScalarFunctionDoesIntersectWithLine,
         nullptr,
         nullptr,
         nullptr);
+    if (return_code != SQLITE_OK)
+    {
+        throw database_exception("Error registering \"Scalar_DoesIntersectWithLine\".", return_code);
+    }
 }
 
 /*static*/int SqliteCustomFunctions::LineThrough2Points2d_Query(sqlite3_rtree_query_info* info)
 {
-    LineThruTwoPointsD* pLine = static_cast<LineThruTwoPointsD*>(info->pUser);
+    auto* pLine = static_cast<LineThruTwoPointsD*>(info->pUser);
     if (pLine == nullptr)
     {
         /* If pUser is still 0, then the parameter values have not been tested
@@ -78,18 +88,22 @@ using namespace imgdoc2;
         /*Allocate a structure to cache parameter data in.Return SQLITE_NOMEM
         ** if the allocation fails.*/
         pLine = static_cast<LineThruTwoPointsD*>(info->pUser = sqlite3_malloc(sizeof(LineThruTwoPointsD)));
-        if (!pLine)
+        if (pLine == nullptr)
         {
             return SQLITE_NOMEM;
         }
 
         info->xDelUser = Free_LineThruTwoPointsD;
+
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic) pointer-arithmetic is fine here
         pLine->a.x = info->aParam[0];
         pLine->a.y = info->aParam[1];
         pLine->b.x = info->aParam[2];
         pLine->b.y = info->aParam[3];
+        // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
 
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic) pointer-arithmetic is fine here
     const RectangleD rect(info->aCoord[0], info->aCoord[2], info->aCoord[1] - info->aCoord[0], info->aCoord[3] - info->aCoord[2]);
 
     // check whether the start-/end-point is inside the rectangle
@@ -127,7 +141,7 @@ using namespace imgdoc2;
 
 /*static*/int SqliteCustomFunctions::Plane3d_Query(sqlite3_rtree_query_info* info)
 {
-    Plane_NormalAndDistD* pPlane = static_cast<Plane_NormalAndDistD*>(info->pUser);
+    auto* pPlane = static_cast<Plane_NormalAndDistD*>(info->pUser);
     if (pPlane == nullptr)
     {
         /* If pUser is still 0, then the parameter values have not been tested
@@ -135,7 +149,7 @@ using namespace imgdoc2;
 
         /* This geometry callback is for use with a 3-dimensional r-tree table.
         ** Return an error if the table does not have exactly 3 dimensions. */
-        if (info->nCoord != 6)
+        if (info->nCoord != kNumberOfParametersExpectedForPlane3DQuery)
         {
             return SQLITE_ERROR;
         }
@@ -149,20 +163,22 @@ using namespace imgdoc2;
         /*Allocate a structure to cache parameter data in.Return SQLITE_NOMEM
         ** if the allocation fails.*/
         pPlane = static_cast<Plane_NormalAndDistD*>(info->pUser = sqlite3_malloc(sizeof(Plane_NormalAndDistD)));
-        if (!pPlane)
+        if (pPlane == nullptr)
         {
             return SQLITE_NOMEM;
         }
 
         info->xDelUser = Free_PlaneNormalAndDistD;
+        // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic) pointer-arithmetic is fine here
         pPlane->normal.x = info->aParam[0];
         pPlane->normal.y = info->aParam[1];
         pPlane->normal.z = info->aParam[2];
         pPlane->distance = info->aParam[3];
+        // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
 
-    CuboidD aabb(info->aCoord[0], info->aCoord[2], info->aCoord[4],
-        info->aCoord[1] - info->aCoord[0], info->aCoord[3] - info->aCoord[2], info->aCoord[5] - info->aCoord[4]);
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers) pointer-arithmetic is fine here
+    CuboidD aabb(info->aCoord[0], info->aCoord[2], info->aCoord[4], info->aCoord[1] - info->aCoord[0], info->aCoord[3] - info->aCoord[2], info->aCoord[5] - info->aCoord[4]);
     const bool doIntersect = SqliteCustomFunctions::DoAabbAndPlaneIntersect(aabb, *pPlane);
     if (doIntersect)
     {
@@ -177,37 +193,40 @@ using namespace imgdoc2;
     return SQLITE_OK;
 }
 
-/*static*/void SqliteCustomFunctions::Free_LineThruTwoPointsD(void* p)
+/*static*/void SqliteCustomFunctions::Free_LineThruTwoPointsD(void* pointer)
 {
-    sqlite3_free(p);
+    sqlite3_free(pointer);
 }
 
-/*static*/void SqliteCustomFunctions::Free_PlaneNormalAndDistD(void* p)
+/*static*/void SqliteCustomFunctions::Free_PlaneNormalAndDistD(void* pointer)
 {
-    sqlite3_free(p);
+    sqlite3_free(pointer);
 }
 
-/*static*/bool SqliteCustomFunctions::DoLinesIntersect(const imgdoc2::PointD& a1, const imgdoc2::PointD& a2, const imgdoc2::PointD& b1, const imgdoc2::PointD& b2)
+/*static*/bool SqliteCustomFunctions::DoLinesIntersect(const imgdoc2::PointD& point_a1, const imgdoc2::PointD& point_a2, const imgdoc2::PointD& point_b1, const imgdoc2::PointD& point_b2)
 {
-    const PointD b(a2.x - a1.x, a2.y - a1.y);
-    const PointD d(b2.x - b1.x, b2.y - b1.y);
+    const PointD point_b(point_a2.x - point_a1.x, point_a2.y - point_a1.y);
+    const PointD point_d(point_b2.x - point_b1.x, point_b2.y - point_b1.y);
 
-    const double bDotDPerp = b.x * d.y - b.y * d.x;
+    const double bDotDPerp = point_b.x * point_d.y - point_b.y * point_d.x;
 
     // if b dot d == 0, it means the lines are parallel so have infinite intersection points
-    if (bDotDPerp == 0)
-        return false;
-
-    const PointD c(b1.x - a1.x, b1.y - a1.y);// = b1 - a1;
-    const double t = (c.x * d.y - c.y * d.x) / bDotDPerp;
-    if (t < 0 || t > 1)
+    if (std::fabs(bDotDPerp) <= std::numeric_limits<double>::epsilon())
     {
         return false;
     }
 
-    const double u = (c.x * b.y - c.y * b.x) / bDotDPerp;
-    if (u < 0 || u > 1)
+    const PointD point_c(point_b1.x - point_a1.x, point_b1.y - point_a1.y);// = point_b1 - point_a1;
+    const double slope_t = (point_c.x * point_d.y - point_c.y * point_d.x) / bDotDPerp;
+    if (slope_t < 0 || slope_t > 1)
     {
+        return false;
+    }
+
+    const double slope_u = (point_c.x * point_b.y - point_c.y * point_b.x) / bDotDPerp;
+    if (slope_u < 0 || slope_u > 1)
+    {
+        // NOLINTNEXTLINE(readability-simplify-boolean-expr)
         return false;
     }
 
@@ -221,21 +240,23 @@ using namespace imgdoc2;
 
 /*static*/void SqliteCustomFunctions::ScalarFunctionDoesIntersectWithLine(sqlite3_context* context, int argc, sqlite3_value** argv)
 {
-    if (argc != 8)
+    if (argc != kNumberOfArgumentsForScalarFunctionDoesIntersectWithLine)
     {
         return  sqlite3_result_null(context);
     }
 
-    const double x = sqlite3_value_double(argv[0]);
-    const double y = sqlite3_value_double(argv[1]);
-    const double w = sqlite3_value_double(argv[2]);
-    const double h = sqlite3_value_double(argv[3]);
+    // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic) pointer-arithmetic is fine here
+    const double rect_x = sqlite3_value_double(argv[0]);
+    const double rect_y = sqlite3_value_double(argv[1]);
+    const double rect_width = sqlite3_value_double(argv[2]);
+    const double rect_height = sqlite3_value_double(argv[3]);
     const double p1x = sqlite3_value_double(argv[4]);
     const double p1y = sqlite3_value_double(argv[5]);
     const double p2x = sqlite3_value_double(argv[6]);
     const double p2y = sqlite3_value_double(argv[7]);
+    // NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
-    const RectangleD rect(x, y, w, h);
+    const RectangleD rect(rect_x, rect_y, rect_width, rect_height);
     const LineThruTwoPointsD twoPoints{ {p1x,p1y},{p2x,p2y} };
 
     bool doesIntersect = false;

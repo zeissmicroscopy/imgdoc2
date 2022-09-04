@@ -81,7 +81,7 @@ public:
 
     void SetTableName(TableTypeCommon tableType, const char* name);
 
-    virtual bool TryGetTableName(TableTypeCommon tt, std::string* name) const;
+    virtual bool TryGetTableName(TableTypeCommon table_type, std::string* name) const;
 
     bool TryGetColumnNameOfGeneralInfoTable(int columnIdentifier, std::string* column_name) const;
 
@@ -90,7 +90,7 @@ public:
 
     virtual ~DatabaseConfigurationCommon() = default;
 public:
-    std::string GetTableNameOrThrow(TableTypeCommon tt) const;
+    std::string GetTableNameOrThrow(TableTypeCommon table_type) const;
     std::string GetTableNameForTilesDataOrThrow() const;
     std::string GetTableNameForTilesInfoOrThrow() const;
     std::string GetTableNameForGeneralTableOrThrow() const;
@@ -157,7 +157,7 @@ public:
     void SetDefaultColumnNamesForTilesDataTable();
 public:
     [[nodiscard]] std::string GetColumnNameOfTilesInfoTableOrThrow(int columnIdentifier) const;
-    [[nodiscard]] std::string GetColumnNameOfTilesDataTableOrThrow(int columnIdentifier) const;
+    [[nodiscard]] std::string GetColumnNameOfTilesDataTableOrThrow(int column_identifier) const;
     [[nodiscard]] std::string GetColumnNameOfTilesSpatialIndexTableOrThrow(int columnIdentifier) const;
 
 };

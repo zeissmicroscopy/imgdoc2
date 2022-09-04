@@ -16,31 +16,31 @@ void DatabaseConfigurationCommon::SetTableName(TableTypeCommon tableType, const 
     }
 }
 
-/*virtual*/bool DatabaseConfigurationCommon::TryGetTableName(TableTypeCommon tt, std::string* name) const
+/*virtual*/bool DatabaseConfigurationCommon::TryGetTableName(TableTypeCommon table_type, std::string* name) const
 {
-    const auto it = this->map_tabletype_to_tablename_.find(tt);
-    if (it == this->map_tabletype_to_tablename_.cend())
+    const auto iterator = this->map_tabletype_to_tablename_.find(table_type);
+    if (iterator == this->map_tabletype_to_tablename_.cend())
     {
         return false;
     }
 
     if (name != nullptr)
     {
-        *name = it->second;
+        *name = iterator->second;
     }
 
     return true;
 }
 
-std::string DatabaseConfigurationCommon::GetTableNameOrThrow(TableTypeCommon tt) const
+std::string DatabaseConfigurationCommon::GetTableNameOrThrow(TableTypeCommon table_type) const
 {
-    std::string s;
-    if (!this->TryGetTableName(tt, &s))
+    std::string table_name;
+    if (!this->TryGetTableName(table_type, &table_name))
     {
         throw std::runtime_error("table-name not present");
     }
 
-    return s;
+    return table_name;
 }
 
 bool DatabaseConfigurationCommon::TryGetColumnNameOfGeneralInfoTable(int columnIdentifier, std::string* column_name) const
@@ -53,6 +53,8 @@ bool DatabaseConfigurationCommon::TryGetColumnNameOfGeneralInfoTable(int columnI
         break;
     case kGeneralInfoTable_Column_ValueString:
         requested_column_name = "ValueString";
+        break;
+    default:
         break;
     }
 
@@ -104,27 +106,27 @@ std::string DatabaseConfigurationCommon::GetTableNameForBlobTableOrThrow() const
     return this->GetTableNameOrThrow(TableTypeCommon::Blobs);
 }
 
-std::string DatabaseConfigurationCommon::GetColumnNameOfGeneralInfoTableOrThrow(int columnIdentifier) const
+std::string DatabaseConfigurationCommon::GetColumnNameOfGeneralInfoTableOrThrow(int column_identifier) const
 {
-    string s;
-    if (!this->TryGetColumnNameOfGeneralInfoTable(columnIdentifier, &s))
+    string general_table_name;
+    if (!this->TryGetColumnNameOfGeneralInfoTable(column_identifier, &general_table_name))
     {
         throw std::runtime_error("column-name not present");
     }
 
-    return s;
+    return general_table_name;
 }
 
 bool DatabaseConfigurationCommon::GetIsUsingSpatialIndex() const
 {
-    const auto it = this->map_tabletype_to_tablename_.find(TableTypeCommon::TilesSpatialIndex);
-    return it != this->map_tabletype_to_tablename_.cend();
+    const auto iterator = this->map_tabletype_to_tablename_.find(TableTypeCommon::TilesSpatialIndex);
+    return iterator != this->map_tabletype_to_tablename_.cend();
 }
 
 bool DatabaseConfigurationCommon::GetHasBlobsTable() const
 {
-    const auto it = this->map_tabletype_to_tablename_.find(TableTypeCommon::Blobs);
-    return it != this->map_tabletype_to_tablename_.cend();
+    const auto iterator = this->map_tabletype_to_tablename_.find(TableTypeCommon::Blobs);
+    return iterator != this->map_tabletype_to_tablename_.cend();
 }
 
 bool DatabaseConfigurationCommon::IsDimensionIndexed(imgdoc2::Dimension dimension) const
@@ -134,13 +136,13 @@ bool DatabaseConfigurationCommon::IsDimensionIndexed(imgdoc2::Dimension dimensio
 
 std::string DatabaseConfigurationCommon::GetColumnNameOfBlobTableOrThrow(int column_identifier) const
 {
-    std::string s;
-    if (!this->TryGetColumnNameOfBlobTable(column_identifier, &s))
+    std::string column_name;;
+    if (!this->TryGetColumnNameOfBlobTable(column_identifier, &column_name))
     {
         throw std::runtime_error("column-name not present");
     }
 
-    return s;
+    return column_name;
 }
 
 /*static*/void DatabaseConfigurationCommon::SetColumnName(std::map<int, std::string>& map, int columnIdentifier, const char* column_name)
@@ -157,15 +159,15 @@ std::string DatabaseConfigurationCommon::GetColumnNameOfBlobTableOrThrow(int col
 
 /*static*/bool DatabaseConfigurationCommon::GetColumnName(const std::map<int, std::string>& map, int columnIdentifier, std::string* column_name)
 {
-    const auto it = map.find(columnIdentifier);
-    if (it == map.cend())
+    const auto iterator = map.find(columnIdentifier);
+    if (iterator == map.cend())
     {
         return false;
     }
 
     if (column_name != nullptr)
     {
-        *column_name = it->second;
+        *column_name = iterator->second;
     }
 
     return true;
@@ -210,37 +212,37 @@ bool DatabaseConfiguration2D::TryGetColumnNameOfTilesSpatialIndexTable(int colum
 }
 
 
-std::string DatabaseConfiguration2D::GetColumnNameOfTilesDataTableOrThrow(int columnIdentifier) const
+std::string DatabaseConfiguration2D::GetColumnNameOfTilesDataTableOrThrow(int column_identifier) const
 {
-    std::string s;
-    if (!this->TryGetColumnNameOfTilesDataTable(columnIdentifier, &s))
+    std::string column_name;
+    if (!this->TryGetColumnNameOfTilesDataTable(column_identifier, &column_name))
     {
         throw std::runtime_error("column-name not present");
     }
 
-    return s;
+    return column_name;
 }
 
 std::string DatabaseConfiguration2D::GetColumnNameOfTilesInfoTableOrThrow(int columnIdentifier) const
 {
-    std::string s;
-    if (!this->TryGetColumnNameOfTilesInfoTable(columnIdentifier, &s))
+    std::string column_name;
+    if (!this->TryGetColumnNameOfTilesInfoTable(columnIdentifier, &column_name))
     {
         throw std::runtime_error("column-name not present");
     }
 
-    return s;
+    return column_name;
 }
 
 std::string DatabaseConfiguration2D::GetColumnNameOfTilesSpatialIndexTableOrThrow(int columnIdentifier) const
 {
-    std::string s;
-    if (!this->TryGetColumnNameOfTilesSpatialIndexTable(columnIdentifier, &s))
+    std::string column_name;
+    if (!this->TryGetColumnNameOfTilesSpatialIndexTable(columnIdentifier, &column_name))
     {
         throw std::runtime_error("column-name not present");
     }
 
-    return s;
+    return column_name;
 }
 
 void DatabaseConfiguration2D::SetDefaultColumnNamesForTilesInfoTable()

@@ -9,7 +9,7 @@ using namespace imgdoc2;
 
 /*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteCreateNewDatabase(const char* filename)
 {
-    sqlite3* database;
+    sqlite3* database = nullptr;
     int returnValue = sqlite3_open_v2(
         filename,
         &database,
@@ -38,10 +38,9 @@ using namespace imgdoc2;
 }
 
 SqliteDbConnection::SqliteDbConnection(sqlite3* database)
-    : transaction_count_(0)
+    : database_(database), transaction_count_(0)
 {
     SqliteCustomFunctions::SetupCustomQueries(database);
-    this->database_ = database;
 }
 
 /*virtual*/SqliteDbConnection::~SqliteDbConnection()
@@ -62,7 +61,7 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
         throw invalid_argument("The argument 'statement' must not be null.");
     }
 
-    auto sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
+    auto *sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
     if (sqlite_statement == nullptr)
     {
         throw imgdoc2_exception("Incorrect type encountered - object does not implement 'ISqliteDbStatement'-interface.");
@@ -110,7 +109,7 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
 /*virtual*/bool SqliteDbConnection::StepStatement(IDbStatement* statement)
 {
     // try to cast "statement" to ISqliteStatement
-    const auto sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
+    auto *sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
     if (sqlite_statement == nullptr)
     {
         throw runtime_error("incorrect type");
@@ -119,16 +118,15 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
     const int return_value = sqlite3_step(sqlite_statement->GetSqliteSqlStatement());
 
     // https://www.sqlite.org/c3ref/step.html
-    if (return_value == SQLITE_ROW)
+    switch (return_value)
     {
+    case SQLITE_ROW:
         return true;
-    }
-    else if (return_value == SQLITE_DONE)
-    {
+    case SQLITE_DONE:
         return false;
+    default:
+        throw database_exception("Error from 'sqlite3_step'.", return_value);
     }
-
-    throw database_exception("Error from 'sqlite3_step'.", return_value);
 }
 
 /*virtual*/void SqliteDbConnection::BeginTransaction()
@@ -149,7 +147,7 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
         throw database_exception("Call to 'EndTransaction' where there is no pending transaction.");
     }
 
-    const char* sql_command = commit == true ? "COMMIT;" : "ROLLBACK;";
+    const char* sql_command = (commit  ? "COMMIT;" : "ROLLBACK;");
 
     this->Execute(sql_command);
     this->transaction_count_--;
@@ -162,9 +160,9 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
 
 /*virtual*/std::vector<IDbConnection::ColumnInfo> SqliteDbConnection::GetTableInfo(const char* table_name)
 {
-    ostringstream ss;
-    ss << "SELECT name, type FROM pragma_table_info('" << table_name << "')";
-    auto statement = this->PrepareStatement(ss.str());
+    ostringstream string_stream;
+    string_stream << "SELECT name, type FROM pragma_table_info('" << table_name << "')";
+    auto statement = this->PrepareStatement(string_stream.str());
 
     vector<SqliteDbConnection::ColumnInfo> result;
     while (this->StepStatement(statement.get()))
@@ -180,9 +178,9 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
 
 /*virtual*/std::vector<IDbConnection::IndexInfo> SqliteDbConnection::GetIndicesOfTable(const char* table_name)
 {
-    ostringstream ss;
-    ss << "SELECT name FROM pragma_index_list('" << table_name << "')";
-    auto statement = this->PrepareStatement(ss.str());
+    ostringstream string_stream;
+    string_stream << "SELECT name FROM pragma_index_list('" << table_name << "')";
+    auto statement = this->PrepareStatement(string_stream.str());
     vector<SqliteDbConnection::IndexInfo> result;
     while (this->StepStatement(statement.get()))
     {
