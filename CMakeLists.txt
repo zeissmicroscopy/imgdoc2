@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(IMGDOC2_BUILD_CLANGTIDY "Build with Clang-Tidy" OFF)
 
 if (IMGDOC2_BUILD_CLANGTIDY)
-  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*,-llvm-*,-llvmlibc-*,fuchsia-*,-google-build-using-namespace,-modernize-use-trailing-return-type")
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*,-llvm-*,-llvmlibc-*,-fuchsia-*,-google-build-using-namespace,-modernize-use-trailing-return-type")
   #set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*")
 endif()
 
