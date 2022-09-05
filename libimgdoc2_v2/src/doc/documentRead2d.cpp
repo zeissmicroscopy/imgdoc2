@@ -121,27 +121,27 @@ shared_ptr<IDbStatement> DocumentRead2d::CreateQueryStatement(const imgdoc2::IDi
 
     auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
 
-    int i = 1;
+    int binding_index = 1;
     for (const auto& bind_info : get<1>(query_statement_and_binding_info))
     {
         if (holds_alternative<int>(bind_info.value))
         {
-            statement->BindInt32(i, get<int>(bind_info.value));
+            statement->BindInt32(binding_index, get<int>(bind_info.value));
         }
         else if (holds_alternative<int64_t>(bind_info.value))
         {
-            statement->BindInt64(i, get<int64_t>(bind_info.value));
+            statement->BindInt64(binding_index, get<int64_t>(bind_info.value));
         }
         else if (holds_alternative<double>(bind_info.value))
         {
-            statement->BindDouble(i, get<double>(bind_info.value));
+            statement->BindDouble(binding_index, get<double>(bind_info.value));
         }
         else
         {
             throw logic_error("invalid variant");
         }
 
-        ++i;
+        ++binding_index;
     }
 
     return statement;
@@ -192,8 +192,8 @@ std::shared_ptr<IDbStatement> DocumentRead2d::GetTilesIntersectingRectQueryAndCo
         return this->GetTilesIntersectingRectQueryWithSpatialIndex(rect);
     }
 
-    ostringstream ss;
-    ss << "SELECT spatialindex." << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << " FROM "
+    ostringstream string_stream;
+    string_stream << "SELECT spatialindex." << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << " FROM "
         << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesSpatialIndexTableOrThrow() << " spatialindex "
         << "INNER JOIN " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << " info ON "
         << "spatialindex." << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << " = info." << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk)
@@ -204,35 +204,36 @@ std::shared_ptr<IDbStatement> DocumentRead2d::GetTilesIntersectingRectQueryAndCo
         this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY) << "<=?) ";
 
     auto query_statement_and_binding_info = Utilities::CreateWhereStatement(coordinate_clause, tileinfo_clause, *this->document_->GetDataBaseConfiguration2d());
-    ss << " AND " << get<0>(query_statement_and_binding_info) << ";";
+    string_stream << " AND " << get<0>(query_statement_and_binding_info) << ";";
 
-    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
-    statement->BindDouble(1, rect.x);
-    statement->BindDouble(2, rect.x + rect.w);
-    statement->BindDouble(3, rect.y);
-    statement->BindDouble(4, rect.y + rect.h);
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
+    int binding_index = 1;
+    statement->BindDouble(binding_index++, rect.x);
+    statement->BindDouble(binding_index++, rect.x + rect.w);
+    statement->BindDouble(binding_index++, rect.y);
+    statement->BindDouble(binding_index++, rect.y + rect.h);
 
-    int i = 5;
+
     for (const auto& bind_info : get<1>(query_statement_and_binding_info))
     {
         if (holds_alternative<int>(bind_info.value))
         {
-            statement->BindInt32(i, get<int>(bind_info.value));
+            statement->BindInt32(binding_index, get<int>(bind_info.value));
         }
         else if (holds_alternative<int64_t>(bind_info.value))
         {
-            statement->BindInt64(i, get<int64_t>(bind_info.value));
+            statement->BindInt64(binding_index, get<int64_t>(bind_info.value));
         }
         else if (holds_alternative<double>(bind_info.value))
         {
-            statement->BindDouble(i, get<double>(bind_info.value));
+            statement->BindDouble(binding_index, get<double>(bind_info.value));
         }
         else
         {
             throw logic_error("invalid variant");
         }
 
-        ++i;
+        ++binding_index;
     }
 
     return statement;
@@ -259,32 +260,32 @@ std::shared_ptr<IDbStatement> DocumentRead2d::GetTilesIntersectingRectQueryAndCo
     string_stream << " AND " << get<0>(query_statement_and_binding_info) << ";";
 
     auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
-    statement->BindDouble(1, rect.x);
-    statement->BindDouble(2, rect.x + rect.w);
-    statement->BindDouble(3, rect.y);
-    statement->BindDouble(4, rect.y + rect.h);
+    int binding_index = 1;
+    statement->BindDouble(binding_index++, rect.x);
+    statement->BindDouble(binding_index++, rect.x + rect.w);
+    statement->BindDouble(binding_index++, rect.y);
+    statement->BindDouble(binding_index++, rect.y + rect.h);
 
-    int i = 5;
     for (const auto& bind_info : get<1>(query_statement_and_binding_info))
     {
         if (holds_alternative<int>(bind_info.value))
         {
-            statement->BindInt32(i, get<int>(bind_info.value));
+            statement->BindInt32(binding_index, get<int>(bind_info.value));
         }
         else if (holds_alternative<int64_t>(bind_info.value))
         {
-            statement->BindInt64(i, get<int64_t>(bind_info.value));
+            statement->BindInt64(binding_index, get<int64_t>(bind_info.value));
         }
         else if (holds_alternative<double>(bind_info.value))
         {
-            statement->BindDouble(i, get<double>(bind_info.value));
+            statement->BindDouble(binding_index, get<double>(bind_info.value));
         }
         else
         {
             throw logic_error("invalid variant");
         }
 
-        ++i;
+        ++binding_index;
     }
 
     return statement;
