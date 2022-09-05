@@ -1,5 +1,5 @@
 ---
-Checks: '*,-google-build-using-namespace,-modernize-use-trailing-return-type,-readability-convert-member-functions-to-static'
+Checks: '*,-llvm-*,-llvmlibc-*,-fuchsia-*,-altera-*,-hicpp-*,-abseil-*,-google-build-using-namespace,-modernize-use-trailing-return-type,-readability-convert-member-functions-to-static'
 
 
 ...
