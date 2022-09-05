@@ -13,7 +13,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 option(IMGDOC2_BUILD_CLANGTIDY "Build with Clang-Tidy" OFF)
 
 if (IMGDOC2_BUILD_CLANGTIDY)
-  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*,-llvm-*,-llvmlibc-*,-fuchsia-*,-altera-*,-hicpp-*,-abseil-*,-google-build-using-namespace,-modernize-use-trailing-return-type,-readability-convert-member-functions-to-static")
+  # How "clang-tidy" organization works (if this option is enable here):
+  # - the compiler is looking for a ".clang-tidy"-file (containing configuration) in the parent folder of each compilation unit
+  # - this ".clang-tidy"-file in turn my refer to another ".clang-tidy"-file in its parent directory if the option "InheritParentConfig" is set to true
+  # - _on top_ of that the option we give here with the checks-argument is applied (where we globally turn off some checkers)
+  # please see -> https://clang.llvm.org/extra/clang-tidy for details
+  # Note: this means that if there is no ".clang-tidy"-file (in the parent folder of a .cpp file), then no checks are done
+  set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=-llvm-*,-llvmlibc-*,-fuchsia-*,-altera-*,-hicpp-*,-abseil-*")
+  #set(CMAKE_CXX_CLANG_TIDY "clang-tidy;-checks=*,-llvm-*,-llvmlibc-*,-fuchsia-*,-altera-*,-hicpp-*,-abseil-*,-google-build-using-namespace,-modernize-use-trailing-return-type,-readability-convert-member-functions-to-static")
   #set(CMAKE_C_CLANG_TIDY "clang-tidy;-checks=*")
 endif()
 
