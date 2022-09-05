@@ -48,16 +48,16 @@ using namespace std;
     }
 }
 
-/*virtual*/void DocumentRead2d::GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, std::function<bool(imgdoc2::dbIndex)> func)
+/*virtual*/void DocumentRead2d::GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const imgdoc2::IDimCoordinateQueryClause* coordinate_clause, const imgdoc2::ITileInfoQueryClause* tileinfo_clause, std::function<bool(imgdoc2::dbIndex)> func)
 {
     shared_ptr<IDbStatement> query_statement;
     if (this->document_->GetDataBaseConfiguration2d()->GetIsUsingSpatialIndex())
     {
-        query_statement = this->GetTilesIntersectingRectQueryAndCoordinateAndInfoQueryClauseWithSpatialIndex(rect, clause, tileInfoQuery);
+        query_statement = this->GetTilesIntersectingRectQueryAndCoordinateAndInfoQueryClauseWithSpatialIndex(rect, coordinate_clause, tileinfo_clause);
     }
     else
     {
-        query_statement = this->GetTilesIntersectingRectQueryAndCoordinateAndInfoQueryClause(rect, clause, tileInfoQuery);
+        query_statement = this->GetTilesIntersectingRectQueryAndCoordinateAndInfoQueryClause(rect, coordinate_clause, tileinfo_clause);
     }
 
     while (this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
@@ -108,7 +108,7 @@ shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_
     return statement;
 }
 
-shared_ptr<IDbStatement> DocumentRead2d::CreateQueryStatement(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery)
+shared_ptr<IDbStatement> DocumentRead2d::CreateQueryStatement(const imgdoc2::IDimCoordinateQueryClause* coordinate_clause, const imgdoc2::ITileInfoQueryClause* tileinfo_clause)
 {
     ostringstream string_stream;
     string_stream << "SELECT [" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_Pk) << "]," <<
@@ -116,7 +116,7 @@ shared_ptr<IDbStatement> DocumentRead2d::CreateQueryStatement(const imgdoc2::IDi
         "FROM [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << "] " <<
         "WHERE ";
 
-    auto query_statement_and_binding_info = Utilities::CreateWhereStatement(clause, tileInfoQuery, *this->document_->GetDataBaseConfiguration2d());
+    auto query_statement_and_binding_info = Utilities::CreateWhereStatement(coordinate_clause, tileinfo_clause, *this->document_->GetDataBaseConfiguration2d());
     string_stream << get<0>(query_statement_and_binding_info) << ";";
 
     auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
@@ -212,7 +212,6 @@ std::shared_ptr<IDbStatement> DocumentRead2d::GetTilesIntersectingRectQueryAndCo
     statement->BindDouble(binding_index++, rect.x + rect.w);
     statement->BindDouble(binding_index++, rect.y);
     statement->BindDouble(binding_index++, rect.y + rect.h);
-
 
     for (const auto& bind_info : get<1>(query_statement_and_binding_info))
     {

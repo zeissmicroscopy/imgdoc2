@@ -8,27 +8,26 @@ class OpenExistingOptions : public imgdoc2::IOpenExistingOptions
 {
 private:
     std::string     filename_;
-    bool            read_only_;
+    bool            read_only_{false};
 public:
-    OpenExistingOptions() : read_only_(false)
-    {}
+    OpenExistingOptions() = default;
 
-    virtual void SetFilename(const char* sz) override
+    void SetFilename(const char* filename) override
     {
-        this->filename_ = sz;
+        this->filename_ = filename;
     }
 
-    virtual void SetOpenReadonly(bool read_only) override
+    void SetOpenReadonly(bool read_only) override
     {
         this->read_only_ = read_only;
     }
 
-    virtual bool GetOpenReadonly() const override
+    [[nodiscard]] bool GetOpenReadonly() const override
     {
         return this->read_only_;
     }
 
-    virtual const std::string& GetFilename() const override
+    [[nodiscard]] const std::string& GetFilename() const override
     {
         return this->filename_;
     }

@@ -50,8 +50,8 @@ imgdoc2::dbIndex DocumentWrite2d::AddTileInternal(
 {
     auto tiles_data_id = this->AddTileData(tileInfo, datatype, storage_type, data);
 
-    ostringstream ss;
-    ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << " ("
+    ostringstream string_stream;
+    string_stream << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesInfoOrThrow() << " ("
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX) << "],"
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY) << "],"
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileW) << "],"
@@ -61,37 +61,36 @@ imgdoc2::dbIndex DocumentWrite2d::AddTileInternal(
 
     vector<int> coordinate_values;
     coord->EnumCoordinates(
-        [&](Dimension d, int v)->bool
+        [&](Dimension dimension, int value)->bool
         {
-            ss << ", " << this->document_->GetDataBaseConfiguration2d()->GetDimensionsColumnPrefix() << d;
-            coordinate_values.push_back(v);
+            string_stream << ", " << this->document_->GetDataBaseConfiguration2d()->GetDimensionsColumnPrefix() << dimension;
+            coordinate_values.push_back(value);
             return true;
         });
 
-    ss << ") VALUES( ?, ?, ?, ?, ?, ?";
+    string_stream << ") VALUES( ?, ?, ?, ?, ?, ?";
     for (size_t i = 0; i < coordinate_values.size(); ++i)
     {
-        ss << ", ?";
+        string_stream << ", ?";
     }
 
-    ss << ");";
+    string_stream << ");";
 
-    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
-    statement->BindDouble(1, info->posX);
-    statement->BindDouble(2, info->posY);
-    statement->BindDouble(3, info->width);
-    statement->BindDouble(4, info->height);
-    statement->BindInt32(5, info->pyrLvl);
-    statement->BindInt64(6, tiles_data_id);
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
+    int binding_index = 1;
+    statement->BindDouble(binding_index++, info->posX);
+    statement->BindDouble(binding_index++, info->posY);
+    statement->BindDouble(binding_index++, info->width);
+    statement->BindDouble(binding_index++, info->height);
+    statement->BindInt32(binding_index++, info->pyrLvl);
+    statement->BindInt64(binding_index++, tiles_data_id);
 
-    int i = 0;
-    for (const int v : coordinate_values)
+    for (const int coordinate_value : coordinate_values)
     {
-        statement->BindInt32(i + 7, v);
-        i++;
+        statement->BindInt32(binding_index++, coordinate_value);
     }
 
-    auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
+    const auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
 
     if (this->document_->GetDataBaseConfiguration2d()->GetIsUsingSpatialIndex())
     {
@@ -110,8 +109,8 @@ imgdoc2::dbIndex DocumentWrite2d::AddTileData(const imgdoc2::TileBaseInfo* tile_
         blob_db_index = this->AddBlobData(storage_type, data);
     }
 
-    ostringstream ss;
-    ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesDataOrThrow() << " ("
+    ostringstream string_stream;
+    string_stream << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesDataOrThrow() << " ("
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelWidth) << "],"
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelHeight) << "],"
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_PixelType) << "],"
@@ -120,19 +119,21 @@ imgdoc2::dbIndex DocumentWrite2d::AddTileData(const imgdoc2::TileBaseInfo* tile_
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataId) << "]"
         ") VALUES( ?1, ?2, ?3, ?4, ?5, ?6);";
 
-    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
-    statement->BindInt32(1, tile_info->pixelWidth);
-    statement->BindInt32(2, tile_info->pixelHeight);
-    statement->BindInt32(3, tile_info->pixelType);
-    statement->BindInt32(4, static_cast<underlying_type_t<decltype(datatype)>>(datatype));
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
+
+    int binding_index = 1;
+    statement->BindInt32(binding_index++, tile_info->pixelWidth);
+    statement->BindInt32(binding_index++, tile_info->pixelHeight);
+    statement->BindInt32(binding_index++, tile_info->pixelType);
+    statement->BindInt32(binding_index++, static_cast<underlying_type_t<decltype(datatype)>>(datatype));
     if (data != nullptr)
     {
         // for data-type "zero" 
-        statement->BindInt32(5, static_cast<underlying_type_t<decltype(storage_type)>>(storage_type));
-        statement->BindInt64(6, blob_db_index);
+        statement->BindInt32(binding_index++, static_cast<underlying_type_t<decltype(storage_type)>>(storage_type));
+        statement->BindInt64(binding_index++, blob_db_index);
     }
 
-    auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
+    const auto row_id = this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
     return row_id;
 }
 
@@ -158,13 +159,14 @@ imgdoc2::dbIndex DocumentWrite2d::AddBlobData(imgdoc2::TileDataStorageType stora
 
 std::shared_ptr<IDbStatement> DocumentWrite2d::CreateInsertDataStatement(const imgdoc2::IDataObjBase* data)
 {
-    ostringstream ss;
-    ss << "INSERT INTO [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForBlobTableOrThrow() << "] ("
+    ostringstream string_stream;
+    string_stream << "INSERT INTO [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForBlobTableOrThrow() << "] ("
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfBlobTableOrThrow(DatabaseConfigurationCommon::kBlobTable_Column_Data) << "]"
         << ") VALUES( ?1 );";
 
-    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
-    const void* ptr_data; size_t size_data;
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
+    const void* ptr_data = nullptr;
+    size_t size_data = 0;
     data->GetData(&ptr_data, &size_data);
     statement->BindBlob_Static(1, ptr_data, size_data);
     return statement;
@@ -172,8 +174,8 @@ std::shared_ptr<IDbStatement> DocumentWrite2d::CreateInsertDataStatement(const i
 
 void DocumentWrite2d::AddToSpatialIndex(imgdoc2::dbIndex index, const imgdoc2::LogicalPositionInfo& logical_position_info)
 {
-    ostringstream ss;
-    ss << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesSpatialIndexTableOrThrow() << " ("
+    ostringstream string_stream;
+    string_stream << "INSERT INTO " << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesSpatialIndexTableOrThrow() << " ("
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk) << "],"
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX) << "],"
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX) << "],"
@@ -181,12 +183,14 @@ void DocumentWrite2d::AddToSpatialIndex(imgdoc2::dbIndex index, const imgdoc2::L
         << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesSpatialIndexTableOrThrow(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY) << "]"
         ") VALUES(?1,?2,?3,?4,?5);";
 
-    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(ss.str());
-    statement->BindInt64(1, index);
-    statement->BindDouble(2, logical_position_info.posX);
-    statement->BindDouble(3, logical_position_info.posX + logical_position_info.width);
-    statement->BindDouble(4, logical_position_info.posY);
-    statement->BindDouble(5, logical_position_info.posY + logical_position_info.height);
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
+
+    int binding_index = 1;
+    statement->BindInt64(binding_index++, index);
+    statement->BindDouble(binding_index++, logical_position_info.posX);
+    statement->BindDouble(binding_index++, logical_position_info.posX + logical_position_info.width);
+    statement->BindDouble(binding_index++, logical_position_info.posY);
+    statement->BindDouble(binding_index++, logical_position_info.posY + logical_position_info.height);
 
     this->document_->GetDatabase_connection()->ExecuteAndGetLastRowId(statement.get());
 }

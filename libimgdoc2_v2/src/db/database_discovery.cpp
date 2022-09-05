@@ -36,7 +36,7 @@ std::shared_ptr<DatabaseConfigurationCommon> DbDiscovery::GetDatabaseConfigurati
     return configuration;
 }
 
-void DbDiscovery::FillInformationForConfiguration2D(const GeneralDataDiscoveryResult general_data_discovery_result, DatabaseConfiguration2D& database_configuration_2d)
+void DbDiscovery::FillInformationForConfiguration2D(const GeneralDataDiscoveryResult& general_data_discovery_result, DatabaseConfiguration2D& database_configuration_2d)
 {
     database_configuration_2d.SetDimensionColumnPrefix(DbConstants::kDimensionColumnPrefix_Default/*"Dim_"*/);
     database_configuration_2d.SetIndexForDimensionColumnPrefix(DbConstants::kIndexForDimensionColumnPrefix_Default/*"IndexForDim_"*/);
@@ -133,7 +133,7 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
 
 void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResult& general_table_discovery_result)
 {
-    vector<ExpectedColumnsInfo> expected_row_for_table
+    vector<ExpectedColumnsInfo> expected_columns_for_table
     {
         ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_Pk_DefaultName),
         ExpectedColumnsInfo(DbConstants::kTilesDataTable_Column_PixelWidth_DefaultName),
@@ -146,21 +146,21 @@ void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResu
 
     auto columns_of_table = this->db_connection_->GetTableInfo(general_table_discovery_result.tilesdatatable_name.c_str());
 
-    for (const auto& i : expected_row_for_table)
+    for (const auto& expected_column_info : expected_columns_for_table)
     {
         if (!any_of(
             columns_of_table.cbegin(),
             columns_of_table.cend(),
             [&](const IDbConnection::ColumnInfo& column_info)->bool
             {
-                return column_info.column_name == i.column_name;
+                return column_info.column_name == expected_column_info.column_name;
             }))
         {
             throw discovery_exception("Column not found or column is inappropriate.");
         }
     }
 
-    expected_row_for_table = vector<ExpectedColumnsInfo>
+    expected_columns_for_table = vector<ExpectedColumnsInfo>
     {
         ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_Pk_DefaultName),
         ExpectedColumnsInfo(DbConstants::kTilesInfoTable_Column_TileX_DefaultName),
@@ -173,14 +173,14 @@ void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResu
 
     columns_of_table = this->db_connection_->GetTableInfo(general_table_discovery_result.tileinfotable_name.c_str());
 
-    for (const auto& i : expected_row_for_table)
+    for (const auto& expected_column_info : expected_columns_for_table)
     {
         if (!any_of(
             columns_of_table.cbegin(),
             columns_of_table.cend(),
             [&](const IDbConnection::ColumnInfo& column_info)->bool
             {
-                return column_info.column_name == i.column_name;
+                return column_info.column_name == expected_column_info.column_name;
             }))
         {
             throw discovery_exception("Column not found or column is inappropriate.");
@@ -189,27 +189,27 @@ void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResu
 
     // now we look for columns where the name is starting with "Dim_" - this gives us the list of dimensions
     const size_t length_of_column_prefix_string = strlen(DbConstants::kDimensionColumnPrefix_Default);
-    for (const auto& i : columns_of_table)
+    for (const auto& column : columns_of_table)
     {
-        if (i.column_name.find(DbConstants::kDimensionColumnPrefix_Default) == 0 && i.column_name.length() == length_of_column_prefix_string + 1)
+        if (column.column_name.find(DbConstants::kDimensionColumnPrefix_Default) == 0 && column.column_name.length() == length_of_column_prefix_string + 1)
         {
-            general_table_discovery_result.dimensions.push_back(i.column_name[length_of_column_prefix_string]);
+            general_table_discovery_result.dimensions.push_back(column.column_name[length_of_column_prefix_string]);
         }
     }
 
     // Ok, and now we find out which of the dimensions are indexed.
-    auto list_of_indices = this->db_connection_->GetIndicesOfTable(general_table_discovery_result.tileinfotable_name.c_str());
+    const auto list_of_indices = this->db_connection_->GetIndicesOfTable(general_table_discovery_result.tileinfotable_name.c_str());
     const size_t length_of_dimension_index = strlen(DbConstants::kIndexForDimensionColumnPrefix_Default);
-    for (const auto& i : list_of_indices)
+    for (const auto& index_column : list_of_indices)
     {
-        if (i.index_name.find(DbConstants::kIndexForDimensionColumnPrefix_Default) == 0 && i.index_name.length() == length_of_dimension_index + 1)
+        if (index_column.index_name.find(DbConstants::kIndexForDimensionColumnPrefix_Default) == 0 && index_column.index_name.length() == length_of_dimension_index + 1)
         {
             // we better make sure that the indices we get here are actually listed as 'dimensions'
-            // TODO: maybe we should report some warning (if this is not the case)
-            Dimension d = i.index_name[length_of_dimension_index];
-            if (any_of(general_table_discovery_result.dimensions.cbegin(), general_table_discovery_result.dimensions.cend(), [d](Dimension dimension)->bool {return dimension = d; }))
+            // TODO(JBL): maybe we should report some warning (if this is not the case)
+            Dimension dimension_of_index = index_column.index_name[length_of_dimension_index];
+            if (any_of(general_table_discovery_result.dimensions.cbegin(), general_table_discovery_result.dimensions.cend(), [dimension_of_index](Dimension dimension)->bool {return dimension == dimension_of_index; }))
             {
-                general_table_discovery_result.indexed_dimensions.push_back(i.index_name[length_of_dimension_index]);
+                general_table_discovery_result.indexed_dimensions.push_back(index_column.index_name[length_of_dimension_index]);
             }
         }
     }

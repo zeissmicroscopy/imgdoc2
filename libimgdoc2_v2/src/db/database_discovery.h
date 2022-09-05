@@ -33,7 +33,7 @@ public:
 private:
     GeneralDataDiscoveryResult DiscoverGeneralTable();
     void Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResult& general_table_discovery_result);
-    void FillInformationForConfiguration2D(const GeneralDataDiscoveryResult general_data_discovery_result, DatabaseConfiguration2D& configuration_2d);
+    void FillInformationForConfiguration2D(const GeneralDataDiscoveryResult& general_data_discovery_result, DatabaseConfiguration2D& configuration_2d);
 
     struct ExpectedColumnsInfo
     {

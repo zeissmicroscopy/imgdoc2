@@ -8,8 +8,8 @@ std::string imgdoc2::database_exception::GetSqliteErrorMessage() const
 {
     if (this->GetIsSqliteErrorCodeValid())
     {
-        return string(sqlite3_errstr(this->GetSqliteErrorCode()));
+        return { sqlite3_errstr(this->GetSqliteErrorCode()) };
     }
 
-    return string("No Sqlite-Errorcode available.");
+    return { "No Sqlite-Errorcode available." };
 }
