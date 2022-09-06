@@ -10,13 +10,13 @@ using namespace imgdoc2;
 /*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteCreateNewDatabase(const char* filename)
 {
     sqlite3* database = nullptr;
-    int returnValue = sqlite3_open_v2(
+    int return_value = sqlite3_open_v2(
         filename,
         &database,
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI |SQLITE_OPEN_EXRESCODE,
         nullptr);
 
-    if (returnValue != SQLITE_OK)
+    if (return_value != SQLITE_OK)
     {
         // TODO(JBL): error handling might be more involved here, c.f. https://www.sqlite.org/c3ref/open.html
         throw database_exception("Error from 'sqlite3_open_v2'", return_value);
@@ -28,13 +28,13 @@ using namespace imgdoc2;
 /*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteOpenExistingDatabase(const char* filename, bool readonly)
 {
     sqlite3* database;
-    int returnValue = sqlite3_open_v2(
+    int return_value = sqlite3_open_v2(
         filename,
         &database,
         (readonly ? SQLITE_OPEN_READONLY: SQLITE_OPEN_READWRITE) | SQLITE_OPEN_URI | SQLITE_OPEN_EXRESCODE,
         nullptr);
 
-    if (returnValue != SQLITE_OK)
+    if (return_value != SQLITE_OK)
     {
         // TODO(JBL): error handling might be more involved here, c.f. https://www.sqlite.org/c3ref/open.html
         throw database_exception("Error from 'sqlite3_open_v2'", return_value);
