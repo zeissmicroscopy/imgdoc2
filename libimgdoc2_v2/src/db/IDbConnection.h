@@ -6,6 +6,8 @@
 #include <vector>
 #include "IDbStatement.h"
 
+/// This interface gathers the "database operation" we use in libimgdoc2. The goal is that
+/// this interface is database-agnostic, i.e. can be implemented for different databases.
 class IDbConnection
 {
 public:
@@ -26,10 +28,18 @@ public:
         std::string index_name; ///< Name of the index
     };
 public:
+
+    /// Executes the given SQL statement and does *not* read any data returned from the database.
+    /// \param  {const char*} sql_statement The SQL statement (in UTF8).
     virtual void Execute(const char* sql_statement) = 0;
+
     virtual void Execute(IDbStatement* statement) = 0;
     virtual std::int64_t ExecuteAndGetLastRowId(IDbStatement* statement) = 0;
 
+    /// Prepare a SQL statement - the statement is compiled into an internal representation, and a
+    /// statement-object is returned.
+    /// \param  {const std::string&} sql_statement The SQL statement (in UTF8).
+    /// \returns {std::shared_ptr{IDbStatement}} The newly constructed statement-object.
     virtual std::shared_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) = 0;
 
     virtual bool StepStatement(IDbStatement* statement) = 0;
