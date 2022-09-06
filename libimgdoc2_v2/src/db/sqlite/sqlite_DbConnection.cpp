@@ -16,8 +16,11 @@ using namespace imgdoc2;
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI |SQLITE_OPEN_EXRESCODE,
         nullptr);
 
-    // TODO - error handling
-    //  if (returnValue...)
+    if (returnValue != SQLITE_OK)
+    {
+        // TODO(JBL): error handling might be more involved here, c.f. https://www.sqlite.org/c3ref/open.html
+        throw database_exception("Error from 'sqlite3_open_v2'", return_value);
+    }
 
     return make_shared<SqliteDbConnection>(database);
 }
@@ -31,8 +34,11 @@ using namespace imgdoc2;
         (readonly ? SQLITE_OPEN_READONLY: SQLITE_OPEN_READWRITE) | SQLITE_OPEN_URI | SQLITE_OPEN_EXRESCODE,
         nullptr);
 
-    // TODO - error handling
-    //  if (returnValue...)
+    if (returnValue != SQLITE_OK)
+    {
+        // TODO(JBL): error handling might be more involved here, c.f. https://www.sqlite.org/c3ref/open.html
+        throw database_exception("Error from 'sqlite3_open_v2'", return_value);
+    }
 
     return make_shared<SqliteDbConnection>(database);
 }
@@ -51,7 +57,12 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
 
 /*virtual*/void SqliteDbConnection::Execute(const char* sql_statement)
 {
+    // https://www.sqlite.org/c3ref/exec.html
     int return_value = sqlite3_exec(this->database_, sql_statement, nullptr, nullptr, nullptr);
+    if (return_value != SQLITE_OK)
+    {
+        throw database_exception("Error from 'sqlite3_exec'", return_value);
+    }
 }
 
 /*virtual*/void SqliteDbConnection::Execute(IDbStatement* statement)
