@@ -10,6 +10,7 @@ using namespace std;
 
 /*static*/const char* const DbConstants::kTilesInfoTable_DefaultName = "TILESINFO";
 /*static*/const char* const DbConstants::kTilesDataTable_DefaultName = "TILESDATA";
+/*static*/const char* const DbConstants::kTilesSpatialIndexTable_DefaultName = "TILESSPATIALINDEX";
 
 /*static*/const char* const DbConstants::kTilesDataTable_Column_Pk_DefaultName = "Pk";
 /*static*/const char* const DbConstants::kTilesDataTable_Column_PixelWidth_DefaultName = "PixelWidth";
@@ -44,6 +45,8 @@ using namespace std;
         return "DocType";
     case GeneralTableItems::kBlobTable:
         return "BlobTable";
+    case GeneralTableItems::kSpatialIndexTable:
+        return "SpatialIndexTable";
     }
 
     throw std::invalid_argument("invalid argument for 'item' specified.");

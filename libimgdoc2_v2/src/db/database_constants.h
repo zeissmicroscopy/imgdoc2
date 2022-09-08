@@ -4,10 +4,11 @@
 enum class GeneralTableItems
 {
     kVersion,
-    kTilesDataTable,    ///< An enum constant representing "Name of the 'TILESDATA'-table.
+    kTilesDataTable,    ///< An enum constant representing "Name of the 'TILESDATA'-table".
     kTilesInfoTable,
     kDocType,
-    kBlobTable          ///< An enum constant representing "Name of the 'BLOB'-table.
+    kBlobTable,         ///< An enum constant representing "Name of the 'BLOB'-table".
+    kSpatialIndexTable  ///< An enum constant representing the "Name of the 'Spatial-Index'-table".
 };
 
 class DbConstants
@@ -20,6 +21,7 @@ public:
 
     static const char* const kTilesInfoTable_DefaultName;         // = "TILESINFO"
     static const char* const kTilesDataTable_DefaultName;         // = "TILESDATA"
+    static const char* const kTilesSpatialIndexTable_DefaultName; // = "TILESSPATIALINDEX"
 
     static const char* const kTilesDataTable_Column_Pk_DefaultName;
     static const char* const kTilesDataTable_Column_PixelWidth_DefaultName;

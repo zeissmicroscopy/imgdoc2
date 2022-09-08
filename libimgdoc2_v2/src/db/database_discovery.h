@@ -13,10 +13,11 @@ private:
 private:
     struct GeneralDataDiscoveryResult
     {
-        imgdoc2::DocumentType document_type;
+        imgdoc2::DocumentType document_type { imgdoc2::DocumentType::Invalid };
         std::string tilesdatatable_name;
         std::string tileinfotable_name;
         std::string blobtable_name;
+        std::string spatial_index_table_name;
         std::vector<imgdoc2::Dimension> dimensions;
         std::vector<imgdoc2::Dimension> indexed_dimensions;
     };

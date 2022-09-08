@@ -44,9 +44,16 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
     this->ThrowIfBindError(return_code, "sqlite3_bind_double");
 }
 
+/*virtual*/void SqliteDbStatement::BindString(int index, const char* value)
+{
+    // -1 means: determine length (assuming it is a null-terminated string)
+    // SQLITE_TRANSIENT means: make a copy of the string
+    const int return_code = sqlite3_bind_text(this->sql_statement_, index, value, -1, SQLITE_TRANSIENT);
+}
+
 /*virtual*/void SqliteDbStatement::BindBlob_Static(int index, const void* data, size_t size)
 {
-    const int return_code = sqlite3_bind_blob64(this->sql_statement_, index, data, size, nullptr);
+    const int return_code = sqlite3_bind_blob64(this->sql_statement_, index, data, size, SQLITE_STATIC);
     this->ThrowIfBindError(return_code, "sqlite3_bind_blob64");
 }
 

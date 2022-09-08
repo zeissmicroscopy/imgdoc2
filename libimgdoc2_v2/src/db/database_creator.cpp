@@ -7,6 +7,7 @@
 #include "DbFactory.h"
 #include "database_discovery.h"
 #include "../doc/document.h"
+#include "utilities.h"
 
 using namespace std;
 
@@ -58,6 +59,9 @@ std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgd
     {
         sql_statement = this->GenerateSqlStatementForCreatingSpatialTilesIndex_Sqlite(database_configuration.get());
         this->db_connection_->Execute(sql_statement);
+        
+        // and, add its name to the "General" table
+        this->SetGeneralTableInfoForSpatialIndex(database_configuration.get());
     }
 
     if (create_options->GetCreateBlobTable())
@@ -130,6 +134,18 @@ std::string DbCreator::GenerateSqlStatementForCreatingGeneralTable_Sqlite(const 
     return string_stream.str();
 }
 
+void DbCreator::SetGeneralTableInfoForSpatialIndex(const DatabaseConfiguration2D* database_configuration)
+{
+    // insert an item into the "General"-table where we notify about the name of the "tiles-spatial-table"
+    Utilities::WriteStringIntoPropertyBag(
+        this->db_connection_.get(),
+        database_configuration->GetTableNameForGeneralTableOrThrow(),
+        database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_Key),
+        database_configuration->GetColumnNameOfGeneralInfoTableOrThrow(DatabaseConfigurationCommon::kGeneralInfoTable_Column_ValueString),
+        DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kSpatialIndexTable),
+        database_configuration->GetTableNameForTilesSpatialIndexTableOrThrow());
+}
+
 std::string DbCreator::GenerateSqlStatementForFillingGeneralTable_Sqlite(const DatabaseConfiguration2D* database_configuration)
 {
     auto string_stream = stringstream();
@@ -160,7 +176,7 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
 
     if (create_options->GetUseSpatialIndex())
     {
-        database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesSpatialIndex, "TILESSPATIALINDEX");
+        database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesSpatialIndex, DbConstants::kTilesSpatialIndexTable_DefaultName/*"TILESSPATIALINDEX"*/);
         database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk, "id");
         database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX, "minX");
         database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX, "maxX");

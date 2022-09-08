@@ -22,7 +22,10 @@ public:
     virtual void BindInt32(int index, std::int32_t value) override;
     virtual void BindInt64(int index, std::int64_t value) override;
     virtual void BindDouble(int index, double value) override;
+    virtual void BindString(int index, const char* value) override;
+
     virtual void BindBlob_Static(int index, const void* data, size_t size) override;
+
 
     virtual sqlite3_stmt* GetSqliteSqlStatement() override;
 

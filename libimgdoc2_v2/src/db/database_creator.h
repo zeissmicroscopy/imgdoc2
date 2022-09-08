@@ -26,4 +26,6 @@ private:
     std::string GenerateSqlStatementForCreatingBlobTable_Sqlite(const DatabaseConfiguration2D* database_configuration);
 
     void SetBlobTableNameInGeneralTable(const DatabaseConfiguration2D* database_configuration);
+
+    void SetGeneralTableInfoForSpatialIndex(const DatabaseConfiguration2D* database_configuration);
 };

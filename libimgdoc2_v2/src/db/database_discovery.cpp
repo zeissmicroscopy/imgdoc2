@@ -48,6 +48,11 @@ void DbDiscovery::FillInformationForConfiguration2D(const GeneralDataDiscoveryRe
     database_configuration_2d.SetTileDimensions(general_data_discovery_result.dimensions.cbegin(), general_data_discovery_result.dimensions.cend());
     database_configuration_2d.SetIndexedTileDimensions(general_data_discovery_result.indexed_dimensions.cbegin(), general_data_discovery_result.indexed_dimensions.cend());
     database_configuration_2d.SetDefaultColumnNamesForTilesDataTable();
+
+    if (!general_data_discovery_result.spatial_index_table_name.empty())
+    {
+        database_configuration_2d.SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesSpatialIndex, general_data_discovery_result.spatial_index_table_name.c_str());
+    }
 }
 
 DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
@@ -126,6 +131,17 @@ DbDiscovery::GeneralDataDiscoveryResult DbDiscovery::DiscoverGeneralTable()
         &str))
     {
         general_discovery_result.blobtable_name = str;
+    }
+
+    if (Utilities::TryReadStringFromPropertyBag(
+        this->db_connection_.get(),
+        DbConstants::kGeneralTable_Name,
+        DbConstants::kGeneralTable_KeyColumnName,
+        DbConstants::kGeneralTable_ValueStringColumnName,
+        DbConstants::GetGeneralTable_ItemKey(GeneralTableItems::kSpatialIndexTable), //"SptialIndexTable",
+        &str))
+    {
+        general_discovery_result.spatial_index_table_name = str;
     }
 
     return general_discovery_result;
@@ -212,5 +228,15 @@ void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResu
                 general_table_discovery_result.indexed_dimensions.push_back(index_column.index_name[length_of_dimension_index]);
             }
         }
+    }
+
+    // now, find out whether we have a spatial index
+    if (!general_table_discovery_result.spatial_index_table_name.empty())
+    {
+        auto columns_of_spatial_index = this->db_connection_->GetTableInfo(general_table_discovery_result.spatial_index_table_name.c_str());
+        // TODO: * we should gracefully handle the case that the table is not present
+        //       * and, of course, we should check if it is really a "spatial index"
+        
+        // for the time being - if this worked, then we assume it is a spatial table and all is fine
     }
 }

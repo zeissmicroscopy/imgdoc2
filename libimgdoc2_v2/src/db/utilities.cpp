@@ -53,7 +53,7 @@ using namespace imgdoc2;
 
 /*static*/std::tuple<std::string, std::vector<Utilities::DataBindInfo>> Utilities::CreateWhereConditionForTileInfoQueryClause(const imgdoc2::ITileInfoQueryClause* clause, const std::string& column_name_pyramidlevel)
 {
-    ConditionalOperator conditional_operator { ConditionalOperator::Invalid };
+    ConditionalOperator conditional_operator{ ConditionalOperator::Invalid };
     int value = -1;
     if (!clause->GetPyramidLevelCondition(&conditional_operator, &value))
     {
@@ -140,6 +140,22 @@ using namespace imgdoc2;
     }
 
     return false;
+}
+
+/*static*/void Utilities::WriteStringIntoPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key, const std::string& value)
+{
+    ostringstream string_stream;
+    string_stream << "INSERT OR REPLACE INTO [" << table_name << "] (" << key_column_name << "," << value_column_name << ") VALUES(? , ?);";
+    const auto statement = db_connection->PrepareStatement(string_stream.str());
+    int binding_index = 1;
+    statement->BindString(binding_index++, key);
+    statement->BindString(binding_index++, value);
+    db_connection->Execute(statement.get());
+}
+
+/*static*/bool Utilities::DeleteValueFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key)
+{
+    throw runtime_error("Not implemented");
 }
 
 /*static*/bool Utilities::ProcessRangeClause(const string& column_name_for_dimension, const IDimCoordinateQueryClause::RangeClause& rangeClause, vector<Utilities::DataBindInfo>& databind_info, ostringstream& string_stream)
