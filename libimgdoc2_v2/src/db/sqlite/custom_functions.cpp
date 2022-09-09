@@ -23,7 +23,7 @@ using namespace imgdoc2;
 /*static*/void SqliteCustomFunctions::SetupCustomQueries(sqlite3* database)
 {
     // TODO(JBL): 
-    // * May consider this https://www.sqlite.org/c3ref/auto_extension.html instead of registering this stuff here by hand.
+    // * Maybe consider this https://www.sqlite.org/c3ref/auto_extension.html instead of registering this stuff here by hand.
     // * It would also be nice to have a loadable extension with this functionality (https://www.sqlite.org/loadext.html).
     auto return_code = sqlite3_rtree_query_callback(
         database,

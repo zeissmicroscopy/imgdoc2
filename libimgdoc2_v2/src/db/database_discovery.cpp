@@ -20,9 +20,18 @@ void DbDiscovery::DoDiscovery()
     // now, check whether those tables exists and are useable
     this->Check_Tables_And_Determine_Dimensions(general_table_discovery_result);
 
-    auto configuration2d = make_shared<DatabaseConfiguration2D>();
-    this->FillInformationForConfiguration2D(general_table_discovery_result, *configuration2d);
-    this->configuration_ = configuration2d;
+    // if we get here, then we determined the database to be 'usable' for us, so we construct an corresponding
+    // "database-configuration"-object here from the data we gathered.
+    if (general_table_discovery_result.document_type == DocumentType::Image2d)
+    {
+        auto configuration2d = make_shared<DatabaseConfiguration2D>();
+        this->FillInformationForConfiguration2D(general_table_discovery_result, *configuration2d);
+        this->configuration_ = configuration2d;
+    }
+    else
+    {
+        throw runtime_error("only document_type='Image2d' supported currently");
+    }
 }
 
 std::shared_ptr<DatabaseConfigurationCommon> DbDiscovery::GetDatabaseConfiguration()

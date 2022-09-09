@@ -50,7 +50,7 @@ public:
 
     static void WriteStringIntoPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key, const std::string& value);
 
-    static bool DeleteValueFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key);
+    static void DeleteItemFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key);
 private:
     static const char* ConditionalOperatorToString(imgdoc2::ConditionalOperator conditional_operator);
 

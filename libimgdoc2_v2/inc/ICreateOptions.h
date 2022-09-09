@@ -36,7 +36,8 @@ namespace imgdoc2
         /// \param  {bool} create_blob_table True to create BLOB table.
         virtual void SetCreateBlobTable(bool create_blob_table) = 0;
 
-        
+        /// Whether the document should be created with a spatial index.
+        /// \returns {bool} True if a spatial index is requested; false otherwise.
         virtual bool GetUseSpatialIndex() const=0;
 
         virtual const std::string& GetFilename() const = 0;

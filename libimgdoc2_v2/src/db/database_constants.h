@@ -5,18 +5,24 @@ enum class GeneralTableItems
 {
     kVersion,
     kTilesDataTable,    ///< An enum constant representing "Name of the 'TILESDATA'-table".
-    kTilesInfoTable,
-    kDocType,
+    kTilesInfoTable,    ///< An enum constant representing "Name of the 'TILESINFO'-table".
+    kDocType,           ///< An enum constant representing the document type.
     kBlobTable,         ///< An enum constant representing "Name of the 'BLOB'-table".
     kSpatialIndexTable  ///< An enum constant representing the "Name of the 'Spatial-Index'-table".
 };
 
+/// Here we gather constants for the imgdoc2-database desgin. "Constant" means that this should be the
+/// only place where those value appear, and this should be the only place that needs to be changed.
 class DbConstants
 {
 public:
-    static const char* const kGeneralTable_Name;                  // = "GENERAL"
+    /// The name of the General table ("GENERAL").
+    static const char* const kGeneralTable_Name;  
 
-    static const char* const kGeneralTable_KeyColumnName;         // = "Key"
+    /// The name of the column with the keys for the property-bag in the General table ("Key").
+    static const char* const kGeneralTable_KeyColumnName;         
+
+    /// The name of the column with the values for the property-bag in the General table ("ValueString").
     static const char* const kGeneralTable_ValueStringColumnName; // = "ValueString"
 
     static const char* const kTilesInfoTable_DefaultName;         // = "TILESINFO"

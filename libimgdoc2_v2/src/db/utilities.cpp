@@ -153,9 +153,13 @@ using namespace imgdoc2;
     db_connection->Execute(statement.get());
 }
 
-/*static*/bool Utilities::DeleteValueFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key)
+/*static*/void Utilities::DeleteItemFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key)
 {
-    throw runtime_error("Not implemented");
+    ostringstream string_stream;
+    string_stream << "DELETE FROM [" << table_name << "] WHERE [" << table_name << "].[" << key_column_name << "] = ?;";
+    const auto statement = db_connection->PrepareStatement(string_stream.str());
+    statement->BindString(1, key);
+    db_connection->Execute(statement.get());
 }
 
 /*static*/bool Utilities::ProcessRangeClause(const string& column_name_for_dimension, const IDimCoordinateQueryClause::RangeClause& rangeClause, vector<Utilities::DataBindInfo>& databind_info, ostringstream& string_stream)
