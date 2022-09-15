@@ -4,6 +4,7 @@
 #include "LogicalPositionInfo.h"
 #include "IDimCoordinateQueryClause.h"
 #include "ITIleInfoQueryClause.h"
+#include "IBlobOutput.h"
 
 namespace imgdoc2
 {
@@ -23,6 +24,8 @@ namespace imgdoc2
         virtual void Query(const imgdoc2::IDimCoordinateQueryClause* clause, const imgdoc2::ITileInfoQueryClause* tileInfoQuery, const std::function<bool(imgdoc2::dbIndex)>& func) = 0;
 
         virtual void GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const imgdoc2::IDimCoordinateQueryClause* coordinate_clause, const imgdoc2::ITileInfoQueryClause* tileinfo_clause, std::function<bool(imgdoc2::dbIndex)> func) = 0;
+
+        virtual void ReadTileData(imgdoc2::dbIndex idx, imgdoc2::IBlobOutput* data) = 0;
     public:
         void GetTilesIntersectingRect(const imgdoc2::RectangleD& rect, const std::function<bool(imgdoc2::dbIndex)>& func)
         {

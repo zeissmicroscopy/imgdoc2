@@ -48,7 +48,7 @@ set(LibImgDoc2_v2_Srcfiles
          "inc/IDimCoordinateQueryClause.h" 
          "inc/ITIleInfoQueryClause.h"
          "inc/DimCoordinateQueryClause.h"
-         "inc/IBlob.h" 
+         "inc/IBlobOutput.h" 
          "src/doc/transactionHelper.h"
          "src/db/database_discovery.h"
          "src/db/database_discovery.cpp"

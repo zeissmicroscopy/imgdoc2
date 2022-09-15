@@ -33,6 +33,7 @@ public:
     virtual std::int64_t GetResultInt64(int column) override;
     virtual double GetResultDouble(int column) override;
     virtual std::string GetResultString(int column) override;
+    virtual void GetResultBlob(int column, imgdoc2::IBlobOutput* blobOutput) override;
 
 private:
     void ThrowIfBindError(int error_code, const char* function_name);

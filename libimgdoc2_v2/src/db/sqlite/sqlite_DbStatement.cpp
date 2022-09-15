@@ -80,6 +80,14 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
     return value;
 }
 
+/*virtual*/void SqliteDbStatement::GetResultBlob(int column, imgdoc2::IBlobOutput* blobOutput)
+{
+    int size_of_blob = sqlite3_column_bytes(this->sql_statement_, column);
+    blobOutput->Reserve(size_of_blob);
+    const void* ptr_data = sqlite3_column_blob(this->sql_statement_, column);
+    blobOutput->SetData(0, size_of_blob, ptr_data);
+}
+
 /*virtual*/std::string SqliteDbStatement::GetResultString(int column)
 {
     // TODO(JBL): this method is creating a copy of the string, it might be a good idea to have a method

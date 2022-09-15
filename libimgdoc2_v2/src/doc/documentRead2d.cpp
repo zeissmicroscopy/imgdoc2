@@ -4,6 +4,7 @@
 #include "../db/utilities.h"
 
 using namespace std;
+using namespace imgdoc2;
 
 /*virtual*/void DocumentRead2d::ReadTileInfo(imgdoc2::dbIndex idx, imgdoc2::ITileCoordinateMutate* coord, imgdoc2::LogicalPositionInfo* info)
 {
@@ -62,12 +63,24 @@ using namespace std;
 
     while (this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
     {
-        imgdoc2::dbIndex index = query_statement->GetResultInt64(0);
-        bool continue_operation = func(index);
+        const imgdoc2::dbIndex index = query_statement->GetResultInt64(0);
+        const bool continue_operation = func(index);
         if (!continue_operation)
         {
             break;
         }
+    }
+}
+
+/*virtual*/void DocumentRead2d::ReadTileData(imgdoc2::dbIndex idx, imgdoc2::IBlobOutput* data)
+{
+    shared_ptr<IDbStatement> query_statement = this->GetReadDataQueryStatement(idx);
+
+    // TODO: - we expect one and only one result, should raise an error otherwise
+    //       - also, we need to report if no result is found
+    while (this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
+    {
+        query_statement->GetResultBlob(0,data);
     }
 }
 
@@ -288,4 +301,33 @@ std::shared_ptr<IDbStatement> DocumentRead2d::GetTilesIntersectingRectQueryAndCo
     }
 
     return statement;
+}
+
+std::shared_ptr<IDbStatement> DocumentRead2d::GetReadDataQueryStatement(imgdoc2::dbIndex idx)
+{
+    // we create a statement like this:
+    // 
+    // SELECT [Data] FROM [BLOBS] WHERE [BLOBS].[Pk] =
+    //    (
+    //        SELECT BinDataId FROM TILESDATA WHERE Pk = 1  AND BinDataStorageType = 1
+    //    )
+    //
+    //
+    //
+    
+    ostringstream string_stream;
+    string_stream << "SELECT [" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfBlobTableOrThrow(DatabaseConfiguration2D::kBlobTable_Column_Data) << "] "
+        << "FROM [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForBlobTableOrThrow() << "] WHERE [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForBlobTableOrThrow() << "].[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfBlobTableOrThrow(DatabaseConfiguration2D::kBlobTable_Column_Pk) << "] = ("
+        << "SELECT [" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataId) << "] "
+        << "FROM [" << this->document_->GetDataBaseConfiguration2d()->GetTableNameForTilesDataOrThrow() << "] WHERE ["
+        << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_Pk) << "] = ?1 AND "
+        << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesDataTableOrThrow(DatabaseConfiguration2D::kTilesDataTable_Column_BinDataStorageType) << "] = ?2"
+        << ")";
+
+    auto statement = this->document_->GetDatabase_connection()->PrepareStatement(string_stream.str());
+    int binding_index = 1;
+    statement->BindInt64(binding_index++, idx);
+    statement->BindInt32(binding_index++, static_cast<std::underlying_type_t<TileDataStorageType>>(TileDataStorageType::BlobInDatabase));
+    return statement;
+
 }

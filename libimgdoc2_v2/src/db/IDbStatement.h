@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <IBlobOutput.h>
 
 class IDbStatement
 {
@@ -33,6 +34,7 @@ public:
     virtual std::int64_t GetResultInt64(int column) = 0;
     virtual double GetResultDouble(int column) = 0;
     virtual std::string GetResultString(int column) = 0;
+    virtual void GetResultBlob(int column, imgdoc2::IBlobOutput* blobOutput) = 0;
 
     virtual ~IDbStatement() = default;
 
