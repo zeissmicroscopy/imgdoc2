@@ -5,6 +5,7 @@ namespace imgdoc2
     class IDocWrite2d;
     class IDocRead2d;
 
+    /// Values that represent different document types.
     enum class DocumentType
     {
         Invalid,

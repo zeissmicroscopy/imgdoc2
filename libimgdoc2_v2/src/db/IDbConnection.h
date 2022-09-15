@@ -7,7 +7,8 @@
 #include "IDbStatement.h"
 
 /// This interface gathers the "database operation" we use in libimgdoc2. The goal is that
-/// this interface is database-agnostic, i.e. can be implemented for different databases.
+/// this interface is database-agnostic, i.e. can be implemented for different databases, and
+/// that differences in database are abstracted at this level.
 class IDbConnection
 {
 public:
@@ -48,6 +49,12 @@ public:
     virtual void EndTransaction(bool commit) = 0;
     virtual bool IsTransactionPending() const = 0;
 
+    /// Gets information about the specified table.
+    /// TODO: Note that (in current implementation) this method returns an empty vector in case that the
+    /// table does not exists (so an empty table and a non-existing table is undistinguishable).
+    /// 
+    /// \param  {const char*} table_name Name of the table.
+    /// \returns {std::vector{ColumnInfo}} The table information - a vector describing the columns of the table.
     virtual std::vector<ColumnInfo> GetTableInfo(const char* table_name) = 0;
 
     /// Gets a list of existing indices for the specified table.
