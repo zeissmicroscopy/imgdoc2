@@ -28,6 +28,14 @@ using namespace std;
 /*static*/const char* const DbConstants::kTilesInfoTable_Column_PyramidLevel_DefaultName = "PyramidLevel";
 /*static*/const char* const DbConstants::kTilesInfoTable_Column_TileDataId_DefaultName = "TileDataId";
 
+
+/*static*/const char* const DbConstants::kSqliteSpatialIndexTable_Column_Pk_DefaultName = "id";
+/*static*/const char* const DbConstants::kSqliteSpatialIndexTable_Column_minX_DefaultName = "minX";
+/*static*/const char* const DbConstants::kSqliteSpatialIndexTable_Column_maxX_DefaultName = "maxX";
+/*static*/const char* const DbConstants::kSqliteSpatialIndexTable_Column_minY_DefaultName = "minY";
+/*static*/const char* const DbConstants::kSqliteSpatialIndexTable_Column_maxY_DefaultName = "maxY";
+
+
 /*static*/const char* const DbConstants::kDimensionColumnPrefix_Default = "Dim_";
 /*static*/const char* const DbConstants::kIndexForDimensionColumnPrefix_Default = "IndexForDim_";
 

@@ -46,6 +46,13 @@ public:
     static const char* const kTilesInfoTable_Column_PyramidLevel_DefaultName;
     static const char* const kTilesInfoTable_Column_TileDataId_DefaultName;
 
+
+    static const char* const kSqliteSpatialIndexTable_Column_Pk_DefaultName;
+    static const char* const kSqliteSpatialIndexTable_Column_minX_DefaultName;
+    static const char* const kSqliteSpatialIndexTable_Column_maxX_DefaultName;
+    static const char* const kSqliteSpatialIndexTable_Column_minY_DefaultName;
+    static const char* const kSqliteSpatialIndexTable_Column_maxY_DefaultName;
+
     static const char* const kDimensionColumnPrefix_Default;  // = "Dim_"
     static const char* const kIndexForDimensionColumnPrefix_Default; // = "IndexForDim_"
 

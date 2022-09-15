@@ -177,11 +177,11 @@ void DbCreator::Initialize2dConfigurationFromCreateOptions(DatabaseConfiguration
     if (create_options->GetUseSpatialIndex())
     {
         database_configuration->SetTableName(DatabaseConfigurationCommon::TableTypeCommon::TilesSpatialIndex, DbConstants::kTilesSpatialIndexTable_DefaultName/*"TILESSPATIALINDEX"*/);
-        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk, "id");
-        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX, "minX");
-        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX, "maxX");
-        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY, "minY");
-        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY, "maxY");
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_Pk, DbConstants::kSqliteSpatialIndexTable_Column_Pk_DefaultName/*"id"*/);
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinX, DbConstants::kSqliteSpatialIndexTable_Column_minX_DefaultName /*"minX"*/);
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxX, DbConstants::kSqliteSpatialIndexTable_Column_maxX_DefaultName /*"maxX"*/);
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MinY, DbConstants::kSqliteSpatialIndexTable_Column_minY_DefaultName /*"minY"*/);
+        database_configuration->SetColumnNameForTilesSpatialIndexTable(DatabaseConfiguration2D::kTilesSpatialIndexTable_Column_MaxY, DbConstants::kSqliteSpatialIndexTable_Column_maxY_DefaultName /*"maxY"*/);
     }
 
     if (create_options->GetCreateBlobTable())

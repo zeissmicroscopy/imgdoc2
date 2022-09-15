@@ -243,9 +243,37 @@ void DbDiscovery::Check_Tables_And_Determine_Dimensions(GeneralDataDiscoveryResu
     if (!general_table_discovery_result.spatial_index_table_name.empty())
     {
         auto columns_of_spatial_index = this->db_connection_->GetTableInfo(general_table_discovery_result.spatial_index_table_name.c_str());
-        // TODO: * we should gracefully handle the case that the table is not present
-        //       * and, of course, we should check if it is really a "spatial index"
-        
-        // for the time being - if this worked, then we assume it is a spatial table and all is fine
+
+        // We check if we find all the expected columns here, and then declare "spatial index operational".
+        // Otherwise, we clear the "spatial-index-table-field", notifying that there is no spatial index available.
+        expected_columns_for_table = vector<ExpectedColumnsInfo>
+        {
+            ExpectedColumnsInfo(DbConstants::kSqliteSpatialIndexTable_Column_Pk_DefaultName),
+            ExpectedColumnsInfo(DbConstants::kSqliteSpatialIndexTable_Column_minX_DefaultName),
+            ExpectedColumnsInfo(DbConstants::kSqliteSpatialIndexTable_Column_maxX_DefaultName),
+            ExpectedColumnsInfo(DbConstants::kSqliteSpatialIndexTable_Column_minY_DefaultName),
+            ExpectedColumnsInfo(DbConstants::kSqliteSpatialIndexTable_Column_maxY_DefaultName)
+        };
+
+        bool spatial_index_ok = true;
+        for (const auto& expected_column_info : expected_columns_for_table)
+        {
+            if (!any_of(
+                columns_of_spatial_index.cbegin(),
+                columns_of_spatial_index.cend(),
+                [&](const IDbConnection::ColumnInfo& column_info)->bool
+                {
+                    return column_info.column_name == expected_column_info.column_name;
+                }))
+            {
+                spatial_index_ok = false;
+                break;
+            }
+        }
+
+        if (!spatial_index_ok)
+        {
+            general_table_discovery_result.spatial_index_table_name.clear();
+        }
     }
 }
