@@ -11,3 +11,5 @@
 #include "exceptions.h"
 #include "DimCoordinateQueryClause.h"
 
+#include "impl/BlobOutputImplementations.h"
+#include "impl/DataObjectImplementations.h"

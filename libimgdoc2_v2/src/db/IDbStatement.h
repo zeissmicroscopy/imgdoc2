@@ -4,6 +4,12 @@
 #include <string>
 #include <IBlobOutput.h>
 
+/// This interface is representing a "prepared/compiled" database-statement. The life-cycle of a data-base statement is:
+/// - an instance is created (-> IDbConnection::PrepareStatement)  
+/// - if the statement is using literals which are to be replaced with parameters, then the appropriate Bind-methods are to be called  
+/// - now the statement is sent to executioln (-> IDbConnection::StepStatement)  
+/// - and results may then be retrieved by calling into the appropriate "GetResult"-methods.  
+/// This interface is intended to abstract different databases.
 class IDbStatement
 {
 public:
@@ -28,7 +34,7 @@ public:
     /// \param  index   Index of the parameter to bind.
     /// \param  data    The pointer to the data.
     /// \param  size    The size of the data (in bytes).
-    virtual void BindBlob_Static(int index, const void* data, size_t size)=0;
+    virtual void BindBlob_Static(int index, const void* data, size_t size) = 0;
 
     virtual int GetResultInt32(int column) = 0;
     virtual std::int64_t GetResultInt64(int column) = 0;

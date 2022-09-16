@@ -55,7 +55,9 @@ set(LibImgDoc2_v2_Srcfiles
          "src/db/database_constants.h" 
          "src/db/database_constants.cpp"
          "inc/IOpenExistingOptions.h"
- "src/public/OpenExistingOptions.cpp")
+         "src/public/OpenExistingOptions.cpp"
+         "inc/impl/BlobOutputImplementations.h"
+ "inc/impl/DataObjectImplementations.h")
 
 add_library(libimgdoc2_v2 STATIC
                 ${LibImgDoc2_v2_Srcfiles}

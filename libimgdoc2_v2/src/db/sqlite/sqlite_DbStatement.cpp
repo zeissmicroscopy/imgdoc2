@@ -83,9 +83,11 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
 /*virtual*/void SqliteDbStatement::GetResultBlob(int column, imgdoc2::IBlobOutput* blobOutput)
 {
     int size_of_blob = sqlite3_column_bytes(this->sql_statement_, column);
-    blobOutput->Reserve(size_of_blob);
-    const void* ptr_data = sqlite3_column_blob(this->sql_statement_, column);
-    blobOutput->SetData(0, size_of_blob, ptr_data);
+    if (blobOutput->Reserve(size_of_blob))
+    {
+        const void* ptr_data = sqlite3_column_blob(this->sql_statement_, column);
+        blobOutput->SetData(0, size_of_blob, ptr_data);
+    }
 }
 
 /*virtual*/std::string SqliteDbStatement::GetResultString(int column)
