@@ -4,6 +4,9 @@
 #include "../IDbConnection.h"
 #include "ISqlite_DbStatement.h"
 
+/// Implementation of the IDbStatement-interface specific for SQLite. Note that 
+/// the DbStatement-implementation for SQLite is supporting an additional interface
+/// ISqliteDbStatement.
 class SqliteDbStatement : public IDbStatement, public ISqliteDbStatement
 {
 private:
@@ -37,4 +40,7 @@ public:
 
 private:
     void ThrowIfBindError(int error_code, const char* function_name);
+
+public:
+    SqliteDbStatement() = delete;
 };

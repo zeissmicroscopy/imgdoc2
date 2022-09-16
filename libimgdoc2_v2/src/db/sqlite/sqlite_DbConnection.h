@@ -3,6 +3,7 @@
 #include <sqlite3.h>
 #include "../IDbConnection.h"
 
+/// Implementation of the IDbConnection-interface specific to SQLite.
 class SqliteDbConnection : public IDbConnection
 {
 private:

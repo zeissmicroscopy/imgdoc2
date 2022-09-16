@@ -18,6 +18,7 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
 
 /*virtual*/void SqliteDbStatement::Reset()
 {
+    throw std::logic_error("not implemented");
 }
 
 /*virtual*/void SqliteDbStatement::BindNull(int index)

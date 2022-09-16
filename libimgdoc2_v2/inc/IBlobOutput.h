@@ -14,7 +14,7 @@ namespace imgdoc2
         /// exception. If this method returns false, it is interpreted as "the client is
         /// not interested in the data" and there will not be subsequent calls to "SetData".
         /// \param  {size_t} s The size of the data being returned.
-        /// \returns {bool} True if it succeeds (and the object is ready to get "SetData" calls), false if it fails.
+        /// \returns {bool} True if it succeeds (and the object is ready to handle "SetData" calls), false if it fails.
         virtual bool Reserve(size_t s) = 0;
 
         /// Data is passed to the "blob-output"-object with this call. The pointer "data" is

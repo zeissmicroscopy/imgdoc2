@@ -9,9 +9,17 @@
 #include <stdexcept>
 #include <imgdoc2.h>
 
+/// The purpose of this class is to represent all information/configuration required to operate
+/// on the database. This includes
+/// - names of the various tables/column in use  
+/// - certain options or "information about the state" like which columns are indexed or not  
+/// - options/configurations like "spatial index active or not"  
+/// The idea is that "DatabaseConfigurationCommon" covers all options which are common for all supported
+/// "document types", and that we have derived classes specific for a document type.
 class DatabaseConfigurationCommon
 {
 public:
+    /// Values that represent the tables (which are of relevance to us).
     enum class TableTypeCommon
     {
         GeneralInfo,
@@ -21,23 +29,8 @@ public:
         Blobs
     };
 
-    /*static constexpr int kGeneralTableItems_Version = 1;
-    static constexpr int kGeneralTableItems_TilesDataTable = 2;
-    static constexpr int kGeneralTableItems_TilesInfoTable = 3;
-    static constexpr int kGeneralTableItems_DocType = 4;*/
-
-    ///// Values that represent "well known items" in the 'GENERAL'-table.
-    //enum class GeneralTableItems
-    //{
-    //    kVersion,
-    //    kTilesDataTable,    ///< An enum constant representing "Name of the 'TILESDATA'-table.
-    //    kTilesInfoTable,
-    //    kDocType,
-    //    kBlobTable          ///< An enum constant representing "Name of the 'BLOB'-table.
-    //};
-
-    static constexpr int kGeneralInfoTable_Column_Key = 1;
-    static constexpr int kGeneralInfoTable_Column_ValueString = 2;
+    static constexpr int kGeneralInfoTable_Column_Key = 1;  ///< Identifier for the "key column" in the "general" table
+    static constexpr int kGeneralInfoTable_Column_ValueString = 2;  ///< Identifier for the "value(string) column" in the "general" table
 
     static constexpr int kBlobTable_Column_Pk = 1;
     static constexpr int kBlobTable_Column_Data = 2;
