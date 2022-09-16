@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
-#include "../libimgdoc2_v2/inc/imgdoc2.h"
-#include "../libimgdoc2_v2/src/db/utilities.h"
-#include "../libimgdoc2_v2/src/db/DbFactory.h"
+#include "../libimgdoc2/inc/imgdoc2.h"
+#include "../libimgdoc2/src/db/utilities.h"
+#include "../libimgdoc2/src/db/DbFactory.h"
 
 using namespace std;
 

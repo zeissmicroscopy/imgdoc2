@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "../libimgdoc2_v2/src/db/DbFactory.h"
-#include "../libimgdoc2_v2/src/db/database_creator.h"
-#include "../libimgdoc2_v2/src/db/database_discovery.h"
-#include "../libimgdoc2_v2/src/db/database_constants.h"
+#include "../libimgdoc2/src/db/DbFactory.h"
+#include "../libimgdoc2/src/db/database_creator.h"
+#include "../libimgdoc2/src/db/database_discovery.h"
+#include "../libimgdoc2/src/db/database_constants.h"
 
 using namespace imgdoc2;
 using namespace std;
@@ -92,7 +92,7 @@ TEST(DbDiscoveryTest, CreateAndAlterGeneralTableToHaveInconsistentInformationAnd
     //  to a spatial index with doesn't exists
 
     auto dbConnection = DbFactory::SqliteCreateNewDatabase(":memory:");
-    shared_ptr< DatabaseConfiguration2D> database_configuration_from_creation;
+    shared_ptr<DatabaseConfiguration2D> database_configuration_from_creation;
 
     {
         DbCreator db_creator(dbConnection);
@@ -118,7 +118,7 @@ TEST(DbDiscoveryTest, CreateAndAlterGeneralTableToHaveInconsistentInformationAnd
 
     // and now - the expectation is that the "discovery" can identify the spatial-index as being
     //  not operational
-    shared_ptr< DatabaseConfiguration2D> database_configuration_from_discovery;
+    shared_ptr<DatabaseConfiguration2D> database_configuration_from_discovery;
     {
         DbDiscovery db_discovery(dbConnection);
         db_discovery.DoDiscovery();
@@ -128,4 +128,12 @@ TEST(DbDiscoveryTest, CreateAndAlterGeneralTableToHaveInconsistentInformationAnd
     dbConnection.reset();
 
     EXPECT_FALSE(database_configuration_from_discovery->GetIsUsingSpatialIndex());
+}
+
+TEST(DbDiscoveryTest, CreateEmptyDataBaseAndExpectDiscover2DToReportError)
+{
+    auto dbConnection = DbFactory::SqliteCreateNewDatabase(":memory:");
+
+    DbDiscovery db_discovery(dbConnection);
+    EXPECT_THROW(db_discovery.DoDiscovery(), imgdoc2::discovery_exception);
 }

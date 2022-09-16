@@ -39,12 +39,12 @@ FetchContent_MakeAvailable(GSL)
 
 add_subdirectory(external/sqlite3)
 
-add_subdirectory(libimgdoc2_v2)
+add_subdirectory(libimgdoc2)
 add_subdirectory(imgdoc2cmd)
 
 enable_testing()
 
-add_subdirectory(libimgdoc2_v2_tests)
+add_subdirectory(libimgdoc2_tests)
 
 
 
