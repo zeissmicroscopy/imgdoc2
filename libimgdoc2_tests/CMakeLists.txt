@@ -29,19 +29,20 @@ endif()
 
 
 # Add source to this project's executable.
-add_executable( libimgdoc2_v2_tests 
+add_executable( libimgdoc2_tests 
  "db_utilities_test.cpp" 
  "query2d_test.cpp" 
  "dbdiscovery_test.cpp" 
- "propertybagutilities_test.cpp" "blobdata_test.cpp")
+ "propertybagutilities_test.cpp" 
+ "blobdata_test.cpp")
 
-target_include_directories(libimgdoc2_v2_tests PRIVATE ${GTEST_INCLUDE_DIRS})
+target_include_directories(libimgdoc2_tests PRIVATE ${GTEST_INCLUDE_DIRS})
 
 #target_link_libraries(libimgdoc2_tests PRIVATE SQLiteCpp sqlite3)
 #target_link_libraries(libimgdoc2_tests PRIVATE sqlite3)
 
 # this preprocessor define needs to be defined when building "SqliteImgDoc" and by users of it (if linking the static library)
-target_compile_definitions(libimgdoc2_v2_tests PUBLIC _SQLITEIMGDOCSTATICLIB=1)
+target_compile_definitions(libimgdoc2_tests PUBLIC _SQLITEIMGDOCSTATICLIB=1)
 
 # Link test executable against gtest & gtest_main
 
@@ -50,27 +51,27 @@ if(UNIX AND NOT APPLE)
    find_package(Threads REQUIRED)
    message(STATUS "****** UNIX AND NOT APPLE ******")
    #target_link_libraries(libimgdoc2_v2_tests PRIVATE gtest gmock gtest_main libimgdoc2_v2 ${CMAKE_THREAD_LIBS_INIT}  ${CMAKE_DL_LIBS})
-   target_link_libraries(libimgdoc2_v2_tests PRIVATE gtest gmock gtest_main libimgdoc2_v2 pthread dl)
+   target_link_libraries(libimgdoc2_tests PRIVATE gtest gmock gtest_main libimgdoc2 pthread dl)
 elseif(UNIX AND APPLE)
    # Mac OS
    find_package(Threads REQUIRED)
-   target_link_libraries(libimgdoc2_v2_tests PRIVATE gtest gmock gtest_main libimgdoc2_v2 pthread dl)
+   target_link_libraries(libimgdoc2_tests PRIVATE gtest gmock gtest_main libimgdoc2 pthread dl)
 else()
    find_package(Threads REQUIRED)
-   target_link_libraries(libimgdoc2_v2_tests PRIVATE gtest gmock gtest_main libimgdoc2_v2 )
+   target_link_libraries(libimgdoc2_tests PRIVATE gtest gmock gtest_main libimgdoc2 )
 endif()
 
 #[[
 # Cygwin seems to need some special treatment -> https://stackoverflow.com/questions/18784112/googletest-1-6-with-cygwin-1-7-compile-error-fileno-was-not-declared-in-this
  if(NOT CYGWIN)
-    set_target_properties(libimgdoc2_v2_tests PROPERTIES
+    set_target_properties(libimgdoc2_tests PROPERTIES
                CXX_STANDARD 11
                CXX_EXTENSIONS OFF)
 else()
-    set_target_properties(libimgdoc2_v2_tests PROPERTIES
+    set_target_properties(libimgdoc2_tests PROPERTIES
                CXX_STANDARD 11
                CXX_EXTENSIONS ON)
 endif()
 ]]
 
-add_test( libimgdoc2_v2_tests  libimgdoc2_v2_tests  )
+add_test( libimgdoc2_tests  libimgdoc2_tests  )

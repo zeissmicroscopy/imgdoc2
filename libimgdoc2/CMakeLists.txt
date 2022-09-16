@@ -1,7 +1,7 @@
 
 
 
-set(LibImgDoc2_v2_Srcfiles 
+set(LibImgDoc2_Srcfiles 
          "src/public/ClassFactory.cpp"
          "src/public/CreateOptions.cpp"
          "inc/ICreateOptions.h"
@@ -59,20 +59,20 @@ set(LibImgDoc2_v2_Srcfiles
          "inc/impl/BlobOutputImplementations.h"
  "inc/impl/DataObjectImplementations.h")
 
-add_library(libimgdoc2_v2 STATIC
-                ${LibImgDoc2_v2_Srcfiles}
+add_library(libimgdoc2 STATIC
+                ${LibImgDoc2_Srcfiles}
 )
 
-target_link_libraries(libimgdoc2_v2 PUBLIC sqlite3)
+target_link_libraries(libimgdoc2 PUBLIC sqlite3)
 
 # Link against the GSL interface library (i.e. header only library)
-target_link_libraries(libimgdoc2_v2 PRIVATE GSL)
+target_link_libraries(libimgdoc2 PRIVATE GSL)
 
-set_target_properties(libimgdoc2_v2 PROPERTIES INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/sqlite3>;${CMAKE_CURRENT_SOURCE_DIR}/inc")
+set_target_properties(libimgdoc2 PROPERTIES INCLUDE_DIRECTORIES "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../external/sqlite3>;${CMAKE_CURRENT_SOURCE_DIR}/inc")
 
 # this preprocessor define needs to be defined when building "SqliteImgDoc" and by users of it (if linking the static library)
-target_compile_definitions(libimgdoc2_v2 PUBLIC _SQLITEIMGDOCSTATICLIB=1)
+target_compile_definitions(libimgdoc2 PUBLIC _SQLITEIMGDOCSTATICLIB=1)
 
-target_include_directories(libimgdoc2_v2 INTERFACE
+target_include_directories(libimgdoc2 INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc> 
   )
