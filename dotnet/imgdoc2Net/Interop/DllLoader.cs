@@ -7,7 +7,7 @@ namespace ImgDoc2Net.Interop
     internal abstract class DllLoader
     {
         private string filename;
-        private IntPtr dllHandle;
+        private IntPtr dllHandle = IntPtr.Zero;
 
         public static DllLoader GetDllLoader(string filename)
         {

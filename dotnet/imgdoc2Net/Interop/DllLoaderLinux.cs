@@ -25,6 +25,11 @@ namespace ImgDoc2Net.Interop
                 this.DllHandle = DllLoaderLinux.dlopen2(this.Filename, RTLD_NOW);
                 this.importToUse = 2;
             }
+
+            if (this.DllHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException($"Could not load dynamic library '{this.Filename}'.");
+            }
         }
 
         public override IntPtr GetProcAddress(string functionName)
