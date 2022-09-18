@@ -63,6 +63,9 @@ add_library(libimgdoc2 STATIC
                 ${LibImgDoc2_Srcfiles}
 )
 
+# shared libraries need PIC
+set_property(TARGET libimgdoc2 PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 target_link_libraries(libimgdoc2 PUBLIC sqlite3)
 
 # Link against the GSL interface library (i.e. header only library)

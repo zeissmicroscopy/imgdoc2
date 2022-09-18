@@ -20,3 +20,5 @@ target_compile_definitions(sqlite3 PUBLIC # inject user's options
   SQLITE_LIKE_DOESNT_MATCH_BLOBS
 )
 
+# shared libraries need PIC
+set_property(TARGET sqlite3 PROPERTY POSITION_INDEPENDENT_CODE ON)

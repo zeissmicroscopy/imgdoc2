@@ -3,9 +3,14 @@
 #
 cmake_minimum_required (VERSION 3.7)
 
+# Needed to enable -MT compile switch
+cmake_policy(SET CMP0091 NEW)
+
 include(FetchContent)
 
 project("imgdoc2")
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,7 +45,10 @@ FetchContent_MakeAvailable(GSL)
 add_subdirectory(external/sqlite3)
 
 add_subdirectory(libimgdoc2)
+add_subdirectory(imgdoc2API)
 add_subdirectory(imgdoc2cmd)
+
+add_subdirectory(dotnet)
 
 enable_testing()
 
