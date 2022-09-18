@@ -1,15 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-
-namespace ImgDoc2Net.Interop
+﻿namespace ImgDoc2Net.Interop
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Runtime.InteropServices;
+    using System.Text;
+
     public partial class ImgDoc2ApiInterop
     {
         //private const string BaseDllName = @"..\..\..\..\out\build\x64-Debug\imgdoc2API\imgdoc2API"; 
         //private const string BaseDllName = @"D:\dev\ZeissGitHub\imgdoc2\out\build\x64-Debug\imgdoc2API\imgdoc2API";
-        private const string BaseDllName = @"imgdoc2API";
+        private const string BaseDllNameWindows = @"imgdoc2API";
+        private const string BaseDllNameLinux = @"libimgdoc2API";
 
         private static readonly Lazy<ImgDoc2ApiInterop> ImgDoc2ApiInteropInstance = new Lazy<ImgDoc2ApiInterop>(() => new ImgDoc2ApiInterop(), System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 
@@ -38,16 +40,36 @@ namespace ImgDoc2Net.Interop
         /// </remarks>
         private ImgDoc2ApiInterop()
         {
-            string dllName = ImgDoc2ApiInterop.GetDllName();
-            //dllName = "/mnt/d/dev/ZeissGitHub/imgdoc2/dotnet/native_dlls/libimgdoc2API.so";
-            dllName = "./libimgdoc2API.so";
-            this.dllLoader = DllLoader.GetDllLoader(dllName);
-            this.dllLoader.Load();
-            //this.dllHandle = this.TryLoadDll(dllName);
-            //if (this.dllHandle == IntPtr.Zero)
-            //{
-            //    return;
-            //}
+            var possibleDllFilenames = this.GetFullyQualifiedDllPaths();
+            foreach (var filename in possibleDllFilenames)
+            {
+                var loader = DllLoader.GetDllLoader(filename);
+                try
+                {
+                    loader.Load();
+                    this.dllLoader = loader;
+                }
+                catch (Exception e)
+                {
+                    this.dllLoadErrorMsg = e.ToString();
+                }
+            }
+
+            if (this.dllLoader == null)
+            {
+                return;
+            }
+
+            //string dllName = ImgDoc2ApiInterop.GetDllName();
+            ////dllName = "/mnt/d/dev/ZeissGitHub/imgdoc2/dotnet/native_dlls/libimgdoc2API.so";
+            //dllName = "./libimgdoc2API.so";
+            //this.dllLoader = DllLoader.GetDllLoader(dllName);
+            //this.dllLoader.Load();
+            ////this.dllHandle = this.TryLoadDll(dllName);
+            ////if (this.dllHandle == IntPtr.Zero)
+            ////{
+            ////    return;
+            ////}
 
             try
             {
@@ -74,18 +96,18 @@ namespace ImgDoc2Net.Interop
         /// </value>
         public static ImgDoc2ApiInterop Instance => ImgDoc2ApiInterop.ImgDoc2ApiInteropInstance.Value;
 
-        private static string GetDllName()
-        {
-            var cpuArchitecture = RuntimeInformation.ProcessArchitecture;
-            switch (cpuArchitecture)
-            {
-                case Architecture.X64:
-                    return BaseDllName + ".dll";
+        //private static string GetDllName()
+        //{
+        //    var cpuArchitecture = RuntimeInformation.ProcessArchitecture;
+        //    switch (cpuArchitecture)
+        //    {
+        //        case Architecture.X64:
+        //            return BaseDllName + ".dll";
 
-            }
+        //    }
 
-            return BaseDllName + ".dll";
-        }
+        //    return BaseDllName + ".dll";
+        //}
 
         private static string GetMangledName(string functionName)
         {
@@ -126,24 +148,38 @@ namespace ImgDoc2Net.Interop
             return (T)Marshal.GetDelegateForFunctionPointer(addressOfFunctionToCall, typeof(T));
         }
 
-        private IntPtr TryLoadDll(string dllName)
-        {
-            IntPtr handle = ImgDoc2ApiInterop.LoadLibrary(dllName);
-            if (handle == IntPtr.Zero)
-            {
-                this.dllLoadErrorMsg = $"LoadLibrary failed, GetLastError() is {Marshal.GetLastWin32Error()}";
-                return IntPtr.Zero;
-            }
+        //private IntPtr TryLoadDll(string dllName)
+        //{
+        //    IntPtr handle = ImgDoc2ApiInterop.LoadLibrary(dllName);
+        //    if (handle == IntPtr.Zero)
+        //    {
+        //        this.dllLoadErrorMsg = $"LoadLibrary failed, GetLastError() is {Marshal.GetLastWin32Error()}";
+        //        return IntPtr.Zero;
+        //    }
 
-            return handle;
-        }
+        //    return handle;
+        //}
 
         private void ThrowIfNotInitialized()
         {
-            //if (this.dllHandle == IntPtr.Zero)
             if (this.dllLoader == null)
             {
-                throw new InvalidOperationException($"{nameof(ImgDoc2ApiInterop)} is not operational, DLL \"{ImgDoc2ApiInterop.GetDllName()}\" could not be loaded. Debug-info: {this.dllLoadErrorMsg ?? "<not available>"}");
+                throw new InvalidOperationException($"{nameof(ImgDoc2ApiInterop)} is not operational, native dynamic-link-library could not be loaded. Debug-info: {this.dllLoadErrorMsg ?? "<not available>"}");
+            }
+        }
+
+        private IEnumerable<string> GetFullyQualifiedDllPaths()
+        {
+            string pathOfExecutable = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            bool isLinux = Utilities.IsLinux();
+
+            if (!isLinux)
+            {
+                yield return Path.Combine(pathOfExecutable, BaseDllNameWindows + ".dll");
+            }
+            else
+            {
+                yield return Path.Combine(pathOfExecutable, BaseDllNameLinux+ ".so");
             }
         }
     }
@@ -205,23 +241,23 @@ namespace ImgDoc2Net.Interop
 
     }
 
-    /// <content>
-    /// Declaration of kernel32-functions LoadLibrary/GetProcAddress et al.
-    /// </content>
-    public partial class ImgDoc2ApiInterop
-    {
-        /// <content>
-        /// Declaration of kernel32-functions LoadLibrary/GetProcAddress et al.
-        /// </content>
+    ///// <content>
+    ///// Declaration of kernel32-functions LoadLibrary/GetProcAddress et al.
+    ///// </content>
+    //public partial class ImgDoc2ApiInterop
+    //{
+    //    /// <content>
+    //    /// Declaration of kernel32-functions LoadLibrary/GetProcAddress et al.
+    //    /// </content>
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        private static extern IntPtr LoadLibrary(string dllToLoad);
+    //    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    //    private static extern IntPtr LoadLibrary(string dllToLoad);
 
-        [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true, EntryPoint = "GetProcAddress")]
-        private static extern IntPtr GetProcAddress(IntPtr handleModule, string procedureName);
+    //    [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true, EntryPoint = "GetProcAddress")]
+    //    private static extern IntPtr GetProcAddress(IntPtr handleModule, string procedureName);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool FreeLibrary(IntPtr hModule);
-    }
+    //    [DllImport("kernel32.dll", SetLastError = true)]
+    //    [return: MarshalAs(UnmanagedType.Bool)]
+    //    private static extern bool FreeLibrary(IntPtr hModule);
+    //}
 }

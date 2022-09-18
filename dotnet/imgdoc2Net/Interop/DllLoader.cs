@@ -4,14 +4,14 @@ using System.Text;
 
 namespace ImgDoc2Net.Interop
 {
-    internal abstract class DllLoader
+    internal abstract class DllLoader 
     {
         private string filename;
         private IntPtr dllHandle = IntPtr.Zero;
 
         public static DllLoader GetDllLoader(string filename)
         {
-            if (IsLinux())
+            if (Utilities.IsLinux())
             {
                 return new DllLoaderLinux(filename);
             }
@@ -36,18 +36,32 @@ namespace ImgDoc2Net.Interop
             this.filename = filename;
         }
 
-        public abstract void Load();
+        public void Load()
+        {
+            if (this.DllHandle != IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Dynamic Link Library already loaded.");
+            }
+
+            var handle = this.LoadDynamicLibrary(this.Filename);
+            if (handle == IntPtr.Zero)
+            {
+                throw new Exception($"Could not load the dynamic link library '{this.Filename}'.");
+            }
+
+            this.DllHandle = handle;
+        }
 
         public abstract IntPtr GetProcAddress(string functionName);
 
-        /// <summary>
-        /// Gets a value indicating if the current platform is Linunx.
-        /// </summary>
-        public static bool IsLinux()
+        protected abstract IntPtr LoadDynamicLibrary(string filename);
+
+        protected void ThrowIfNotOperational()
         {
-            // http://stackoverflow.com/a/5117005/358336
-            int p = (int)Environment.OSVersion.Platform;
-            return (p == 4) || (p == 6) || (p == 128);
+            if (this.DllHandle == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Dynamic link library is not loaded.");
+            }
         }
     }
 }
