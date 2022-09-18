@@ -8,8 +8,6 @@
 
     public partial class ImgDoc2ApiInterop
     {
-        //private const string BaseDllName = @"..\..\..\..\out\build\x64-Debug\imgdoc2API\imgdoc2API"; 
-        //private const string BaseDllName = @"D:\dev\ZeissGitHub\imgdoc2\out\build\x64-Debug\imgdoc2API\imgdoc2API";
         private const string BaseDllNameWindows = @"imgdoc2API";
         private const string BaseDllNameLinux = @"libimgdoc2API";
 
@@ -18,7 +16,6 @@
         /// <summary>   
         /// (Immutable) Win32-Handle of the DLL. If this is IntPtr.Zero, then the loading of the Dll failed (and 'dllLoadErrorMsg' may contain additional information about the problem).
         /// </summary>
-        //private readonly IntPtr dllHandle;
         private DllLoader dllLoader;
 
         private string dllLoadErrorMsg;
@@ -41,6 +38,8 @@
         private ImgDoc2ApiInterop()
         {
             var possibleDllFilenames = this.GetFullyQualifiedDllPaths();
+
+            // we try to load all filenames we got, and if "Load" succeeded, we keep this DllLoader-instance
             foreach (var filename in possibleDllFilenames)
             {
                 var loader = DllLoader.GetDllLoader(filename);
@@ -55,21 +54,11 @@
                 }
             }
 
+            // it there is no operational DllLoader-instance at this point, we get out of here (and leave this instance in a non-operational state)
             if (this.dllLoader == null)
             {
                 return;
             }
-
-            //string dllName = ImgDoc2ApiInterop.GetDllName();
-            ////dllName = "/mnt/d/dev/ZeissGitHub/imgdoc2/dotnet/native_dlls/libimgdoc2API.so";
-            //dllName = "./libimgdoc2API.so";
-            //this.dllLoader = DllLoader.GetDllLoader(dllName);
-            //this.dllLoader.Load();
-            ////this.dllHandle = this.TryLoadDll(dllName);
-            ////if (this.dllHandle == IntPtr.Zero)
-            ////{
-            ////    return;
-            ////}
 
             try
             {
@@ -81,9 +70,7 @@
             }
             catch (InvalidOperationException exception)
             {
-                //ImgDoc2ApiInterop.FreeLibrary(this.dllHandle);
                 this.dllLoadErrorMsg = exception.ToString();
-                //this.dllHandle = IntPtr.Zero;
                 this.dllLoader = null;
             }
         }
@@ -240,24 +227,4 @@
         private unsafe delegate int CreateOptionsSetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8);
 
     }
-
-    ///// <content>
-    ///// Declaration of kernel32-functions LoadLibrary/GetProcAddress et al.
-    ///// </content>
-    //public partial class ImgDoc2ApiInterop
-    //{
-    //    /// <content>
-    //    /// Declaration of kernel32-functions LoadLibrary/GetProcAddress et al.
-    //    /// </content>
-
-    //    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    //    private static extern IntPtr LoadLibrary(string dllToLoad);
-
-    //    [DllImport("kernel32", CharSet = CharSet.Ansi, SetLastError = true, EntryPoint = "GetProcAddress")]
-    //    private static extern IntPtr GetProcAddress(IntPtr handleModule, string procedureName);
-
-    //    [DllImport("kernel32.dll", SetLastError = true)]
-    //    [return: MarshalAs(UnmanagedType.Bool)]
-    //    private static extern bool FreeLibrary(IntPtr hModule);
-    //}
 }
