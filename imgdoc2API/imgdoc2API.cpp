@@ -141,3 +141,15 @@ ImgDoc2ErrorCode CreateOptions_GetFilename(HandleCreateOptions handle, char* fil
     *size = 1 + filename.length();
     return ImgDoc2_ErrorCode_OK;
 }
+
+ImgDoc2ErrorCode CreateOptions_GetUseSpatialIndex(HandleCreateOptions handle, bool* use_spatial_index, ImgDoc2ErrorInformation* error_information)
+{
+    const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    const bool b = object->GetUseSpatialIndex();
+    if (use_spatial_index != nullptr)
+    {
+        *use_spatial_index = b;
+    }
+
+    return ImgDoc2_ErrorCode_OK;
+}

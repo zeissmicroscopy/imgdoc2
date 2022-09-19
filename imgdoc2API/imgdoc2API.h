@@ -39,5 +39,9 @@ EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_AddIndexForDimension(HandleCreateOp
 /// \param          {HandleCreateOptions} handle Handle identifying an CreateOptions-object.
 /// \param [in,out] {char*} filename_utf8        If non-null, the buffer where the string will be placed.
 /// \param [in,out] {size_t*} size               On input, the size of the buffer pointed to by 'filename_utf8'; on output the number of bytes actually required.
+/// \param [out]    {ImgDoc2ErrorInformation*] error_information      If non-null, in case of an error, additional information describing the error are put here.
+///
 /// \returns {ImgDoc2ErrorCode} An errorcode indicating success or failure of the operation.
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetFilename(HandleCreateOptions handle, char* filename_utf8, size_t* size, ImgDoc2ErrorInformation* error_information);
+
+EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetUseSpatialIndex(HandleCreateOptions handle, bool* use_spatial_index, ImgDoc2ErrorInformation* error_information);

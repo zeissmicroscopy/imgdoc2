@@ -68,6 +68,8 @@
                 this.destroyOpenExistingOptions = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyOpenExistingOptions");
                 this.createOptionsSetFilename = this.GetProcAddressThrowIfNotFound<CreateOptionsSetFilenameDelegate>("CreateOptions_SetFilename");
                 this.createOptionsGetFilename = this.GetProcAddressThrowIfNotFound<CreateOptionsGetFilenameDelegate>("CreateOptions_GetFilename");
+                this.createOptionsGetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_GetUseSpatialIndexDelegate>("CreateOptions_GetUseSpatialIndex");
+                this.createOptionsSetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_SetUseSpatialIndexDelegate>("CreateOptions_SetUseSpatialIndex");
             }
             catch (InvalidOperationException exception)
             {
@@ -219,6 +221,41 @@
             var filename = Encoding.UTF8.GetString(buffer, 0, (int)(sizeOfBuffer.ToUInt32() - 1));
             return filename;
         }
+
+        public bool CreateOptionsGetUseSpatialIndex(IntPtr handleCreateOptions)
+        {
+            this.ThrowIfNotInitialized();
+            bool useSpatialIndex;
+            int returnCode;
+            unsafe
+            {
+                returnCode = this.createOptionsGetUseSpatialIndex(handleCreateOptions, &useSpatialIndex, null);
+            }
+
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                // TODO(Jbl) : stretch out error-handling
+                throw new Exception("Error from 'CreateOptionsGetFilename'.");
+            }
+
+            return useSpatialIndex;
+        }
+
+        public void CreateOptionsSetUseSpatialIndex(IntPtr handleCreateOptions, bool useSpatialIndex)
+        {
+            this.ThrowIfNotInitialized();
+            int returnCode;
+            unsafe
+            {
+                returnCode = this.createOptionsSetUseSpatialIndex(handleCreateOptions, useSpatialIndex, null);
+            }
+
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                // TODO(Jbl) : stretch out error-handling
+                throw new Exception("Error from 'CreateOptionsGetFilename'.");
+            }
+        }
     }
 
     /// <summary>   
@@ -238,6 +275,9 @@
 
         private readonly CreateOptionsSetFilenameDelegate createOptionsSetFilename;
         private readonly CreateOptionsGetFilenameDelegate createOptionsGetFilename;
+        private readonly CreateOptions_SetUseSpatialIndexDelegate createOptionsSetUseSpatialIndex;
+        private readonly CreateOptions_GetUseSpatialIndexDelegate createOptionsGetUseSpatialIndex;
+
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate IntPtr VoidAndReturnIntPtrDelegate();
@@ -250,6 +290,12 @@
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int CreateOptionsGetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8, IntPtr size, ImgDoc2ErrorInformation* errorInformation);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int CreateOptions_SetUseSpatialIndexDelegate(IntPtr handle, bool useSpatialIndex, ImgDoc2ErrorInformation* errorInformation);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int CreateOptions_GetUseSpatialIndexDelegate(IntPtr handle, bool* useSpatialIndex, ImgDoc2ErrorInformation* errorInformation);
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         struct ImgDoc2ErrorInformation

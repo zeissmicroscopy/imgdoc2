@@ -44,5 +44,17 @@
             Assert.Equal(s, filename);
             instance.DestroyCreateOptions(handle);
         }
+
+        [Fact]
+        public void SetUSeSpatialIndexAndGetItAndCompareResult()
+        {
+            var instance = ImgDoc2ApiInterop.Instance;
+            var handle = instance.CreateCreateOptions();
+            instance.CreateOptionsSetUseSpatialIndex(handle, true);
+            Assert.True(instance.CreateOptionsGetUseSpatialIndex(handle));
+            instance.CreateOptionsSetUseSpatialIndex(handle, false);
+            Assert.False(instance.CreateOptionsGetUseSpatialIndex(handle));
+            instance.DestroyCreateOptions(handle);
+        }
     }
 }
