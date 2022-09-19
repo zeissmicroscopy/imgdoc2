@@ -41,3 +41,5 @@ dotnet/ImgDoc2Playground_Framework/bin
 dotnet/ImgDoc2Playground_Framework/obj
 dotnet/ImgDoc2Playground_NetCore/bin
 dotnet/ImgDoc2Playground_NetCore/obj
+dotnet/ImgDoc2Net_Unittests/bin
+dotnet/ImgDoc2Net_Unittests/obj
