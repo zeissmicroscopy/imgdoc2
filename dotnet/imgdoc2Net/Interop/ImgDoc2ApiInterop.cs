@@ -67,6 +67,7 @@
                 this.createOpenExistingOptions = this.GetProcAddressThrowIfNotFound<VoidAndReturnIntPtrDelegate>("CreateOpenExistingOptions");
                 this.destroyOpenExistingOptions = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyOpenExistingOptions");
                 this.createOptionsSetFilename = this.GetProcAddressThrowIfNotFound<CreateOptionsSetFilenameDelegate>("CreateOptions_SetFilename");
+                this.createOptionsGetFilename = this.GetProcAddressThrowIfNotFound<CreateOptionsGetFilenameDelegate>("CreateOptions_GetFilename");
             }
             catch (InvalidOperationException exception)
             {
@@ -82,19 +83,6 @@
         /// The instance.
         /// </value>
         public static ImgDoc2ApiInterop Instance => ImgDoc2ApiInterop.ImgDoc2ApiInteropInstance.Value;
-
-        //private static string GetDllName()
-        //{
-        //    var cpuArchitecture = RuntimeInformation.ProcessArchitecture;
-        //    switch (cpuArchitecture)
-        //    {
-        //        case Architecture.X64:
-        //            return BaseDllName + ".dll";
-
-        //    }
-
-        //    return BaseDllName + ".dll";
-        //}
 
         private static string GetMangledName(string functionName)
         {
@@ -135,18 +123,6 @@
             return (T)Marshal.GetDelegateForFunctionPointer(addressOfFunctionToCall, typeof(T));
         }
 
-        //private IntPtr TryLoadDll(string dllName)
-        //{
-        //    IntPtr handle = ImgDoc2ApiInterop.LoadLibrary(dllName);
-        //    if (handle == IntPtr.Zero)
-        //    {
-        //        this.dllLoadErrorMsg = $"LoadLibrary failed, GetLastError() is {Marshal.GetLastWin32Error()}";
-        //        return IntPtr.Zero;
-        //    }
-
-        //    return handle;
-        //}
-
         private void ThrowIfNotInitialized()
         {
             if (this.dllLoader == null)
@@ -157,6 +133,7 @@
 
         private IEnumerable<string> GetFullyQualifiedDllPaths()
         {
+            // TODO(JBL): I'd like to have CPU-architecture-specific suffixes for the filenames ("x86", "x64", "arm32" etc.) and probably a "d" for debug-builds or so
             string pathOfExecutable = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             bool isLinux = Utilities.IsLinux();
 
@@ -166,7 +143,7 @@
             }
             else
             {
-                yield return Path.Combine(pathOfExecutable, BaseDllNameLinux+ ".so");
+                yield return Path.Combine(pathOfExecutable, BaseDllNameLinux + ".so");
             }
         }
     }
@@ -188,7 +165,7 @@
             this.destroyCreateOptions(handleCreateOptions);
         }
 
-        public unsafe void CreateOptionsSetFilename(IntPtr handleCreateOptions, string filename)
+        public void CreateOptionsSetFilename(IntPtr handleCreateOptions, string filename)
         {
             this.ThrowIfNotInitialized();
             if (filename == null)
@@ -197,10 +174,33 @@
             }
 
             byte[] bytesUtf8 = Encoding.UTF8.GetBytes(filename);
-            fixed (byte* pointerBytesUtf8 = &bytesUtf8[0])
+            unsafe
             {
-                this.createOptionsSetFilename(handleCreateOptions, new IntPtr(pointerBytesUtf8));
+                fixed (byte* pointerBytesUtf8 = &bytesUtf8[0])
+                {
+                    this.createOptionsSetFilename(handleCreateOptions, new IntPtr(pointerBytesUtf8));
+                }
             }
+        }
+
+        public string CreateOptionsGetFilename(IntPtr handleCreateOptions)
+        {
+            this.ThrowIfNotInitialized();
+
+            // TODO(JBL): we are abusing UIntPtr as an equivalent to size_t, c.f. https://stackoverflow.com/questions/32906774/what-is-equal-to-the-c-size-t-in-c-sharp
+            UIntPtr sizeOfBuffer = new UIntPtr(1024);
+            byte[] buffer = new byte[sizeOfBuffer.ToUInt32()];
+            unsafe
+            {
+                fixed (byte* pointerToBuffer = &buffer[0])
+                {
+                    // TODO(JBL): quite a lot, error-handling and adapting the buffersize if necessary
+                    int returnCode = this.createOptionsGetFilename(handleCreateOptions, new IntPtr(pointerToBuffer), new IntPtr(&sizeOfBuffer));
+                }
+            }
+
+            var filename = Encoding.UTF8.GetString(buffer, 0, (int)(sizeOfBuffer.ToUInt32() - 1));
+            return filename;
         }
     }
 
@@ -216,6 +216,7 @@
         private readonly IntPtrAndReturnVoidDelegate destroyOpenExistingOptions;
 
         private readonly CreateOptionsSetFilenameDelegate createOptionsSetFilename;
+        private readonly CreateOptionsGetFilenameDelegate createOptionsGetFilename;
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate IntPtr VoidAndReturnIntPtrDelegate();
@@ -225,6 +226,9 @@
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int CreateOptionsSetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int CreateOptionsGetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8, IntPtr size);
 
     }
 }

@@ -16,5 +16,5 @@ static constexpr ImgDoc2ErrorCode ImgDoc2_ErrorCode_UnspecifiedError = 50;
 
 struct ImgDoc2ErrorInformation
 {
-    
+    // TODO(JBL): idea is to return additional information about an error here
 };

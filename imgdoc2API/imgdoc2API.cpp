@@ -1,8 +1,10 @@
 #include <memory>
+#include <algorithm>
 #include <imgdoc2.h>
 #include "imgdoc2API.h"
 
 using namespace imgdoc2;
+using namespace std;
 
 template <typename t>
 struct SharedPtrWrapper
@@ -117,5 +119,25 @@ ImgDoc2ErrorCode CreateOptions_AddIndexForDimension(HandleCreateOptions handle, 
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
     object->AddIndexForDimension(dimension);
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode CreateOptions_GetFilename(HandleCreateOptions handle, char* filename_utf8, size_t* size)
+{
+    if (size == nullptr || *size < 1)
+    {
+        return ImgDoc2_ErrorCode_InvalidArgument;
+    }
+
+    const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+
+    const auto& filename = object->GetFilename();
+    if (filename_utf8 != nullptr)
+    {
+        memcpy(filename_utf8, filename.c_str(), min(*size, 1 + filename.length()));
+        filename_utf8[*size - 1] = '\0';
+    }
+
+    *size = 1 + filename.length();
     return ImgDoc2_ErrorCode_OK;
 }
