@@ -3,7 +3,11 @@
 #ifdef LIBIMGDOC2_EXPORTS
 #ifdef __GNUC__
 #define LIBIMGDOC2_API __attribute__ ((visibility ("default")))
-#define EXTERNAL_API(_returntype_)  extern "C"  _returntype_ __attribute__ ((visibility ("default"))) __attribute__((stdcall))
+#if defined(__i386__)
+ #define EXTERNAL_API(_returntype_)  extern "C"  _returntype_ __attribute__ ((visibility ("default"))) __attribute__((stdcall))
+#else
+ #define EXTERNAL_API(_returntype_)  extern "C"  _returntype_ __attribute__ ((visibility ("default"))) 
+#endif
 #else
 #define LIBIMGDOC2_API __declspec(dllexport)
 #define EXTERNAL_API(_returntype_)  extern "C"  _returntype_ LIBIMGDOC2_API  __stdcall 
