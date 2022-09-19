@@ -50,6 +50,7 @@ SqliteDbStatement::SqliteDbStatement(sqlite3_stmt* sql_statement)  :
     // -1 means: determine length (assuming it is a null-terminated string)
     // SQLITE_TRANSIENT means: make a copy of the string
     const int return_code = sqlite3_bind_text(this->sql_statement_, index, value, -1, SQLITE_TRANSIENT);
+    this->ThrowIfBindError(return_code, "sqlite3_bind_text");
 }
 
 /*virtual*/void SqliteDbStatement::BindBlob_Static(int index, const void* data, size_t size)
