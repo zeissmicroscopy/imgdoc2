@@ -178,7 +178,7 @@
             {
                 fixed (byte* pointerBytesUtf8 = &bytesUtf8[0])
                 {
-                    this.createOptionsSetFilename(handleCreateOptions, new IntPtr(pointerBytesUtf8));
+                    this.createOptionsSetFilename(handleCreateOptions, new IntPtr(pointerBytesUtf8), null);
                 }
             }
         }
@@ -187,16 +187,33 @@
         {
             this.ThrowIfNotInitialized();
 
+            const int initialLength = 1024;
+
             // TODO(JBL): we are abusing UIntPtr as an equivalent to size_t, c.f. https://stackoverflow.com/questions/32906774/what-is-equal-to-the-c-size-t-in-c-sharp
-            UIntPtr sizeOfBuffer = new UIntPtr(1024);
+            UIntPtr sizeOfBuffer = new UIntPtr(initialLength);
             byte[] buffer = new byte[sizeOfBuffer.ToUInt32()];
+            int returnCode;
             unsafe
             {
                 fixed (byte* pointerToBuffer = &buffer[0])
                 {
-                    // TODO(JBL): quite a lot, error-handling and adapting the buffersize if necessary
-                    int returnCode = this.createOptionsGetFilename(handleCreateOptions, new IntPtr(pointerToBuffer), new IntPtr(&sizeOfBuffer));
+                    returnCode = this.createOptionsGetFilename(handleCreateOptions, new IntPtr(pointerToBuffer), new IntPtr(&sizeOfBuffer), null);
                 }
+
+                if (returnCode == ImgDoc2_ErrorCode_OK && sizeOfBuffer.ToUInt32() > initialLength)
+                {
+                    Array.Resize(ref buffer, (int)sizeOfBuffer.ToUInt32());
+                    fixed (byte* pointerToBuffer = &buffer[0])
+                    {
+                        returnCode = this.createOptionsGetFilename(handleCreateOptions, new IntPtr(pointerToBuffer), new IntPtr(&sizeOfBuffer), null);
+                    }
+                }
+            }
+
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                // TODO(Jbl) : stretch out error-handling
+                throw new Exception("Error from 'CreateOptionsGetFilename'.");
             }
 
             var filename = Encoding.UTF8.GetString(buffer, 0, (int)(sizeOfBuffer.ToUInt32() - 1));
@@ -209,6 +226,10 @@
     /// </summary>
     public partial class ImgDoc2ApiInterop
     {
+        private const int ImgDoc2_ErrorCode_OK = 0;
+        private const int ImgDoc2_ErrorCode_InvalidArgument = 1;
+        private const int ImgDoc2_ErrorCode_UnspecifiedError = 50;
+
         private readonly VoidAndReturnIntPtrDelegate createCreateOptions;
         private readonly IntPtrAndReturnVoidDelegate destroyCreateOptions;
 
@@ -225,10 +246,15 @@
         private unsafe delegate int IntPtrAndReturnVoidDelegate(IntPtr handle);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int CreateOptionsSetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8);
+        private unsafe delegate int CreateOptionsSetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int CreateOptionsGetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8, IntPtr size);
+        private unsafe delegate int CreateOptionsGetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8, IntPtr size, ImgDoc2ErrorInformation* errorInformation);
 
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        struct ImgDoc2ErrorInformation
+        {
+
+        }
     }
 }

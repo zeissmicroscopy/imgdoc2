@@ -14,7 +14,9 @@ static constexpr ImgDoc2ErrorCode ImgDoc2_ErrorCode_InvalidArgument = 1;
 /// An unspecified error occurred.
 static constexpr ImgDoc2ErrorCode ImgDoc2_ErrorCode_UnspecifiedError = 50;
 
+#pragma pack(push, 4)
 struct ImgDoc2ErrorInformation
 {
     // TODO(JBL): idea is to return additional information about an error here
 };
+#pragma pack(pop)

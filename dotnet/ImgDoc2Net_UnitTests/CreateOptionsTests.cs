@@ -31,5 +31,18 @@
             Assert.Equal(s, Filename);
             instance.DestroyCreateOptions(handle);
         }
+
+        [Fact]
+        public void SetFilenameVeryLongTextAndGetItAndCompareResult()
+        {
+            string filename = string.Concat(Enumerable.Repeat("Testtext12", 1000));
+
+            var instance = ImgDoc2ApiInterop.Instance;
+            var handle = instance.CreateCreateOptions();
+            instance.CreateOptionsSetFilename(handle, filename);
+            string s = instance.CreateOptionsGetFilename(handle);
+            Assert.Equal(s, filename);
+            instance.DestroyCreateOptions(handle);
+        }
     }
 }

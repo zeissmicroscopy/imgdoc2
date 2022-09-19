@@ -94,35 +94,35 @@ void DestroyReader2d(HandleDocRead2D handle)
     delete object;
 }
 
-ImgDoc2ErrorCode CreateOptions_SetFilename(HandleCreateOptions handle, const char* filename_utf8)
+ImgDoc2ErrorCode CreateOptions_SetFilename(HandleCreateOptions handle, const char* filename_utf8, ImgDoc2ErrorInformation* error_information)
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
     object->SetFilename(filename_utf8);
     return ImgDoc2_ErrorCode_OK;
 }
 
-ImgDoc2ErrorCode CreateOptions_AddDimension(HandleCreateOptions handle, char dimension)
+ImgDoc2ErrorCode CreateOptions_AddDimension(HandleCreateOptions handle, char dimension, ImgDoc2ErrorInformation* error_information)
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
     object->AddDimension(dimension);
     return ImgDoc2_ErrorCode_OK;
 }
 
-ImgDoc2ErrorCode CreateOptions_SetUseSpatialIndex(HandleCreateOptions handle, bool use_spatial_index)
+ImgDoc2ErrorCode CreateOptions_SetUseSpatialIndex(HandleCreateOptions handle, bool use_spatial_index, ImgDoc2ErrorInformation* error_information)
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
     object->SetUseSpatialIndex(use_spatial_index);
     return ImgDoc2_ErrorCode_OK;
 }
 
-ImgDoc2ErrorCode CreateOptions_AddIndexForDimension(HandleCreateOptions handle, char dimension)
+ImgDoc2ErrorCode CreateOptions_AddIndexForDimension(HandleCreateOptions handle, char dimension, ImgDoc2ErrorInformation* error_information)
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
     object->AddIndexForDimension(dimension);
     return ImgDoc2_ErrorCode_OK;
 }
 
-ImgDoc2ErrorCode CreateOptions_GetFilename(HandleCreateOptions handle, char* filename_utf8, size_t* size)
+ImgDoc2ErrorCode CreateOptions_GetFilename(HandleCreateOptions handle, char* filename_utf8, size_t* size, ImgDoc2ErrorInformation* error_information)
 {
     if (size == nullptr || *size < 1)
     {
