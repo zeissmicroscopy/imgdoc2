@@ -1,6 +1,7 @@
 #include <imgdoc2.h>
 #include <string>
 #include <unordered_set>
+#include <sstream>
 
 using namespace std;
 using namespace imgdoc2;
@@ -43,11 +44,13 @@ public:
 
     void AddDimension(Dimension dim) override
     {
+        ThrowIfDimensionInvalid(dim);
         this->dimensions_.emplace(dim);
     }
 
     void AddIndexForDimension(Dimension dim) override
     {
+        ThrowIfDimensionInvalid(dim);
         this->dimensionsToIndex_.emplace(dim);
     }
 

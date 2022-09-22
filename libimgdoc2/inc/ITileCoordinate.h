@@ -21,13 +21,13 @@ namespace imgdoc2
         inline std::vector<imgdoc2::Dimension> GetDimensions() const
         {
             std::vector<imgdoc2::Dimension> vec;
-            this->EnumDimensions([&](imgdoc2::Dimension d)->bool {vec.push_back(d); return true; });
+            this->EnumDimensions([&vec](imgdoc2::Dimension d)->bool {vec.push_back(d); return true; });
             return vec;
         }
 
         inline static bool IsValidDimension(imgdoc2::Dimension d)
         {
-            return ((d >= 'a' && d <= 'z') || (d >= 'A' && d <= 'Z'));
+            return imgdoc2::IsDimensionValid(d);
         }
     };
 

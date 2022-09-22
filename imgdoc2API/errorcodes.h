@@ -17,6 +17,9 @@ static constexpr ImgDoc2ErrorCode ImgDoc2_ErrorCode_UnspecifiedError = 50;
 #pragma pack(push, 4)
 struct ImgDoc2ErrorInformation
 {
+    static constexpr size_t kMaxMessageLength = 200;
+
     // TODO(JBL): idea is to return additional information about an error here
+    char message[kMaxMessageLength];
 };
 #pragma pack(pop)

@@ -18,9 +18,9 @@ namespace imgdoc2
         virtual void SetFilename(const char* filename) = 0;
 
         /// Adds a dimension.
-        /// TODO: 
-        /// - What happens if it already exists?   
-        /// - should we limit "valid dimensions" (e.g. to a-z A-Z)?
+        /// Adding the same dimension multiple times is valid, no error is reported in this case.
+        /// If the argument 'dim' is not a valid dimension identifier, an "invalid_argument" exception
+        /// will be thrown.
         /// \param  {imgdoc2::Dimension} dim The dimension to add.
         virtual void AddDimension(imgdoc2::Dimension dim) = 0;
 
@@ -29,6 +29,9 @@ namespace imgdoc2
         virtual void SetUseSpatialIndex(bool use_spatial_index) = 0;
 
         /// Adds a dimension for which an index is to be created.
+        /// Adding the same dimension multiple times is valid, no error is reported in this case.
+        /// If the argument 'dim' is not a valid dimension identifier, an "invalid_argument" exception
+        /// will be thrown.
         /// \param  {imgdoc2::Dimension} dim The dimension for which to create an index.
         virtual void AddIndexForDimension(imgdoc2::Dimension dim) = 0;
 

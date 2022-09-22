@@ -5,7 +5,7 @@
     using System.Text;
     using ImgDoc2Net.Interop;
 
-    public class CreateOptions : IDisposable
+    public partial class CreateOptions : IDisposable
     {
         private IntPtr objectHandle;
 
@@ -26,29 +26,61 @@
             set { ImgDoc2ApiInterop.Instance.CreateOptionsSetUseSpatialIndex(this.objectHandle, value); }
         }
 
-        private void ReleaseUnmanagedResources()
+        public void AddDimension(Dimension dimension)
         {
-            ImgDoc2ApiInterop.Instance.DestroyCreateOptions(this.objectHandle);
-            this.objectHandle = IntPtr.Zero;
+            ImgDoc2ApiInterop.Instance.CreateOptionsAddDimension(this.objectHandle, dimension);
+        }
+
+        public void AddDimensions(IEnumerable<Dimension> dimensions)
+        {
+            foreach (var d in dimensions)
+            {
+                this.AddDimension(d);
+            }
+        }
+        public void AddIndexedDimension(Dimension dimension)
+        {
+            ImgDoc2ApiInterop.Instance.CreateOptionsAddIndexedDimension(this.objectHandle, dimension);
+        }
+
+        public void AddIndexedDimensions(IEnumerable<Dimension> dimensions)
+        {
+            foreach (var d in dimensions)
+            {
+                this.AddIndexedDimension(d);
+            }
+        }
+
+        ~CreateOptions()
+        {
+            this.Dispose(false);
+        }
+    }
+
+
+    /// <content>
+    /// This part contains the implementation of IDisposable. 
+    /// </content>
+    public partial class CreateOptions
+    {
+        public void Dispose()
+        {
+            this.Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)
         {
-            ReleaseUnmanagedResources();
+            this.ReleaseUnmanagedResources();
             if (disposing)
             {
             }
         }
 
-        public void Dispose()
+        private void ReleaseUnmanagedResources()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        ~CreateOptions()
-        {
-            Dispose(false);
+            ImgDoc2ApiInterop.Instance.DestroyCreateOptions(this.objectHandle);
+            this.objectHandle = IntPtr.Zero;
         }
     }
 }

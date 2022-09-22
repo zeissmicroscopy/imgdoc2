@@ -70,6 +70,11 @@
                 this.createOptionsGetFilename = this.GetProcAddressThrowIfNotFound<CreateOptionsGetFilenameDelegate>("CreateOptions_GetFilename");
                 this.createOptionsGetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_GetUseSpatialIndexDelegate>("CreateOptions_GetUseSpatialIndex");
                 this.createOptionsSetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_SetUseSpatialIndexDelegate>("CreateOptions_SetUseSpatialIndex");
+
+                this.createOptionsAddDimension = this.GetProcAddressThrowIfNotFound<CreateOptions_AddDimensionDelegate>("CreateOptions_AddDimension");
+                this.createOptionsAddIndexedDimension = this.GetProcAddressThrowIfNotFound<CreateOptions_AddDimensionDelegate>("CreateOptions_AddIndexedDimension");
+                this.createOptionsGetDimensions = this.GetProcAddressThrowIfNotFound<CreateOptions_GetDimensionsDelegate>("CreateOptions_GetDimensions");
+                this.createOptionsGetIndexedDimensions = this.GetProcAddressThrowIfNotFound<CreateOptions_GetDimensionsDelegate>("CreateOptions_GetIndexedDimensions");
             }
             catch (InvalidOperationException exception)
             {
@@ -256,6 +261,109 @@
                 throw new Exception("Error from 'CreateOptionsGetFilename'.");
             }
         }
+
+        public void CreateOptionsAddDimension(IntPtr handleCreateOptions, Dimension dimension)
+        {
+            this.ThrowIfNotInitialized();
+            int returnCode;
+            ImgDoc2ErrorInformation errorInformation;
+            unsafe
+            {
+                returnCode = this.createOptionsAddDimension(handleCreateOptions, (byte)dimension.Id, &errorInformation);
+                HandleErrorCases(returnCode, ref errorInformation);
+            }
+
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                // TODO(Jbl) : stretch out error-handling
+                throw new Exception("Error from 'CreateOptionsGetFilename'.");
+            }
+        }
+
+        public void CreateOptionsAddIndexedDimension(IntPtr handleCreateOptions, Dimension dimension)
+        {
+            this.ThrowIfNotInitialized();
+            int returnCode;
+            unsafe
+            {
+                returnCode = this.createOptionsAddIndexedDimension(handleCreateOptions, (byte)dimension.Id, null);
+            }
+
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                // TODO(Jbl) : stretch out error-handling
+                throw new Exception("Error from 'CreateOptionsGetFilename'.");
+            }
+        }
+
+        public Dimension[] CreateOptionsGetDimensions(IntPtr handleCreateOptions)
+        {
+            this.ThrowIfNotInitialized();
+
+            int returnCode;
+
+            // for sake of simplicity, we only call once into native code with a buffer which is large enough for
+            //  all conceivable cases
+            const int BufferSize = 64;
+            unsafe
+            {
+                byte* dimensionsBuffer = stackalloc byte[BufferSize];
+                UIntPtr sizeOfBuffer = new UIntPtr(BufferSize);  // TODO(Jbl):  we are abusing UIntPtr as an equivalent to size_t, c.f. https://stackoverflow.com/questions/32906774/what-is-equal-to-the-c-size-t-in-c-sharp
+                returnCode = this.createOptionsGetDimensions(handleCreateOptions, dimensionsBuffer, new IntPtr(&sizeOfBuffer), null);
+                if (sizeOfBuffer.ToUInt32() > BufferSize)
+                {
+                    throw new NotImplementedException("Buffersize exceeded, may want to implement variable buffersizes.");
+                }
+
+                Dimension[] dimensions = new Dimension[sizeOfBuffer.ToUInt32()];
+                for (int i = 0; i < sizeOfBuffer.ToUInt32(); i++)
+                {
+                    dimensions[i] = new Dimension((char)dimensionsBuffer[i]);
+                }
+
+                return dimensions;
+            }
+        }
+
+        public Dimension[] CreateOptionsGetIndexedDimensions(IntPtr handleCreateOptions)
+        {
+            this.ThrowIfNotInitialized();
+
+            int returnCode;
+
+            // for sake of simplicity, we only call once into native code with a buffer which is large enough for
+            //  all conceivable cases
+            const int BufferSize = 64;
+            unsafe
+            {
+                byte* dimensionsBuffer = stackalloc byte[BufferSize];
+                UIntPtr sizeOfBuffer = new UIntPtr(BufferSize);  // TODO(Jbl):  we are abusing UIntPtr as an equivalent to size_t, c.f. https://stackoverflow.com/questions/32906774/what-is-equal-to-the-c-size-t-in-c-sharp
+                returnCode = this.createOptionsGetIndexedDimensions(handleCreateOptions, dimensionsBuffer, new IntPtr(&sizeOfBuffer), null);
+                if (sizeOfBuffer.ToUInt32() > BufferSize)
+                {
+                    throw new NotImplementedException("Buffersize exceeded, may want to implement variable buffersizes.");
+                }
+
+                Dimension[] dimensions = new Dimension[sizeOfBuffer.ToUInt32()];
+                for (int i = 0; i < sizeOfBuffer.ToUInt32(); i++)
+                {
+                    dimensions[i] = new Dimension((char)dimensionsBuffer[i]);
+                }
+
+                return dimensions;
+            }
+        }
+    }
+
+    public partial class ImgDoc2ApiInterop
+    {
+        private void HandleErrorCases(int returnCode, ref ImgDoc2ErrorInformation errorInformation)
+        {
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                //string errorMessage = Encoding.UTF8.GetString(errorInformation.message);
+            }
+        }
     }
 
     /// <summary>   
@@ -277,6 +385,10 @@
         private readonly CreateOptionsGetFilenameDelegate createOptionsGetFilename;
         private readonly CreateOptions_SetUseSpatialIndexDelegate createOptionsSetUseSpatialIndex;
         private readonly CreateOptions_GetUseSpatialIndexDelegate createOptionsGetUseSpatialIndex;
+        private readonly CreateOptions_AddDimensionDelegate createOptionsAddDimension;
+        private readonly CreateOptions_AddDimensionDelegate createOptionsAddIndexedDimension;
+        private readonly CreateOptions_GetDimensionsDelegate createOptionsGetDimensions;
+        private readonly CreateOptions_GetDimensionsDelegate createOptionsGetIndexedDimensions;
 
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -297,10 +409,17 @@
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int CreateOptions_GetUseSpatialIndexDelegate(IntPtr handle, bool* useSpatialIndex, ImgDoc2ErrorInformation* errorInformation);
 
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        struct ImgDoc2ErrorInformation
-        {
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int CreateOptions_AddDimensionDelegate(IntPtr handle, byte dim, ImgDoc2ErrorInformation* errorInformation);
 
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int CreateOptions_GetDimensionsDelegate(IntPtr handle, byte* dim, IntPtr dimElementCount, ImgDoc2ErrorInformation* errorInformation);
+
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        unsafe struct ImgDoc2ErrorInformation
+        {
+            public fixed byte message[200];
         }
     }
 }

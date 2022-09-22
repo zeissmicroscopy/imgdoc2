@@ -13,6 +13,29 @@ struct SharedPtrWrapper
     std::shared_ptr<t> shared_ptr_;
 };
 
+static void FillOutErrorInformation(const exception& exception, ImgDoc2ErrorInformation* error_information)
+{
+    if (error_information != nullptr)
+    {
+        auto error_message = exception.what();
+        
+        // ensure that the string is always null-terminated, even in the case of truncation
+        strncpy_s(error_information->message, ImgDoc2ErrorInformation::kMaxMessageLength, error_message, ImgDoc2ErrorInformation::kMaxMessageLength - 1);
+    }
+}
+
+ImgDoc2ErrorCode MapExceptionToReturnValue(const exception& exception)
+{
+    if (typeid(exception) == typeid(invalid_argument))
+    {
+        return ImgDoc2_ErrorCode_InvalidArgument;
+    }
+
+    // TODO(Jbl) - add additional exception types
+
+    return ImgDoc2_ErrorCode_UnspecifiedError;
+}
+
 HandleCreateOptions CreateCreateOptions()
 {
     return reinterpret_cast<HandleCreateOptions>(ClassFactory::CreateCreateOptionsPtr());
@@ -101,13 +124,6 @@ ImgDoc2ErrorCode CreateOptions_SetFilename(HandleCreateOptions handle, const cha
     return ImgDoc2_ErrorCode_OK;
 }
 
-ImgDoc2ErrorCode CreateOptions_AddDimension(HandleCreateOptions handle, char dimension, ImgDoc2ErrorInformation* error_information)
-{
-    const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
-    object->AddDimension(dimension);
-    return ImgDoc2_ErrorCode_OK;
-}
-
 ImgDoc2ErrorCode CreateOptions_SetUseSpatialIndex(HandleCreateOptions handle, bool use_spatial_index, ImgDoc2ErrorInformation* error_information)
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
@@ -151,5 +167,87 @@ ImgDoc2ErrorCode CreateOptions_GetUseSpatialIndex(HandleCreateOptions handle, bo
         *use_spatial_index = b;
     }
 
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode CreateOptions_AddDimension(HandleCreateOptions handle, std::uint8_t  dimension, ImgDoc2ErrorInformation* error_information)
+{
+    const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    try
+    {
+        object->AddDimension(dimension);
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
+
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode CreateOptions_AddIndexedDimension(HandleCreateOptions handle, std::uint8_t  dimension, ImgDoc2ErrorInformation* error_information)
+{
+    const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    try
+    {
+        object->AddIndexForDimension(dimension);
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
+
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode CreateOptions_GetDimensions(HandleCreateOptions handle, std::uint8_t* dimensions, size_t* elements_count, ImgDoc2ErrorInformation* error_information)
+{
+    if (elements_count == nullptr)
+    {
+        return ImgDoc2_ErrorCode_InvalidArgument;
+    }
+
+    auto* const object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    const auto dimensions_from_object = object->GetDimensions();
+
+    size_t count = 0;
+    for (auto d : dimensions_from_object)
+    {
+        if (count >= *elements_count)
+        {
+            break;
+        }
+
+        dimensions[count++] = d;
+    }
+
+    *elements_count = dimensions_from_object.size();
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode CreateOptions_GetIndexedDimensions(HandleCreateOptions handle, std::uint8_t* dimensions, size_t* elements_count, ImgDoc2ErrorInformation* error_information)
+{
+    if (elements_count == nullptr)
+    {
+        return ImgDoc2_ErrorCode_InvalidArgument;
+    }
+
+    auto* const object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    const auto dimensions_from_object = object->GetIndexedDimensions();
+
+    size_t count = 0;
+    for (auto d : dimensions_from_object)
+    {
+        if (count >= *elements_count)
+        {
+            break;
+        }
+
+        dimensions[count++] = d;
+    }
+
+    *elements_count = dimensions_from_object.size();
     return ImgDoc2_ErrorCode_OK;
 }

@@ -20,6 +20,7 @@ TEST(DbDiscoveryTest, CreateAndDiscover2D)
         auto create_options = ClassFactory::CreateCreateOptionsUp();
         create_options->AddDimension('a');
         create_options->AddDimension('b');
+        create_options->AddDimension('b');
         create_options->AddDimension('c');
         create_options->AddIndexForDimension('a');
         create_options->AddIndexForDimension('c');

@@ -28,7 +28,7 @@ namespace imgdoc2
             return true;
         }
 
-        bool SetData(size_t offset, size_t size, const void* data)
+        bool SetData(size_t offset, size_t size, const void* data) override
         {
             if (!this->is_reserved_)
             {

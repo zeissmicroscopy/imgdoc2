@@ -2,12 +2,28 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <sstream>
 
 namespace imgdoc2
 {
     typedef long long dbIndex;
 
     typedef char Dimension;
+
+    inline bool IsDimensionValid(Dimension dimension)
+    {
+        return ((dimension >= 'a' && dimension <= 'z') || (dimension >= 'A' && dimension <= 'Z'));
+    }
+
+    inline bool ThrowIfDimensionInvalid(Dimension dimension)
+    {
+        if (!imgdoc2::IsDimensionValid(dimension))
+        {
+            std::ostringstream ss;
+            ss << "The character '" << dimension << "' is not a valid dimension specifier.";
+            throw std::invalid_argument(ss.str());
+        }
+    }
 
     template <typename t>
     struct PointT
