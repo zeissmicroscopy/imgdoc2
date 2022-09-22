@@ -109,5 +109,25 @@
             Assert.True(dimensions != null && dimensions.Length == 0);
             instance.DestroyCreateOptions(handle);
         }
+
+        [Fact]
+        public void AddInvalidDimensionIdentifierAndExpectException()
+        {
+            var instance = ImgDoc2ApiInterop.Instance;
+            var handle = instance.CreateCreateOptions();
+            Dimension dimension = new Dimension();
+            Assert.Throws<ImgDoc2Exception>(() => instance.CreateOptionsAddDimension(handle, dimension));
+            instance.DestroyCreateOptions(handle);
+        }
+
+        [Fact]
+        public void AddIndexedInvalidDimensionIdentifierAndExpectException()
+        {
+            var instance = ImgDoc2ApiInterop.Instance;
+            var handle = instance.CreateCreateOptions();
+            Dimension dimension = new Dimension();
+            Assert.Throws<ImgDoc2Exception>(() => instance.CreateOptionsAddIndexedDimension(handle, dimension));
+            instance.DestroyCreateOptions(handle);
+        }
     }
 }

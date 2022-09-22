@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <cmath>
+#include <iomanip>
 #include <sstream>
 
 namespace imgdoc2
@@ -15,12 +16,12 @@ namespace imgdoc2
         return ((dimension >= 'a' && dimension <= 'z') || (dimension >= 'A' && dimension <= 'Z'));
     }
 
-    inline bool ThrowIfDimensionInvalid(Dimension dimension)
+    inline void ThrowIfDimensionInvalid(Dimension dimension)
     {
         if (!imgdoc2::IsDimensionValid(dimension))
         {
             std::ostringstream ss;
-            ss << "The character '" << dimension << "' is not a valid dimension specifier.";
+            ss << "The character '" << (isprint(dimension) ? dimension : '?') << "'=0x" << std::setfill('0') << std::setw(2) << std::hex << static_cast<int>(dimension) << " is not a valid dimension specifier.";
             throw std::invalid_argument(ss.str());
         }
     }

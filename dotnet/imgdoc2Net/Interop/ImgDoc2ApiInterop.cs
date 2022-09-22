@@ -270,30 +270,22 @@
             unsafe
             {
                 returnCode = this.createOptionsAddDimension(handleCreateOptions, (byte)dimension.Id, &errorInformation);
-                HandleErrorCases(returnCode, ref errorInformation);
             }
 
-            if (returnCode != ImgDoc2_ErrorCode_OK)
-            {
-                // TODO(Jbl) : stretch out error-handling
-                throw new Exception("Error from 'CreateOptionsGetFilename'.");
-            }
+            this.HandleErrorCases(returnCode, in errorInformation);
         }
 
         public void CreateOptionsAddIndexedDimension(IntPtr handleCreateOptions, Dimension dimension)
         {
             this.ThrowIfNotInitialized();
             int returnCode;
+            ImgDoc2ErrorInformation errorInformation;
             unsafe
             {
                 returnCode = this.createOptionsAddIndexedDimension(handleCreateOptions, (byte)dimension.Id, null);
             }
 
-            if (returnCode != ImgDoc2_ErrorCode_OK)
-            {
-                // TODO(Jbl) : stretch out error-handling
-                throw new Exception("Error from 'CreateOptionsGetFilename'.");
-            }
+            this.HandleErrorCases(returnCode, in errorInformation);
         }
 
         public Dimension[] CreateOptionsGetDimensions(IntPtr handleCreateOptions)
@@ -357,11 +349,37 @@
 
     public partial class ImgDoc2ApiInterop
     {
-        private void HandleErrorCases(int returnCode, ref ImgDoc2ErrorInformation errorInformation)
+        /// <summary> Handles error cases - i.e. if the imgdoc2-API-return-code is indicating an error, we retrieve the
+        ///           error-information from the interop-error-information struct and turn it into an appropriate
+        ///           .NET exception.</summary>
+        /// <param name="returnCode">       The imgdoc2-API-return code.</param>
+        /// <param name="errorInformation"> Interop-error-information struct describing the error.</param>
+        private void HandleErrorCases(int returnCode, in ImgDoc2ErrorInformation errorInformation)
         {
             if (returnCode != ImgDoc2_ErrorCode_OK)
             {
-                //string errorMessage = Encoding.UTF8.GetString(errorInformation.message);
+                string errorMessage;
+                unsafe
+                {
+                    fixed (byte* messagePointerUtf8 = errorInformation.message)
+                    {
+                        // we need to determine the length of the string (i.e. the position of the terminating '\0') in order
+                        // to use 'Encoding.UTF8.GetString' for proper operation. .NET 7 seems to have 'Marshal.PtrToStringUtf8' which
+                        // would do the job better.
+                        int lengthOfUtf8String;
+                        for (lengthOfUtf8String = 0; lengthOfUtf8String < ImgDoc2ErrorInformationMessageMaxLength; ++lengthOfUtf8String)
+                        {
+                            if (messagePointerUtf8[lengthOfUtf8String] == 0)
+                            {
+                                break;
+                            }
+                        }
+
+                        errorMessage = Encoding.UTF8.GetString(messagePointerUtf8, lengthOfUtf8String);
+                    }
+                }
+
+                throw new ImgDoc2Exception(returnCode, errorMessage);
             }
         }
     }
@@ -415,11 +433,12 @@
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int CreateOptions_GetDimensionsDelegate(IntPtr handle, byte* dim, IntPtr dimElementCount, ImgDoc2ErrorInformation* errorInformation);
 
+        private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         unsafe struct ImgDoc2ErrorInformation
         {
-            public fixed byte message[200];
+            public fixed byte message[ImgDoc2ErrorInformationMessageMaxLength];
         }
     }
 }
