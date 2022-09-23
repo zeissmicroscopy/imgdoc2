@@ -3,15 +3,21 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using ImgDoc2Net.Interfaces;
     using ImgDoc2Net.Interop;
 
-    public partial class CreateOptions : IDisposable
+    public partial class CreateOptions : ICreateOptions
     {
         private IntPtr objectHandle;
 
         public CreateOptions()
         {
             this.objectHandle = ImgDoc2ApiInterop.Instance.CreateCreateOptions();
+        }
+
+        public IntPtr Handle
+        {
+            get { return this.objectHandle; }
         }
 
         public string Filename
@@ -56,7 +62,6 @@
             this.Dispose(false);
         }
     }
-
 
     /// <content>
     /// This part contains the implementation of IDisposable. 
