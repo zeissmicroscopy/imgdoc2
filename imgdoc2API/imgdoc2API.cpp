@@ -20,7 +20,8 @@ static void FillOutErrorInformation(const exception& exception, ImgDoc2ErrorInfo
         auto error_message = exception.what();
         
         // ensure that the string is always null-terminated, even in the case of truncation
-        strncpy_s(error_information->message, ImgDoc2ErrorInformation::kMaxMessageLength, error_message, ImgDoc2ErrorInformation::kMaxMessageLength - 1);
+        strncpy(error_information->message, error_message, ImgDoc2ErrorInformation::kMaxMessageLength - 1);
+        error_information->message[ImgDoc2ErrorInformation::kMaxMessageLength - 1] = '\0';
     }
 }
 
