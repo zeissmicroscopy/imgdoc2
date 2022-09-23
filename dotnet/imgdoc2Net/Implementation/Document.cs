@@ -1,14 +1,18 @@
-﻿namespace ImgDoc2Net
+﻿
+namespace ImgDoc2Net
 {
+    using ImgDoc2Net.Implementation;
     using ImgDoc2Net.Interfaces;
     using ImgDoc2Net.Interop;
     using System;
-    using System.Collections.Generic;
-    using System.Text;
 
     public partial class Document : IDocument
     {
         private IntPtr documentHandle;
+
+        private Document()
+        {
+        }
 
         private Document(CreateOptions createOptions)
         {
@@ -17,7 +21,13 @@
 
         public IRead2d Get2dReader()
         {
-            throw new NotImplementedException();
+            var readerHandle = ImgDoc2ApiInterop.Instance.DocumentGetReader2d(this.documentHandle);
+            if (readerHandle != IntPtr.Zero)
+            {
+                return new Read2d(readerHandle);
+            }
+
+            return null;
         }
     }
 
@@ -44,7 +54,7 @@
                     // TODO: dispose managed state (managed objects)
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
+                ImgDoc2ApiInterop.Instance.DestroyDocument(this.documentHandle);
                 // TODO: set large fields to null
                 this.disposedValue = true;
             }

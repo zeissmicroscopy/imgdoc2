@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace ImgDoc2Net.Interop
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
     internal class Utilities
     {
         /// <summary>

@@ -13,8 +13,9 @@
     public class CreateDocumentTests
     {
         [Fact]
-        public void CreateNewDocumentAndCheckIfItIsOperational()
+        public void CreateNewDocumentAndCheckIfItIsOperationalAtInteropLevel()
         {
+            // this test is operating on "interop"-level
             var instance = ImgDoc2ApiInterop.Instance;
             var createOptionsHandle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(createOptionsHandle, ":memory:");
@@ -28,13 +29,23 @@
         }
 
         [Fact]
-        public void CreateNewDocumentWithInvalidCreateOptionsAndExpectException()
+        public void CreateNewDocumentWithInvalidCreateOptionsAndExpectExceptionAtInteropLevel()
         {
+            // this test is operating on "interop"-level
             var instance = ImgDoc2ApiInterop.Instance;
             var createOptionsHandle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(createOptionsHandle, "/../invalid:XXXXXX:");
             Assert.Throws<ImgDoc2Exception>(() => instance.CreateNewDocument(createOptionsHandle));
             instance.DestroyCreateOptions(createOptionsHandle);
+        }
+
+        [Fact]
+        public void CreateNewDocumentAndCheckIfItIsOperational()
+        {
+            using var createOptions = new CreateOptions() {Filename = ":memory:"};
+            using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+            using var reader2d = document.Get2dReader();
+            Assert.NotNull(reader2d);
         }
     }
 }

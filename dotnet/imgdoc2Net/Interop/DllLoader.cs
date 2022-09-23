@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace ImgDoc2Net.Interop
 {
+    using System;
+
     internal abstract class DllLoader 
     {
         private string filename;

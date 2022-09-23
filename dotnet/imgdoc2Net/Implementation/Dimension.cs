@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace ImgDoc2Net
 {
+    using System;
+
     public struct Dimension
     {
         public Dimension(char c)

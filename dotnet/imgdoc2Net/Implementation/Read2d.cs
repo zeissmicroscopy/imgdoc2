@@ -1,14 +1,17 @@
-﻿using ImgDoc2Net.Interfaces;
-using ImgDoc2Net.Interop;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
+﻿
 namespace ImgDoc2Net.Implementation
 {
+    using ImgDoc2Net.Interfaces;
+    using ImgDoc2Net.Interop;
+    using System;
+
     internal partial class Read2d : IRead2d
     {
         private IntPtr reader2dObjectHandle;
+
+        private Read2d()
+        {
+        }
 
         public Read2d(IntPtr handle)
         {
