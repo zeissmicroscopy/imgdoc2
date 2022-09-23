@@ -19,6 +19,12 @@ using namespace imgdoc2;
     if (return_value != SQLITE_OK)
     {
         // TODO(JBL): error handling might be more involved here, c.f. https://www.sqlite.org/c3ref/open.html
+        if (database != nullptr)
+        {
+            // documentation states that even in case of an error, a database-connection object may be returned, which should be destroyed here
+            sqlite3_close(database);
+        }
+
         throw database_exception("Error from 'sqlite3_open_v2'", return_value);
     }
 
@@ -27,7 +33,7 @@ using namespace imgdoc2;
 
 /*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteOpenExistingDatabase(const char* filename, bool readonly)
 {
-    sqlite3* database;
+    sqlite3* database = nullptr;
     int return_value = sqlite3_open_v2(
         filename,
         &database,
@@ -37,6 +43,12 @@ using namespace imgdoc2;
     if (return_value != SQLITE_OK)
     {
         // TODO(JBL): error handling might be more involved here, c.f. https://www.sqlite.org/c3ref/open.html
+        if (database != nullptr)
+        {
+            // documentation states that even in case of an error, a database-connection object may be returned, which should be destroyed here
+            sqlite3_close(database);
+        }
+
         throw database_exception("Error from 'sqlite3_open_v2'", return_value);
     }
 
