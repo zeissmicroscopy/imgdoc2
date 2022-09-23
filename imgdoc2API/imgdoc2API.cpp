@@ -65,9 +65,20 @@ ImgDoc2ErrorCode CreateNewDocument(HandleCreateOptions create_options, HandleDoc
         return ImgDoc2_ErrorCode_InvalidArgument;
     }
 
-    auto imgdoc2 = ClassFactory::CreateNew(reinterpret_cast<ICreateOptions*>(create_options));  // NOLINT(performance-no-int-to-ptr)
+    shared_ptr<imgdoc2::IDoc> imgdoc2;
+    try
+    {
+        imgdoc2 = ClassFactory::CreateNew(reinterpret_cast<ICreateOptions*>(create_options));  // NOLINT(performance-no-int-to-ptr)
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
+
     auto shared_imgdoc_wrappping_object = new SharedPtrWrapper<IDoc>{ imgdoc2 };
     *document = reinterpret_cast<HandleDoc>(shared_imgdoc_wrappping_object);
+    int count = imgdoc2.use_count();
     return ImgDoc2_ErrorCode_OK;
 }
 
@@ -97,7 +108,9 @@ ImgDoc2ErrorCode IDoc_GetReader2d(HandleDoc handle_document, HandleDocRead2D* re
         return ImgDoc2_ErrorCode_InvalidArgument;
     }
 
+    int count = reinterpret_cast<SharedPtrWrapper<IDoc>*>(handle_document)->shared_ptr_.use_count();
     auto spReader2d = reinterpret_cast<SharedPtrWrapper<IDoc>*>(handle_document)->shared_ptr_->GetReader2d();   // NOLINT(performance-no-int-to-ptr)
+    count = reinterpret_cast<SharedPtrWrapper<IDoc>*>(handle_document)->shared_ptr_.use_count();
     if (spReader2d)
     {
         auto shared_reader2d_wrappping_object = new SharedPtrWrapper<IDocRead2d>{ spReader2d };

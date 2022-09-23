@@ -75,6 +75,12 @@
                 this.createOptionsAddIndexedDimension = this.GetProcAddressThrowIfNotFound<CreateOptions_AddDimensionDelegate>("CreateOptions_AddIndexedDimension");
                 this.createOptionsGetDimensions = this.GetProcAddressThrowIfNotFound<CreateOptions_GetDimensionsDelegate>("CreateOptions_GetDimensions");
                 this.createOptionsGetIndexedDimensions = this.GetProcAddressThrowIfNotFound<CreateOptions_GetDimensionsDelegate>("CreateOptions_GetIndexedDimensions");
+
+                this.createNewDocument = this.GetProcAddressThrowIfNotFound<CreateNewDocumentDelegate>("CreateNewDocument");
+                this.destroyDocument = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyDocument");
+
+                this.documentGetReader2d = this.GetProcAddressThrowIfNotFound<IDoc_GetObjectDelegate>("IDoc_GetReader2d");
+                this.destroyReader2d = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyReader2d");
             }
             catch (InvalidOperationException exception)
             {
@@ -345,6 +351,51 @@
                 return dimensions;
             }
         }
+
+        public IntPtr CreateNewDocument(IntPtr handleCreateOptions)
+        {
+            this.ThrowIfNotInitialized();
+
+            int returnCode;
+            IntPtr documentHandle;
+            ImgDoc2ErrorInformation errorInformation;
+            unsafe
+            {
+                returnCode = this.createNewDocument(handleCreateOptions, &documentHandle, &errorInformation);
+            }
+
+            this.HandleErrorCases(returnCode, in errorInformation);
+            return documentHandle;
+        }
+
+        public void DestroyDocument(IntPtr handleDocument)
+        {
+            this.ThrowIfNotInitialized();
+            this.destroyDocument(handleDocument);
+        }
+
+        public IntPtr DocumentGetReader2d(IntPtr handleDocumnet)
+        {
+            this.ThrowIfNotInitialized();
+
+            int returnCode;
+            IntPtr readerdHandle;
+            ImgDoc2ErrorInformation errorInformation;
+            unsafe
+            {
+                returnCode = this.documentGetReader2d(handleDocumnet, &readerdHandle, &errorInformation);
+            }
+
+            this.HandleErrorCases(returnCode, in errorInformation);
+            return readerdHandle;
+        }
+
+        public void DestroyReader2d(IntPtr handleReader)
+        {
+            this.ThrowIfNotInitialized();
+            this.destroyReader2d(handleReader);
+        }
+
     }
 
     public partial class ImgDoc2ApiInterop
@@ -408,6 +459,12 @@
         private readonly CreateOptions_GetDimensionsDelegate createOptionsGetDimensions;
         private readonly CreateOptions_GetDimensionsDelegate createOptionsGetIndexedDimensions;
 
+        private readonly CreateNewDocumentDelegate createNewDocument;
+        private readonly IntPtrAndReturnVoidDelegate destroyDocument;
+
+        private readonly IDoc_GetObjectDelegate documentGetReader2d;
+        private readonly IntPtrAndReturnVoidDelegate destroyReader2d;
+
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate IntPtr VoidAndReturnIntPtrDelegate();
@@ -432,6 +489,17 @@
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int CreateOptions_GetDimensionsDelegate(IntPtr handle, byte* dim, IntPtr dimElementCount, ImgDoc2ErrorInformation* errorInformation);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int CreateNewDocumentDelegate(IntPtr handleCreateOptions, IntPtr* documentHandle, ImgDoc2ErrorInformation* errorInformation);
+
+        /// <summary>   Delegate used for the GetReader/GetWriter-methods of IDocument. </summary>
+        /// <param name="documentHandle" type="IntPtr">                     Handle of the document. </param>
+        /// <param name="reader2dHandle" type="IntPtr*">                    [out] If non-null, handle of the reader-2D-oject will be put here. </param>
+        /// <param name="errorInformation" type="ImgDoc2ErrorInformation*"> [in,out] If non-null, information describing an error. </param>
+        /// <returns type="int">    An integer indicating success of failure of the operation. </returns>
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int IDoc_GetObjectDelegate(IntPtr documentHandle, IntPtr* reader2dHandle, ImgDoc2ErrorInformation* errorInformation);
 
         private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 
