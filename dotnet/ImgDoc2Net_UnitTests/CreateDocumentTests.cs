@@ -32,7 +32,7 @@
         {
             var instance = ImgDoc2ApiInterop.Instance;
             var createOptionsHandle = instance.CreateCreateOptions();
-            instance.CreateOptionsSetFilename(createOptionsHandle, "invalid:XXXXXX:");
+            instance.CreateOptionsSetFilename(createOptionsHandle, "../invalid:XXXXXX:");
             Assert.Throws<ImgDoc2Exception>(() => instance.CreateNewDocument(createOptionsHandle));
             instance.DestroyCreateOptions(createOptionsHandle);
         }
