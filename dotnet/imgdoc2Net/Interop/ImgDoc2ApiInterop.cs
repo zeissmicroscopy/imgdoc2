@@ -1,11 +1,16 @@
 ﻿namespace ImgDoc2Net.Interop
 {
+    using ImgDoc2Net.Interfaces;
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;
 
+    /// <summary>   
+    /// This class contains "the lowest level interop interface". 
+    /// </summary>
     public partial class ImgDoc2ApiInterop
     {
         private const string BaseDllNameWindows = @"imgdoc2API";
@@ -81,6 +86,10 @@
 
                 this.documentGetReader2d = this.GetProcAddressThrowIfNotFound<IDoc_GetObjectDelegate>("IDoc_GetReader2d");
                 this.destroyReader2d = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyReader2d");
+                this.documentGetWriter2d = this.GetProcAddressThrowIfNotFound<IDoc_GetObjectDelegate>("IDoc_GetWriter2d");
+                this.destroyWriter2d = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyWriter2d");
+
+                this.idocwrite2dAddTile = this.GetProcAddressThrowIfNotFound<IDocWrite2d_AddTileDelegate>("IDocWrite2d_AddTile");
             }
             catch (InvalidOperationException exception)
             {
@@ -396,6 +405,43 @@
             this.destroyReader2d(handleReader);
         }
 
+        public IntPtr DocumentGetWriter2d(IntPtr handleDocumnet)
+        {
+            this.ThrowIfNotInitialized();
+
+            int returnCode;
+            IntPtr writerHandle;
+            ImgDoc2ErrorInformation errorInformation;
+            unsafe
+            {
+                returnCode = this.documentGetWriter2d(handleDocumnet, &writerHandle, &errorInformation);
+            }
+
+            this.HandleErrorCases(returnCode, in errorInformation);
+            return writerHandle;
+        }
+
+        public void DestroyWriter2d(IntPtr handleWriter)
+        {
+            this.ThrowIfNotInitialized();
+            this.destroyWriter2d(handleWriter);
+        }
+
+        public void Reader2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate)
+        {
+            byte[] tileCoordinateInterop = ConvertToTileCoordinateInterop(coordinate);
+
+            int returnCode;
+            ImgDoc2ErrorInformation errorInformation;
+
+            unsafe
+            {
+                fixed (byte* pointerTileCoordinateInterop = &tileCoordinateInterop[0])
+                {
+                    returnCode = this.idocwrite2dAddTile(write2dHandle, new IntPtr(pointerTileCoordinateInterop), &errorInformation);
+                }
+            }
+        }
     }
 
     public partial class ImgDoc2ApiInterop
@@ -464,6 +510,10 @@
 
         private readonly IDoc_GetObjectDelegate documentGetReader2d;
         private readonly IntPtrAndReturnVoidDelegate destroyReader2d;
+        private readonly IDoc_GetObjectDelegate documentGetWriter2d;
+        private readonly IntPtrAndReturnVoidDelegate destroyWriter2d;
+
+        private readonly IDocWrite2d_AddTileDelegate idocwrite2dAddTile;
 
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -501,12 +551,87 @@
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDoc_GetObjectDelegate(IntPtr documentHandle, IntPtr* reader2dHandle, ImgDoc2ErrorInformation* errorInformation);
 
+        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, ImgDoc2ErrorInformation* errorInformation);
+
         private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         unsafe struct ImgDoc2ErrorInformation
         {
             public fixed byte message[ImgDoc2ErrorInformationMessageMaxLength];
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        unsafe struct DimensionAndValueInterop
+        {
+            byte dimension;
+            int value;
+        };
+
+        /// <summary>   
+        /// This struct is used for transfering "tile-coordinate-information". The actual memory layout is that
+        /// there is an array of "DimensionAndValueInterop" structs (so, no only one as in the definition below).
+        /// There are as many "DimensionAndValueInterop"-structs in memory (contiguos) as the property "number_of_elements"
+        /// is specifying.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        unsafe struct TileCoordinateInterop
+        {
+            public int number_of_elements;
+
+            /// <summary>   
+            /// Here we have as many "DimensionAndValueInterop" structs directly following as "number_of_elements" is specifying.
+            /// </summary>
+            public DimensionAndValueInterop values;
+        }
+    }
+
+    /// <summary>   
+    /// This part contains the declaration of the delegates and native structs. 
+    /// </summary>
+    public partial class ImgDoc2ApiInterop
+    {
+        /// <summary>   
+        /// Converts a tileCoordinate to a blitable datastructure.
+        /// </summary>
+        /// <param name="tileCoordinate" type="ITileCoordinate">    The tile coordinate. </param>
+        /// <returns type="byte[]"> A byte array containing the tile coordinate information as a flat and blitable datastructure (following the "TileCoordinateInterop" struct layout). </returns>
+        static private byte[] ConvertToTileCoordinateInterop(ITileCoordinate tileCoordinate)
+        {
+            int numberOfElements = tileCoordinate.EnumCoordinates().Count();
+            if (numberOfElements == 0)
+            {
+                using (var stream = new MemoryStream(4))
+                {
+                    using (var writer = new BinaryWriter(stream))
+                    {
+                        writer.Write(0);
+                    }
+
+                    return stream.ToArray();
+                }
+            }
+
+            // calculate the required size
+            int size = numberOfElements * Marshal.SizeOf<DimensionAndValueInterop>() + Marshal.SizeOf<TileCoordinateInterop>();
+
+            using (var stream = new MemoryStream(size))
+            {
+                using (var writer = new BinaryWriter(stream))
+                {
+                    writer.Write(numberOfElements);
+                    foreach (var item in tileCoordinate.EnumCoordinates())
+                    {
+                        writer.Write((byte)item.Item1.Id);
+                        writer.Write((byte)0);
+                        writer.Write((byte)0);
+                        writer.Write((byte)0);
+                        writer.Write(item.Item2);
+                    }
+                }
+
+                return stream.ToArray();
+            }
         }
     }
 }

@@ -6,8 +6,8 @@ namespace imgdoc2
 {
     struct TileBaseInfo
     {
-        int pixelWidth;
-        int pixelHeight;
+        std::uint32_t pixelWidth;
+        std::uint32_t pixelHeight;
         std::uint8_t pixelType;
     };
 }

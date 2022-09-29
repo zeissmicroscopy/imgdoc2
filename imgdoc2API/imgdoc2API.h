@@ -3,6 +3,9 @@
 #include <cstdint>
 #include "importexport.h"
 #include "errorcodes.h"
+#include "tilecoordinateinterop.h"
+#include "logicalpositioninfointerop.h"
+#include "queryresultinterop.h"
 
 typedef std::intptr_t ObjectHandle;
 
@@ -12,6 +15,7 @@ typedef ObjectHandle HandleCreateOptions;
 typedef ObjectHandle HandleOpenExistingOptions;
 typedef ObjectHandle HandleDoc;
 typedef ObjectHandle HandleDocRead2D;
+typedef ObjectHandle HandleDocWrite2D;
 
 // factory methods
 EXTERNAL_API(HandleCreateOptions) CreateCreateOptions();
@@ -24,8 +28,11 @@ EXTERNAL_API(ImgDoc2ErrorCode) CreateNewDocument(HandleCreateOptions create_opti
 EXTERNAL_API(ImgDoc2ErrorCode) OpenExistingDocument(HandleOpenExistingOptions open_existing_options, HandleDoc* document, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(void) DestroyDocument(HandleDoc handle);
 
-EXTERNAL_API(ImgDoc2ErrorCode) IDoc_GetReader2d(HandleDoc handle_document, HandleDocRead2D* document, ImgDoc2ErrorInformation* error_information);
+EXTERNAL_API(ImgDoc2ErrorCode) IDoc_GetReader2d(HandleDoc handle_document, HandleDocRead2D* document_read2d, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(void) DestroyReader2d(HandleDocRead2D handle);
+
+EXTERNAL_API(ImgDoc2ErrorCode) IDoc_GetWriter2d(HandleDoc handle_document, HandleDocWrite2D* document_write2d, ImgDoc2ErrorInformation* error_information);
+EXTERNAL_API(void) DestroyWriter2d(HandleDocWrite2D handle);
 
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_SetFilename(HandleCreateOptions handle, const char* filename_utf8, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_SetUseSpatialIndex(HandleCreateOptions handle, bool use_spatial_index, ImgDoc2ErrorInformation* error_information);
@@ -49,3 +56,10 @@ EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_AddDimension(HandleCreateOptions ha
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_AddIndexedDimension(HandleCreateOptions handle, std::uint8_t dimension, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetDimensions(HandleCreateOptions handle, std::uint8_t* dimension, size_t* elements_count, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetIndexedDimensions(HandleCreateOptions handle, std::uint8_t* dimension, size_t* elements_count,ImgDoc2ErrorInformation* error_information);
+
+EXTERNAL_API(ImgDoc2ErrorCode) IDocWrite2d_AddTile(
+    HandleDocWrite2D handle,
+    const TileCoordinateInterop* tile_coordinate_interop,
+    ImgDoc2ErrorInformation* error_information);
+
+EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_Query(HandleDocRead2D handle, const void* dim_coordinate_query_clause_interop, QueryResultInterop* result, ImgDoc2ErrorInformation* error_information);

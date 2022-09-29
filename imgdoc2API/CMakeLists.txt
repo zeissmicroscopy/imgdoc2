@@ -1,6 +1,12 @@
 add_library(imgdoc2API  SHARED
                 imgdoc2API.h
-                imgdoc2API.cpp "importexport.h" "errorcodes.h")
+                imgdoc2API.cpp 
+                "importexport.h" 
+                "errorcodes.h" 
+                "tilecoordinateinterop.h" 
+                "logicalpositioninfointerop.h" 
+                "utilities.h"
+                "utilities.cpp" "queryresultinterop.h")
 
 target_link_libraries(imgdoc2API PRIVATE libimgdoc2)
 

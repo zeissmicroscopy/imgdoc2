@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <imgdoc2.h>
 #include "imgdoc2API.h"
+#include "utilities.h"
 
 using namespace imgdoc2;
 using namespace std;
@@ -125,6 +126,33 @@ ImgDoc2ErrorCode IDoc_GetReader2d(HandleDoc handle_document, HandleDocRead2D* re
 void DestroyReader2d(HandleDocRead2D handle)
 {
     const auto object = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    delete object;
+}
+
+ImgDoc2ErrorCode IDoc_GetWriter2d(HandleDoc handle_document, HandleDocWrite2D* document_writer2d, ImgDoc2ErrorInformation* error_information)
+{
+    if (document_writer2d == nullptr)
+    {
+        return ImgDoc2_ErrorCode_InvalidArgument;
+    }
+
+    auto spWriter2d = reinterpret_cast<SharedPtrWrapper<IDoc>*>(handle_document)->shared_ptr_->GetWriter2d();   // NOLINT(performance-no-int-to-ptr)
+    if (spWriter2d)
+    {
+        auto shared_writer2d_wrappping_object = new SharedPtrWrapper<IDocWrite2d>{ spWriter2d };
+        *document_writer2d = reinterpret_cast<HandleDocWrite2D>(shared_writer2d_wrappping_object);
+    }
+    else
+    {
+        *document_writer2d = kInvalidOjectHandle;
+    }
+
+    return ImgDoc2_ErrorCode_OK;
+}
+
+void DestroyWriter2d(HandleDocWrite2D handle)
+{
+    const auto object = reinterpret_cast<SharedPtrWrapper<IDocWrite2d>*>(handle);  // NOLINT(performance-no-int-to-ptr)
     delete object;
 }
 
@@ -260,5 +288,18 @@ ImgDoc2ErrorCode CreateOptions_GetIndexedDimensions(HandleCreateOptions handle, 
     }
 
     *elements_count = dimensions_from_object.size();
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode IDocWrite2d_AddTile(HandleDocWrite2D handle, const TileCoordinateInterop* tile_coordinate_interop, ImgDoc2ErrorInformation* error_information)
+{
+    auto tile_coordinate = Utilities::ConvertToTileCoordinate(tile_coordinate_interop);
+
+    return ImgDoc2_ErrorCode_OK;
+}
+
+
+ImgDoc2ErrorCode IDocRead2d_Query(HandleDocRead2D handle, const void* dim_coordinate_query_clause_interop, QueryResultInterop* result, ImgDoc2ErrorInformation* error_information)
+{
     return ImgDoc2_ErrorCode_OK;
 }

@@ -3,6 +3,7 @@ namespace ImgDoc2Net
 {
     using System;
 
+    /// <summary>   This structure is representing a 'dimension' in imgdoc2. </summary>
     public struct Dimension
     {
         public Dimension(char c)
