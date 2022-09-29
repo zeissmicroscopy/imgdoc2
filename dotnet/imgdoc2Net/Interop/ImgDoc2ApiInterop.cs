@@ -427,9 +427,10 @@
             this.destroyWriter2d(handleWriter);
         }
 
-        public void Reader2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate)
+        public void Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition)
         {
             byte[] tileCoordinateInterop = ConvertToTileCoordinateInterop(coordinate);
+            LogicalPositionInfoInterop logicalPositionInfoInterop = new LogicalPositionInfoInterop(in logicalPosition);
 
             int returnCode;
             ImgDoc2ErrorInformation errorInformation;
@@ -438,7 +439,7 @@
             {
                 fixed (byte* pointerTileCoordinateInterop = &tileCoordinateInterop[0])
                 {
-                    returnCode = this.idocwrite2dAddTile(write2dHandle, new IntPtr(pointerTileCoordinateInterop), &errorInformation);
+                    returnCode = this.idocwrite2dAddTile(write2dHandle, new IntPtr(pointerTileCoordinateInterop), &logicalPositionInfoInterop, &errorInformation);
                 }
             }
         }
@@ -551,7 +552,7 @@
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDoc_GetObjectDelegate(IntPtr documentHandle, IntPtr* reader2dHandle, ImgDoc2ErrorInformation* errorInformation);
 
-        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, ImgDoc2ErrorInformation* errorInformation);
 
         private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 
@@ -583,6 +584,25 @@
             /// Here we have as many "DimensionAndValueInterop" structs directly following as "number_of_elements" is specifying.
             /// </summary>
             public DimensionAndValueInterop values;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        unsafe struct LogicalPositionInfoInterop
+        {
+            public LogicalPositionInfoInterop(in LogicalPosition logicalPosition)
+            {
+                this.PositionX = logicalPosition.PositionX;
+                this.PositionY = logicalPosition.PositionY;
+                this.Width = logicalPosition.Width;
+                this.Height = logicalPosition.Height;
+                this.PyramidLevel = logicalPosition.PyramidLevel;
+            }
+
+            public double PositionX;
+            public double PositionY;
+            public double Width;
+            public double Height;
+            public int PyramidLevel;
         }
     }
 

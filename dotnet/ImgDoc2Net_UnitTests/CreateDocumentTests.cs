@@ -1,4 +1,6 @@
-﻿namespace ImgDoc2Net_UnitTests
+﻿using ImgDoc2Net.Interfaces;
+
+namespace ImgDoc2Net_UnitTests
 {
     using ImgDoc2Net;
     using ImgDoc2Net.Implementation;
@@ -56,19 +58,23 @@
             var instance = ImgDoc2ApiInterop.Instance;
             var createOptionsHandle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(createOptionsHandle, ":memory:");
+            instance.CreateOptionsAddDimension(createOptionsHandle,new Dimension('A'));
+            instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('Z'));
             var documentHandle = instance.CreateNewDocument(createOptionsHandle);
             Assert.NotEqual(documentHandle, IntPtr.Zero);
             var reader2dHandle = instance.DocumentGetWriter2d(documentHandle);
             Assert.NotEqual(reader2dHandle, IntPtr.Zero);
 
             TileCoordinate coordinate = new TileCoordinate(
-                new[] 
-                { 
+                new[]
+                {
                     Tuple.Create(new Dimension('A'), 1) ,
                     Tuple.Create(new Dimension('Z'), 2)
                 });
 
-            instance.Reader2dAddTile(reader2dHandle, coordinate);
+            LogicalPosition logicalPosition = new LogicalPosition()
+            { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
+            instance.Writer2dAddTile(reader2dHandle, coordinate, in logicalPosition);
 
             instance.DestroyCreateOptions(createOptionsHandle);
             instance.DestroyDocument(documentHandle);

@@ -291,9 +291,35 @@ ImgDoc2ErrorCode CreateOptions_GetIndexedDimensions(HandleCreateOptions handle, 
     return ImgDoc2_ErrorCode_OK;
 }
 
-ImgDoc2ErrorCode IDocWrite2d_AddTile(HandleDocWrite2D handle, const TileCoordinateInterop* tile_coordinate_interop, ImgDoc2ErrorInformation* error_information)
+ImgDoc2ErrorCode IDocWrite2d_AddTile(HandleDocWrite2D handle, const TileCoordinateInterop* tile_coordinate_interop, LogicalPositionInfoInterop* logical_position_info_interop, ImgDoc2ErrorInformation* error_information)
 {
+    if (tile_coordinate_interop == nullptr)
+    {
+        return ImgDoc2_ErrorCode_InvalidArgument;
+    }
+
+    if (logical_position_info_interop == nullptr)
+    {
+        return ImgDoc2_ErrorCode_InvalidArgument;
+    }
+
     auto tile_coordinate = Utilities::ConvertToTileCoordinate(tile_coordinate_interop);
+    auto logical_position_info = Utilities::ConvertLogicalPositionInfoInteropToImgdoc2(*logical_position_info_interop);
+
+    TileBaseInfo tile_info;
+    tile_info.pixelWidth = 100;
+    tile_info.pixelHeight = 101;
+    tile_info.pixelType = 0;
+
+    auto writer2d = reinterpret_cast<SharedPtrWrapper<IDocWrite2d>*>(handle)->shared_ptr_;
+    writer2d->AddTile(
+        &tile_coordinate,
+        &logical_position_info,
+        &tile_info,
+        DataTypes::ZERO,
+        TileDataStorageType::BlobInDatabase,
+        nullptr);
+
 
     return ImgDoc2_ErrorCode_OK;
 }
@@ -301,5 +327,7 @@ ImgDoc2ErrorCode IDocWrite2d_AddTile(HandleDocWrite2D handle, const TileCoordina
 
 ImgDoc2ErrorCode IDocRead2d_Query(HandleDocRead2D handle, const void* dim_coordinate_query_clause_interop, QueryResultInterop* result, ImgDoc2ErrorInformation* error_information)
 {
+    auto reader2d = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle)->shared_ptr_;
+    //reader2d->Query()
     return ImgDoc2_ErrorCode_OK;
 }

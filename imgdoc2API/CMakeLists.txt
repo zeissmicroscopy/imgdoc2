@@ -6,7 +6,9 @@ add_library(imgdoc2API  SHARED
                 "tilecoordinateinterop.h" 
                 "logicalpositioninfointerop.h" 
                 "utilities.h"
-                "utilities.cpp" "queryresultinterop.h")
+                "utilities.cpp" 
+                "queryresultinterop.h" 
+                "dimcoordinatequeryclauseinterop.h")
 
 target_link_libraries(imgdoc2API PRIVATE libimgdoc2)
 

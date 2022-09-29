@@ -6,6 +6,7 @@
 #include "tilecoordinateinterop.h"
 #include "logicalpositioninfointerop.h"
 #include "queryresultinterop.h"
+#include "dimcoordinatequeryclauseinterop.h"
 
 typedef std::intptr_t ObjectHandle;
 
@@ -58,8 +59,13 @@ EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetDimensions(HandleCreateOptions h
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetIndexedDimensions(HandleCreateOptions handle, std::uint8_t* dimension, size_t* elements_count,ImgDoc2ErrorInformation* error_information);
 
 EXTERNAL_API(ImgDoc2ErrorCode) IDocWrite2d_AddTile(
-    HandleDocWrite2D handle,
-    const TileCoordinateInterop* tile_coordinate_interop,
+    HandleDocWrite2D handle, 
+    const TileCoordinateInterop* tile_coordinate_interop, 
+    LogicalPositionInfoInterop* logical_position_info_interop, 
     ImgDoc2ErrorInformation* error_information);
 
-EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_Query(HandleDocRead2D handle, const void* dim_coordinate_query_clause_interop, QueryResultInterop* result, ImgDoc2ErrorInformation* error_information);
+EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_Query(
+    HandleDocRead2D handle, 
+    const void* dim_coordinate_query_clause_interop, 
+    QueryResultInterop* result, 
+    ImgDoc2ErrorInformation* error_information);
