@@ -325,9 +325,29 @@ ImgDoc2ErrorCode IDocWrite2d_AddTile(HandleDocWrite2D handle, const TileCoordina
 }
 
 
-ImgDoc2ErrorCode IDocRead2d_Query(HandleDocRead2D handle, const void* dim_coordinate_query_clause_interop, QueryResultInterop* result, ImgDoc2ErrorInformation* error_information)
+ImgDoc2ErrorCode IDocRead2d_Query(HandleDocRead2D handle, const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop, QueryResultInterop* result, ImgDoc2ErrorInformation* error_information)
 {
     auto reader2d = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle)->shared_ptr_;
-    //reader2d->Query()
+    
+    auto dimension_coordinate_query_clause = Utilities::ConvertDimensionQueryRangeClauseInteropToImgdoc2(dim_coordinate_query_clause_interop);
+
+    uint32_t results_retrieved_count = 0;
+    result->more_results_available = 0;
+    reader2d->Query(&dimension_coordinate_query_clause, nullptr,
+        [result,&results_retrieved_count](imgdoc2::dbIndex index)->bool
+        {
+            if (results_retrieved_count < result->element_count)
+            {
+                result->indices[results_retrieved_count] = index;
+                ++results_retrieved_count;
+                return true;
+            }
+
+            result->more_results_available = 1;
+            return false;
+        });
+
+    result->element_count = results_retrieved_count;
+
     return ImgDoc2_ErrorCode_OK;
 }

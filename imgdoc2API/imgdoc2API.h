@@ -66,6 +66,6 @@ EXTERNAL_API(ImgDoc2ErrorCode) IDocWrite2d_AddTile(
 
 EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_Query(
     HandleDocRead2D handle, 
-    const void* dim_coordinate_query_clause_interop, 
+    const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop,
     QueryResultInterop* result, 
     ImgDoc2ErrorInformation* error_information);

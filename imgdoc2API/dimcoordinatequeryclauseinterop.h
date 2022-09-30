@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgdoc2.h>
+
 #pragma pack(push, 1)
 struct DimensionQueryRangeClauseInterop
 {
@@ -11,6 +13,6 @@ struct DimensionQueryRangeClauseInterop
 struct DimensionQueryClauseInterop
 {
     int element_count;
-    DimensionQueryRangeClauseInterop query_range_clause;
+    DimensionQueryRangeClauseInterop query_range_clause[];
 };
 #pragma pack(pop)

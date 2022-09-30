@@ -90,6 +90,7 @@
                 this.destroyWriter2d = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyWriter2d");
 
                 this.idocwrite2dAddTile = this.GetProcAddressThrowIfNotFound<IDocWrite2d_AddTileDelegate>("IDocWrite2d_AddTile");
+                this.idocread2dQuery = this.GetProcAddressThrowIfNotFound<IDocRead2d_QueryDelegate>("IDocRead2d_Query");
             }
             catch (InvalidOperationException exception)
             {
@@ -443,6 +444,46 @@
                 }
             }
         }
+
+        public QueryResult Reader2dQuery(IntPtr read2dHandle, IDimensionQueryClause clause)
+        {
+            byte[] dimensionQueryClauseInterop = ConvertToTileCoordinateInterop(clause);
+            byte[] queryResultInterop = CreateQueryResultInterop(50);
+
+            int returnCode;
+            ImgDoc2ErrorInformation errorInformation;
+
+            unsafe
+            {
+                fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
+                fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
+                {
+                    returnCode = this.idocread2dQuery(read2dHandle, new IntPtr(pointerDimensionQueryClauseInterop), new IntPtr(pointerQueryResultInterop), &errorInformation);
+                }
+            }
+
+            QueryResult result = ConvertToQueryResult(queryResultInterop);
+            return result;
+        }
+    }
+
+    public partial class ImgDoc2ApiInterop
+    {
+        public class QueryResult
+        {
+            public QueryResult() : this(0)
+            { }
+
+            public QueryResult(int reservedSize)
+            {
+                this.Keys = new List<long>(reservedSize);
+            }
+
+            public bool ResultComplete { get; set; }
+
+            public List<long> Keys { get; }
+        }
+
     }
 
     public partial class ImgDoc2ApiInterop
@@ -515,6 +556,7 @@
         private readonly IntPtrAndReturnVoidDelegate destroyWriter2d;
 
         private readonly IDocWrite2d_AddTileDelegate idocwrite2dAddTile;
+        private readonly IDocRead2d_QueryDelegate idocread2dQuery;
 
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -553,6 +595,8 @@
         private unsafe delegate int IDoc_GetObjectDelegate(IntPtr documentHandle, IntPtr* reader2dHandle, ImgDoc2ErrorInformation* errorInformation);
 
         private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, ImgDoc2ErrorInformation* errorInformation);
+
+        private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
 
         private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 
@@ -652,6 +696,71 @@
 
                 return stream.ToArray();
             }
+        }
+
+        static private byte[] ConvertToTileCoordinateInterop(IDimensionQueryClause dimensionQueryClause)
+        {
+            var conditions = dimensionQueryClause.EnumConditions().ToList();
+            using (var stream = new MemoryStream())
+            {
+                using (var writer = new BinaryWriter(stream))
+                {
+                    writer.Write(conditions.Count);
+
+                    foreach (var condition in conditions)
+                    {
+                        writer.Write((byte)condition.Dimension.Id);
+                        writer.Write(condition.RangeStart);
+                        writer.Write(condition.RangeEnd);
+                    }
+                }
+
+                return stream.ToArray();
+            }
+        }
+
+        /// <summary>   
+        /// Creates a blob containing an empty "query-result" with space for the specified amount of elements.
+        /// This is corresponding to the native struct "QueryResultInterop".
+        /// </summary>
+        /// <param name="elementCount" type="int">  Reserve space for the specified number of elements. </param>
+        /// <returns type="byte[]"> A blob representing the native structure "QueryResultInterop". </returns>
+        static private byte[] CreateQueryResultInterop(int elementCount)
+        {
+            /*
+             The native struct is:
+            struct QueryResultInterop
+            {
+                std::uint32_t element_count;
+                std::uint32_t more_results_available;
+                imgdoc2::dbIndex indices[];
+            };
+            */
+
+            int size = 8 + 8 * elementCount;
+            using (var stream = new MemoryStream(new byte[size]))
+            {
+                using (var writer = new BinaryWriter(stream))
+                {
+                    writer.Write(elementCount);
+                }
+
+                return stream.ToArray();
+            }
+        }
+
+        static private QueryResult ConvertToQueryResult(byte[] queryResultInterop)
+        {
+            int count = BitConverter.ToInt32(queryResultInterop, 0);
+            QueryResult queryResult = new QueryResult(count);
+            queryResult.ResultComplete = BitConverter.ToInt32(queryResultInterop, 4) == 0 ? true : false;
+
+            for (int i = 0; i < count; ++i)
+            {
+                queryResult.Keys.Add(BitConverter.ToInt64(queryResultInterop, 8 + i * 8));
+            }
+
+            return queryResult;
         }
     }
 }

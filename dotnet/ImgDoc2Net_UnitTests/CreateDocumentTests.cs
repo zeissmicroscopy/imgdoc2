@@ -62,8 +62,8 @@ namespace ImgDoc2Net_UnitTests
             instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('Z'));
             var documentHandle = instance.CreateNewDocument(createOptionsHandle);
             Assert.NotEqual(documentHandle, IntPtr.Zero);
-            var reader2dHandle = instance.DocumentGetWriter2d(documentHandle);
-            Assert.NotEqual(reader2dHandle, IntPtr.Zero);
+            var writer2dHandle = instance.DocumentGetWriter2d(documentHandle);
+            Assert.NotEqual(writer2dHandle, IntPtr.Zero);
 
             TileCoordinate coordinate = new TileCoordinate(
                 new[]
@@ -74,11 +74,21 @@ namespace ImgDoc2Net_UnitTests
 
             LogicalPosition logicalPosition = new LogicalPosition()
             { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
-            instance.Writer2dAddTile(reader2dHandle, coordinate, in logicalPosition);
+            instance.Writer2dAddTile(writer2dHandle, coordinate, in logicalPosition);
+
+            var dimensionQueryClause = new DimensionQueryClause();
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = -1, RangeEnd = 2 });
+
+            var reader2dHandle = instance.DocumentGetReader2d(documentHandle);
+            var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+
+            Assert.True(queryResult.ResultComplete);
+            Assert.True(queryResult.Keys.Count == 1);
 
             instance.DestroyCreateOptions(createOptionsHandle);
             instance.DestroyDocument(documentHandle);
-            instance.DestroyWriter2d(reader2dHandle);
+            instance.DestroyReader2d(reader2dHandle);
+            instance.DestroyWriter2d(writer2dHandle);
         }
     }
 }
