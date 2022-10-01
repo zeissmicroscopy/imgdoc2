@@ -41,3 +41,12 @@ using namespace imgdoc2;
 
   return query_clause;
 }
+
+/*static*/imgdoc2::TileBaseInfo Utilities::ConvertTileBaseInfoInteropToImgdoc2(const TileBaseInfoInterop& tile_base_info_interop)
+{
+    TileBaseInfo tile_base_info;
+    tile_base_info.pixelWidth = tile_base_info_interop.pixelWidth;
+    tile_base_info.pixelHeight = tile_base_info_interop.pixelHeight;
+    tile_base_info.pixelType= tile_base_info_interop.pixelType;
+    return tile_base_info;
+}

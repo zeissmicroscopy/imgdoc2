@@ -52,19 +52,20 @@ namespace ImgDoc2Net_UnitTests
         }
 
         [Fact]
-        public void CreateNewDocumentAndAddATileAtInteropLevel()
+        public void CreateNewDocumentAndAddATileAndRunQueriesAtInteropLevel()
         {
             // this test is operating on "interop"-level
             var instance = ImgDoc2ApiInterop.Instance;
             var createOptionsHandle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(createOptionsHandle, ":memory:");
-            instance.CreateOptionsAddDimension(createOptionsHandle,new Dimension('A'));
+            instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('A'));
             instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('Z'));
             var documentHandle = instance.CreateNewDocument(createOptionsHandle);
             Assert.NotEqual(documentHandle, IntPtr.Zero);
             var writer2dHandle = instance.DocumentGetWriter2d(documentHandle);
             Assert.NotEqual(writer2dHandle, IntPtr.Zero);
 
+            // add one tile with coordinate "A1Z2"
             TileCoordinate coordinate = new TileCoordinate(
                 new[]
                 {
@@ -72,18 +73,89 @@ namespace ImgDoc2Net_UnitTests
                     Tuple.Create(new Dimension('Z'), 2)
                 });
 
-            LogicalPosition logicalPosition = new LogicalPosition()
-            { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
-            instance.Writer2dAddTile(writer2dHandle, coordinate, in logicalPosition);
+            LogicalPosition logicalPosition = new LogicalPosition() { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
+            Tile2dBaseInfo tile2dBaseInfo = new Tile2dBaseInfo(1, 2, PixelType.Gray8);
+            instance.Writer2dAddTile(writer2dHandle, coordinate, in logicalPosition, tile2dBaseInfo);
 
+            // now, query for "tiles with A=1" (where there is obviously one)
             var dimensionQueryClause = new DimensionQueryClause();
-            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = -1, RangeEnd = 2 });
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
 
             var reader2dHandle = instance.DocumentGetReader2d(documentHandle);
             var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
 
             Assert.True(queryResult.ResultComplete);
-            Assert.True(queryResult.Keys.Count == 1);
+            Assert.True(queryResult.Keys.Count == 1, "We expect to find one tile as result of the query.");
+
+            // now, query for "tiles with A=5" (where there is obviously none)
+            dimensionQueryClause = new DimensionQueryClause();
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 5, RangeEnd = 5 });
+
+            reader2dHandle = instance.DocumentGetReader2d(documentHandle);
+            queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+            Assert.True(queryResult.ResultComplete);
+            Assert.True(queryResult.Keys.Count == 0, "We expect to find no tile as result of the query.");
+
+            instance.DestroyCreateOptions(createOptionsHandle);
+            instance.DestroyDocument(documentHandle);
+            instance.DestroyReader2d(reader2dHandle);
+            instance.DestroyWriter2d(writer2dHandle);
+        }
+
+        [Fact]
+        public void CreateNewDocumentAndAddTwoTilesAndRunQueriesAtInteropLevel()
+        {
+            // this test is operating on "interop"-level
+            var instance = ImgDoc2ApiInterop.Instance;
+            var createOptionsHandle = instance.CreateCreateOptions();
+            instance.CreateOptionsSetFilename(createOptionsHandle, ":memory:");
+            instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('A'));
+            instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('B'));
+            var documentHandle = instance.CreateNewDocument(createOptionsHandle);
+            Assert.NotEqual(documentHandle, IntPtr.Zero);
+            var writer2dHandle = instance.DocumentGetWriter2d(documentHandle);
+            Assert.NotEqual(writer2dHandle, IntPtr.Zero);
+
+            // add one tile with coordinate "A1Z2"
+            TileCoordinate coordinate = new TileCoordinate(
+                new[]
+                {
+                    Tuple.Create(new Dimension('A'), 1) ,
+                    Tuple.Create(new Dimension('B'), 1)
+                });
+
+            LogicalPosition logicalPosition = new LogicalPosition() { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
+            Tile2dBaseInfo tile2dBaseInfo = new Tile2dBaseInfo(2, 3, PixelType.Gray8);
+            instance.Writer2dAddTile(writer2dHandle, coordinate, in logicalPosition, tile2dBaseInfo);
+
+            coordinate = new TileCoordinate(
+                new[]
+                {
+                    Tuple.Create(new Dimension('A'), 1) ,
+                    Tuple.Create(new Dimension('B'), 2)
+                });
+
+            instance.Writer2dAddTile(writer2dHandle, coordinate, in logicalPosition, tile2dBaseInfo);
+
+            // now, query for "tiles with A=1" (where there are two)
+            var dimensionQueryClause = new DimensionQueryClause();
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
+
+            var reader2dHandle = instance.DocumentGetReader2d(documentHandle);
+            var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+
+            Assert.True(queryResult.ResultComplete);
+            Assert.True(queryResult.Keys.Count == 2, "We expect to find two tiles as result of the query.");
+
+            //// now, query for "tiles with A=1 and B=2" (where there is none)
+            dimensionQueryClause = new DimensionQueryClause();
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('B'), RangeStart = 2, RangeEnd = 2 });
+
+            reader2dHandle = instance.DocumentGetReader2d(documentHandle);
+            queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+            Assert.True(queryResult.ResultComplete);
+            Assert.True(queryResult.Keys.Count == 1, "We expect to find one tile as result of the query.");
 
             instance.DestroyCreateOptions(createOptionsHandle);
             instance.DestroyDocument(documentHandle);

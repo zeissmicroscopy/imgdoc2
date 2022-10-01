@@ -428,10 +428,11 @@
             this.destroyWriter2d(handleWriter);
         }
 
-        public void Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition)
+        public void Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo)
         {
             byte[] tileCoordinateInterop = ConvertToTileCoordinateInterop(coordinate);
             LogicalPositionInfoInterop logicalPositionInfoInterop = new LogicalPositionInfoInterop(in logicalPosition);
+            TileBaseInfoInterop tileBaseInfoInterop = ConvertToTileBaseInfoInterop(tile2dBaseInfo);
 
             int returnCode;
             ImgDoc2ErrorInformation errorInformation;
@@ -440,7 +441,7 @@
             {
                 fixed (byte* pointerTileCoordinateInterop = &tileCoordinateInterop[0])
                 {
-                    returnCode = this.idocwrite2dAddTile(write2dHandle, new IntPtr(pointerTileCoordinateInterop), &logicalPositionInfoInterop, &errorInformation);
+                    returnCode = this.idocwrite2dAddTile(write2dHandle, new IntPtr(pointerTileCoordinateInterop), &logicalPositionInfoInterop, &tileBaseInfoInterop, &errorInformation);
                 }
             }
         }
@@ -594,7 +595,7 @@
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDoc_GetObjectDelegate(IntPtr documentHandle, IntPtr* reader2dHandle, ImgDoc2ErrorInformation* errorInformation);
 
-        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, TileBaseInfoInterop* tileBaseInfo, ImgDoc2ErrorInformation* errorInformation);
 
         private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
 
@@ -648,6 +649,14 @@
             public double Height;
             public int PyramidLevel;
         }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        struct TileBaseInfoInterop
+        {
+            public uint PixelWidth;
+            public uint PixelHeight;
+            public byte PixelType;
+        }
     }
 
     /// <summary>   
@@ -660,7 +669,7 @@
         /// </summary>
         /// <param name="tileCoordinate" type="ITileCoordinate">    The tile coordinate. </param>
         /// <returns type="byte[]"> A byte array containing the tile coordinate information as a flat and blitable datastructure (following the "TileCoordinateInterop" struct layout). </returns>
-        static private byte[] ConvertToTileCoordinateInterop(ITileCoordinate tileCoordinate)
+        private static byte[] ConvertToTileCoordinateInterop(ITileCoordinate tileCoordinate)
         {
             int numberOfElements = tileCoordinate.EnumCoordinates().Count();
             if (numberOfElements == 0)
@@ -698,7 +707,7 @@
             }
         }
 
-        static private byte[] ConvertToTileCoordinateInterop(IDimensionQueryClause dimensionQueryClause)
+        private static byte[] ConvertToTileCoordinateInterop(IDimensionQueryClause dimensionQueryClause)
         {
             var conditions = dimensionQueryClause.EnumConditions().ToList();
             using (var stream = new MemoryStream())
@@ -725,7 +734,7 @@
         /// </summary>
         /// <param name="elementCount" type="int">  Reserve space for the specified number of elements. </param>
         /// <returns type="byte[]"> A blob representing the native structure "QueryResultInterop". </returns>
-        static private byte[] CreateQueryResultInterop(int elementCount)
+        private static byte[] CreateQueryResultInterop(int elementCount)
         {
             /*
              The native struct is:
@@ -749,7 +758,7 @@
             }
         }
 
-        static private QueryResult ConvertToQueryResult(byte[] queryResultInterop)
+        private static QueryResult ConvertToQueryResult(byte[] queryResultInterop)
         {
             int count = BitConverter.ToInt32(queryResultInterop, 0);
             QueryResult queryResult = new QueryResult(count);
@@ -761,6 +770,15 @@
             }
 
             return queryResult;
+        }
+
+        private static TileBaseInfoInterop ConvertToTileBaseInfoInterop(Tile2dBaseInfo tile2dBaseInfo)
+        {
+            var tileBaseInfoInterop = default(TileBaseInfoInterop);
+            tileBaseInfoInterop.PixelWidth = (uint)tile2dBaseInfo.PixelWidth;
+            tileBaseInfoInterop.PixelHeight = (uint)tile2dBaseInfo.PixelHeight;
+            tileBaseInfoInterop.PixelType = 0;
+            return tileBaseInfoInterop;
         }
     }
 }
