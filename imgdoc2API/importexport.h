@@ -1,9 +1,13 @@
 #pragma once
 
 #ifdef __GNUC__
- #define LIBIMGDOC2_STDCALL __attribute__((stdcall))
+    #if defined(__i386__)
+         #define LIBIMGDOC2_STDCALL __attribute__((stdcall))
+    #else
+        #define LIBIMGDOC2_STDCALL 
+    #endif
 #else
- #define LIBIMGDOC2_STDCALL __stdcall
+    #define LIBIMGDOC2_STDCALL __stdcall
 #endif
 
 #ifdef LIBIMGDOC2_EXPORTS
