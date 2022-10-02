@@ -73,8 +73,10 @@
                 this.destroyOpenExistingOptions = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyOpenExistingOptions");
                 this.createOptionsSetFilename = this.GetProcAddressThrowIfNotFound<CreateOptionsSetFilenameDelegate>("CreateOptions_SetFilename");
                 this.createOptionsGetFilename = this.GetProcAddressThrowIfNotFound<CreateOptionsGetFilenameDelegate>("CreateOptions_GetFilename");
-                this.createOptionsGetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_GetUseSpatialIndexDelegate>("CreateOptions_GetUseSpatialIndex");
-                this.createOptionsSetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_SetUseSpatialIndexDelegate>("CreateOptions_SetUseSpatialIndex");
+                this.createOptionsGetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_GetBooleanDelegate>("CreateOptions_GetUseSpatialIndex");
+                this.createOptionsSetUseSpatialIndex = this.GetProcAddressThrowIfNotFound<CreateOptions_SetBooleanDelegate>("CreateOptions_SetUseSpatialIndex");
+                this.createOptionsGetUseBlobTable = this.GetProcAddressThrowIfNotFound<CreateOptions_GetBooleanDelegate>("CreateOptions_GetUseBlobTable");
+                this.createOptionsSetUseBlobTable = this.GetProcAddressThrowIfNotFound<CreateOptions_SetBooleanDelegate>("CreateOptions_SetUseBlobTable");
 
                 this.createOptionsAddDimension = this.GetProcAddressThrowIfNotFound<CreateOptions_AddDimensionDelegate>("CreateOptions_AddDimension");
                 this.createOptionsAddIndexedDimension = this.GetProcAddressThrowIfNotFound<CreateOptions_AddDimensionDelegate>("CreateOptions_AddIndexedDimension");
@@ -91,6 +93,10 @@
 
                 this.idocwrite2dAddTile = this.GetProcAddressThrowIfNotFound<IDocWrite2d_AddTileDelegate>("IDocWrite2d_AddTile");
                 this.idocread2dQuery = this.GetProcAddressThrowIfNotFound<IDocRead2d_QueryDelegate>("IDocRead2d_Query");
+                this.idocread2dReadTileData = this.GetProcAddressThrowIfNotFound<IDocRead2d_ReadTileDataDelegate>("IDocRead2d_ReadTileData");
+
+                this.funcPtrBlobOutputSetSizeForwarder = Marshal.GetFunctionPointerForDelegate<BlobOutputSetSizeDelegate>(ImgDoc2ApiInterop.BlobOutputSetSizeDelegateObj);
+                this.funcPtrBlobOutputSetDataForwarder = Marshal.GetFunctionPointerForDelegate<BlobOutputSetDataDelegate>(ImgDoc2ApiInterop.BlobOutputSetDataDelegateObj);
             }
             catch (InvalidOperationException exception)
             {
@@ -256,10 +262,29 @@
             if (returnCode != ImgDoc2_ErrorCode_OK)
             {
                 // TODO(Jbl) : stretch out error-handling
-                throw new Exception("Error from 'CreateOptionsGetFilename'.");
+                throw new Exception("Error from 'CreateOptionsGetUseSpatialIndex'.");
             }
 
             return useSpatialIndex;
+        }
+
+        public bool CreateOptionsGetUseBlobTable(IntPtr handleCreateOptions)
+        {
+            this.ThrowIfNotInitialized();
+            bool useBlobTable;
+            int returnCode;
+            unsafe
+            {
+                returnCode = this.createOptionsGetUseBlobTable(handleCreateOptions, &useBlobTable, null);
+            }
+
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                // TODO(Jbl) : stretch out error-handling
+                throw new Exception("Error from 'CreateOptionsGetUseBlobTable'.");
+            }
+
+            return useBlobTable;
         }
 
         public void CreateOptionsSetUseSpatialIndex(IntPtr handleCreateOptions, bool useSpatialIndex)
@@ -269,6 +294,22 @@
             unsafe
             {
                 returnCode = this.createOptionsSetUseSpatialIndex(handleCreateOptions, useSpatialIndex, null);
+            }
+
+            if (returnCode != ImgDoc2_ErrorCode_OK)
+            {
+                // TODO(Jbl) : stretch out error-handling
+                throw new Exception("Error from 'CreateOptionsGetFilename'.");
+            }
+        }
+
+        public void CreateOptionsSetUseBlobTable(IntPtr handleCreateOptions, bool useBlobTable)
+        {
+            this.ThrowIfNotInitialized();
+            int returnCode;
+            unsafe
+            {
+                returnCode = this.createOptionsSetUseBlobTable(handleCreateOptions, useBlobTable, null);
             }
 
             if (returnCode != ImgDoc2_ErrorCode_OK)
@@ -428,7 +469,7 @@
             this.destroyWriter2d(handleWriter);
         }
 
-        public void Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo)
+        public void Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo, DataType dataType, IntPtr pointerData, long dataSize)
         {
             byte[] tileCoordinateInterop = ConvertToTileCoordinateInterop(coordinate);
             LogicalPositionInfoInterop logicalPositionInfoInterop = new LogicalPositionInfoInterop(in logicalPosition);
@@ -441,9 +482,19 @@
             {
                 fixed (byte* pointerTileCoordinateInterop = &tileCoordinateInterop[0])
                 {
-                    returnCode = this.idocwrite2dAddTile(write2dHandle, new IntPtr(pointerTileCoordinateInterop), &logicalPositionInfoInterop, &tileBaseInfoInterop, &errorInformation);
+                    returnCode = this.idocwrite2dAddTile(
+                        write2dHandle,
+                        new IntPtr(pointerTileCoordinateInterop),
+                        &logicalPositionInfoInterop,
+                        &tileBaseInfoInterop,
+                        (byte)dataType,
+                        pointerData,
+                        dataSize,
+                        &errorInformation);
                 }
             }
+
+            this.HandleErrorCases(returnCode, in errorInformation);
         }
 
         public QueryResult Reader2dQuery(IntPtr read2dHandle, IDimensionQueryClause clause)
@@ -463,8 +514,33 @@
                 }
             }
 
+            this.HandleErrorCases(returnCode, in errorInformation);
+
             QueryResult result = ConvertToQueryResult(queryResultInterop);
             return result;
+        }
+
+        public byte[] Reader2dReadTileData(IntPtr read2dHandle, long pk)
+        {
+            int returnCode;
+            ImgDoc2ErrorInformation errorInformation;
+
+            BlobOutputOnByteArray blobOutput = new BlobOutputOnByteArray();
+
+            unsafe
+            {
+                GCHandle gcHandle = GCHandle.Alloc(blobOutput, GCHandleType.Normal);
+                returnCode = this.idocread2dReadTileData(
+                    read2dHandle,
+                    pk,
+                    GCHandle.ToIntPtr(gcHandle),
+                    this.funcPtrBlobOutputSetSizeForwarder,
+                    this.funcPtrBlobOutputSetDataForwarder,
+                    &errorInformation);
+                gcHandle.Free();
+            }
+
+            return blobOutput.Buffer;
         }
     }
 
@@ -484,7 +560,75 @@
 
             public List<long> Keys { get; }
         }
+    }
 
+    public partial class ImgDoc2ApiInterop
+    {
+        /// <summary>
+        /// Function pointer (callable from unmanaged code) to the function "BlobOutputSetSizeFunction".
+        /// </summary>
+        private IntPtr funcPtrBlobOutputSetSizeForwarder;
+
+        /// <summary>
+        /// Function pointer (callable from unmanaged code) to the function "BlobOutputSetDataFunction".
+        /// </summary>
+        private IntPtr funcPtrBlobOutputSetDataForwarder;
+
+        private delegate bool BlobOutputSetSizeDelegate(IntPtr blobOutputObjectHandle, ulong size);
+        private delegate bool BlobOutputSetDataDelegate(IntPtr blobOutputObjectHandle, ulong offset, ulong size, IntPtr pointerToData);
+
+        /// <summary>
+        /// Delegate to the (static) BlobOutputSetSizeFunction-forwarder-function. It is important that this delegate does NOT get
+        /// GCed (which is ensured in case of a static variable of course).
+        /// </summary>
+        private static readonly BlobOutputSetSizeDelegate BlobOutputSetSizeDelegateObj = ImgDoc2ApiInterop.BlobOutputSetSizeFunction;
+
+        /// <summary>
+        /// Delegate to the (static) BlobOutputSetDataFunction-forwarder-function. It is important that this delegate does NOT get
+        /// GCed (which is ensured in case of a static variable of course).
+        /// </summary>
+        private static readonly BlobOutputSetDataDelegate BlobOutputSetDataDelegateObj = ImgDoc2ApiInterop.BlobOutputSetDataFunction;
+
+        static bool BlobOutputSetSizeFunction(IntPtr blobOutputObjectHandle, ulong size)
+        {
+            GCHandle gcHandle = GCHandle.FromIntPtr(blobOutputObjectHandle);
+            IBlobOutput blobOutput = gcHandle.Target as IBlobOutput;
+            return blobOutput.SetSize(size);
+        }
+
+        static bool BlobOutputSetDataFunction(IntPtr blobOutputObjectHandle, ulong offset, ulong size, IntPtr pointerToData)
+        {
+            GCHandle gcHandle = GCHandle.FromIntPtr(blobOutputObjectHandle);
+            IBlobOutput blobOutput = gcHandle.Target as IBlobOutput;
+            return blobOutput.SetData(offset, size, pointerToData);
+        }
+
+        private interface IBlobOutput
+        {
+            bool SetSize(ulong size);
+
+            bool SetData(ulong offset, ulong size, IntPtr pointerToData);
+        }
+
+        public class BlobOutputOnByteArray : IBlobOutput
+        {
+            private byte[] buffer;
+
+            public byte[] Buffer => this.buffer;
+
+            public bool SetSize(ulong size)
+            {
+                this.buffer = new byte[size];
+                return true;
+            }
+
+            public bool SetData(ulong offset, ulong size, IntPtr pointerToData)
+            {
+                // TODO(JBl) - error handling for out-of-range
+                Marshal.Copy(pointerToData, this.buffer, (int)offset, (int)size);
+                return true;
+            }
+        }
     }
 
     public partial class ImgDoc2ApiInterop
@@ -541,8 +685,10 @@
 
         private readonly CreateOptionsSetFilenameDelegate createOptionsSetFilename;
         private readonly CreateOptionsGetFilenameDelegate createOptionsGetFilename;
-        private readonly CreateOptions_SetUseSpatialIndexDelegate createOptionsSetUseSpatialIndex;
-        private readonly CreateOptions_GetUseSpatialIndexDelegate createOptionsGetUseSpatialIndex;
+        private readonly CreateOptions_SetBooleanDelegate createOptionsSetUseSpatialIndex;
+        private readonly CreateOptions_SetBooleanDelegate createOptionsSetUseBlobTable;
+        private readonly CreateOptions_GetBooleanDelegate createOptionsGetUseSpatialIndex;
+        private readonly CreateOptions_GetBooleanDelegate createOptionsGetUseBlobTable;
         private readonly CreateOptions_AddDimensionDelegate createOptionsAddDimension;
         private readonly CreateOptions_AddDimensionDelegate createOptionsAddIndexedDimension;
         private readonly CreateOptions_GetDimensionsDelegate createOptionsGetDimensions;
@@ -558,7 +704,7 @@
 
         private readonly IDocWrite2d_AddTileDelegate idocwrite2dAddTile;
         private readonly IDocRead2d_QueryDelegate idocread2dQuery;
-
+        private readonly IDocRead2d_ReadTileDataDelegate idocread2dReadTileData;
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate IntPtr VoidAndReturnIntPtrDelegate();
@@ -573,10 +719,10 @@
         private unsafe delegate int CreateOptionsGetFilenameDelegate(IntPtr handle, IntPtr fileNameUtf8, IntPtr size, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int CreateOptions_SetUseSpatialIndexDelegate(IntPtr handle, bool useSpatialIndex, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int CreateOptions_SetBooleanDelegate(IntPtr handle, bool useSpatialIndex, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int CreateOptions_GetUseSpatialIndexDelegate(IntPtr handle, bool* useSpatialIndex, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int CreateOptions_GetBooleanDelegate(IntPtr handle, bool* useSpatialIndex, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int CreateOptions_AddDimensionDelegate(IntPtr handle, byte dim, ImgDoc2ErrorInformation* errorInformation);
@@ -595,9 +741,14 @@
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDoc_GetObjectDelegate(IntPtr documentHandle, IntPtr* reader2dHandle, ImgDoc2ErrorInformation* errorInformation);
 
-        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, TileBaseInfoInterop* tileBaseInfo, ImgDoc2ErrorInformation* errorInformation);
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, TileBaseInfoInterop* tileBaseInfo, byte dataType, IntPtr dataPtr, long size, ImgDoc2ErrorInformation* errorInformation);
 
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int IDocRead2d_ReadTileDataDelegate(IntPtr read2dHandle, long pk, IntPtr blobOutputHandle, IntPtr functionPointerSetSize, IntPtr functionPointerSetData, ImgDoc2ErrorInformation* errorInformation);
 
         private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 

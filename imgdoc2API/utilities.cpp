@@ -50,3 +50,9 @@ using namespace imgdoc2;
     tile_base_info.pixelType= tile_base_info_interop.pixelType;
     return tile_base_info;
 }
+
+/*static*/imgdoc2::DataTypes Utilities::ConvertDatatypeEnumInterop(std::uint8_t data_type_interop)
+{
+    // TODO: add error handling
+    return static_cast<imgdoc2::DataTypes>(data_type_interop);
+}

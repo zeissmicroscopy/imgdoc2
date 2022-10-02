@@ -32,6 +32,12 @@
             set { ImgDoc2ApiInterop.Instance.CreateOptionsSetUseSpatialIndex(this.objectHandle, value); }
         }
 
+        public bool UseBlobTable
+        {
+            get { return ImgDoc2ApiInterop.Instance.CreateOptionsGetUseBlobTable(this.objectHandle); }
+            set { ImgDoc2ApiInterop.Instance.CreateOptionsSetUseBlobTable(this.objectHandle, value); }
+        }
+
         public void AddDimension(Dimension dimension)
         {
             ImgDoc2ApiInterop.Instance.CreateOptionsAddDimension(this.objectHandle, dimension);

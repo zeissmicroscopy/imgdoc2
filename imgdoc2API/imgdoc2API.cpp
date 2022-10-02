@@ -170,6 +170,13 @@ ImgDoc2ErrorCode CreateOptions_SetUseSpatialIndex(HandleCreateOptions handle, bo
     return ImgDoc2_ErrorCode_OK;
 }
 
+ImgDoc2ErrorCode CreateOptions_SetUseBlobTable(HandleCreateOptions handle, bool use_blob_table, ImgDoc2ErrorInformation* error_information)
+{
+    const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    object->SetCreateBlobTable(use_blob_table);
+    return ImgDoc2_ErrorCode_OK;
+}
+
 ImgDoc2ErrorCode CreateOptions_AddIndexForDimension(HandleCreateOptions handle, char dimension, ImgDoc2ErrorInformation* error_information)
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
@@ -204,6 +211,18 @@ ImgDoc2ErrorCode CreateOptions_GetUseSpatialIndex(HandleCreateOptions handle, bo
     if (use_spatial_index != nullptr)
     {
         *use_spatial_index = b;
+    }
+
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode CreateOptions_GetUseBlobTable(HandleCreateOptions handle, bool* use_blob_table, ImgDoc2ErrorInformation* error_information)
+{
+    const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    const bool b = object->GetCreateBlobTable();
+    if (use_blob_table != nullptr)
+    {
+        *use_blob_table = b;
     }
 
     return ImgDoc2_ErrorCode_OK;
@@ -296,6 +315,9 @@ ImgDoc2ErrorCode IDocWrite2d_AddTile(
     const TileCoordinateInterop* tile_coordinate_interop, 
     const LogicalPositionInfoInterop* logical_position_info_interop,
     const TileBaseInfoInterop* tile_base_info_interop,
+    std::uint8_t data_type_interop,
+    const void* ptr_data,
+    std::uint64_t size_data,
     ImgDoc2ErrorInformation* error_information)
 {
     if (tile_coordinate_interop == nullptr)
@@ -311,17 +333,41 @@ ImgDoc2ErrorCode IDocWrite2d_AddTile(
     auto tile_coordinate = Utilities::ConvertToTileCoordinate(tile_coordinate_interop);
     auto logical_position_info = Utilities::ConvertLogicalPositionInfoInteropToImgdoc2(*logical_position_info_interop);
     TileBaseInfo tile_info = Utilities::ConvertTileBaseInfoInteropToImgdoc2(*tile_base_info_interop);
+    DataTypes data_type = Utilities::ConvertDatatypeEnumInterop(data_type_interop);
 
     auto writer2d = reinterpret_cast<SharedPtrWrapper<IDocWrite2d>*>(handle)->shared_ptr_;
+
+    struct GetDataObject : public IDataObjBase
+    {
+    private:
+        const void* p_;
+        size_t s_;
+    public:
+        GetDataObject(const void* p, size_t s):p_(p),s_(s){}
+        virtual void GetData(const void** p, size_t* s) const override
+        {
+            if (p != nullptr)
+            {
+                *p = this->p_;
+            }
+
+            if (s != nullptr)
+            {
+                *s = this->s_;
+            }
+        }
+    };
+
     try
     {
+        const GetDataObject data_object(ptr_data, size_data);
         writer2d->AddTile(
             &tile_coordinate,
             &logical_position_info,
             &tile_info,
-            DataTypes::ZERO,
+            data_type,
             TileDataStorageType::BlobInDatabase,
-            nullptr);
+            &data_object);
     }
     catch (exception& exception)
     {
@@ -342,21 +388,55 @@ ImgDoc2ErrorCode IDocRead2d_Query(HandleDocRead2D handle, const DimensionQueryCl
 
     uint32_t results_retrieved_count = 0;
     result->more_results_available = 0;
-    reader2d->Query(&dimension_coordinate_query_clause, nullptr,
-        [result, &results_retrieved_count](imgdoc2::dbIndex index)->bool
-        {
-            if (results_retrieved_count < result->element_count)
-            {
-                result->indices[results_retrieved_count] = index;
-                ++results_retrieved_count;
-                return true;
-            }
 
-            result->more_results_available = 1;
-            return false;
-        });
+    try
+    {
+        reader2d->Query(&dimension_coordinate_query_clause, nullptr,
+            [result, &results_retrieved_count](imgdoc2::dbIndex index)->bool
+            {
+                if (results_retrieved_count < result->element_count)
+                {
+                    result->indices[results_retrieved_count] = index;
+                    ++results_retrieved_count;
+                    return true;
+                }
+
+                result->more_results_available = 1;
+                return false;
+            });
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
 
     result->element_count = results_retrieved_count;
+
+    return ImgDoc2_ErrorCode_OK;
+}
+
+ImgDoc2ErrorCode IDocRead2d_ReadTileData(
+    HandleDocRead2D handle,
+    long pk,
+    std::intptr_t blob_output_handle,
+    bool(__stdcall* pfnReserve)(std::intptr_t blob_output_handle, std::uint64_t size),
+    bool(__stdcall* pfnSetData)(std::intptr_t blob_output_handle, std::uint64_t offset, std::uint64_t size, const void* data),
+    ImgDoc2ErrorInformation* error_information)
+{
+    auto reader2d = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle)->shared_ptr_;
+
+    Utilities::BlobOutputOnFunctionsDecorator blob_output_object(blob_output_handle, pfnReserve, pfnSetData);
+
+    try
+    {
+        reader2d->ReadTileData(pk, &blob_output_object);
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
 
     return ImgDoc2_ErrorCode_OK;
 }

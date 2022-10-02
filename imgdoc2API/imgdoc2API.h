@@ -39,6 +39,7 @@ EXTERNAL_API(void) DestroyWriter2d(HandleDocWrite2D handle);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_SetFilename(HandleCreateOptions handle, const char* filename_utf8, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_SetUseSpatialIndex(HandleCreateOptions handle, bool use_spatial_index, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_AddIndexForDimension(HandleCreateOptions handle, char dimension, ImgDoc2ErrorInformation* error_information);
+EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_SetUseBlobTable(HandleCreateOptions handle, bool use_blob_table, ImgDoc2ErrorInformation* error_information);
 
 /// Get the property 'filename' from the CreateOptions-object (as an UTF8-encoded string).
 /// On input, 'size' specifies the size of the buffer pointed to 'filename_utf8' in bytes. On return, the actual
@@ -53,7 +54,7 @@ EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_AddIndexForDimension(HandleCreateOp
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetFilename(HandleCreateOptions handle, char* filename_utf8, size_t* size, ImgDoc2ErrorInformation* error_information);
 
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetUseSpatialIndex(HandleCreateOptions handle, bool* use_spatial_index, ImgDoc2ErrorInformation* error_information);
-
+EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetUseBlobTable(HandleCreateOptions handle, bool* create_blob_table, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_AddDimension(HandleCreateOptions handle, std::uint8_t dimension, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_AddIndexedDimension(HandleCreateOptions handle, std::uint8_t dimension, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetDimensions(HandleCreateOptions handle, std::uint8_t* dimension, size_t* elements_count, ImgDoc2ErrorInformation* error_information);
@@ -64,10 +65,21 @@ EXTERNAL_API(ImgDoc2ErrorCode) IDocWrite2d_AddTile(
     const TileCoordinateInterop* tile_coordinate_interop, 
     const LogicalPositionInfoInterop* logical_position_info_interop,
     const TileBaseInfoInterop* tile_base_info_interop,
+    std::uint8_t data_type,
+    const void* ptr_data,
+    std::uint64_t size_data,
     ImgDoc2ErrorInformation* error_information);
 
 EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_Query(
     HandleDocRead2D handle, 
     const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop,
     QueryResultInterop* result, 
+    ImgDoc2ErrorInformation* error_information);
+
+EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_ReadTileData(
+    HandleDocRead2D handle,
+    long pk,
+    std::intptr_t blob_output_handle,
+    bool(__stdcall* pfnReserve)(std::intptr_t blob_output_handle, std::uint64_t size),
+    bool(__stdcall* pfnSetData)(std::intptr_t blob_output_handle, std::uint64_t offset, std::uint64_t size, const void* data),
     ImgDoc2ErrorInformation* error_information);

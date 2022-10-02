@@ -2,7 +2,7 @@
 
 namespace ImgDoc2Net.Interfaces
 {
-    public enum PixelType
+    public enum PixelType 
     {
         Gray8,
         Gray16,
