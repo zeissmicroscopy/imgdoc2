@@ -24,7 +24,7 @@ namespace ImgDoc2Net.Implementation
         public long AddTile(ITileCoordinate tileCoordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo,
             DataType dataType, IntPtr pointerTileData, long sizeTileData)
         {
-            ImgDoc2ApiInterop.Instance.Writer2dAddTile(
+            return ImgDoc2ApiInterop.Instance.Writer2dAddTile(
                 this.writer2dObjectHandle,
                 tileCoordinate,
                 in logicalPosition,
@@ -32,7 +32,6 @@ namespace ImgDoc2Net.Implementation
                 dataType,
                 pointerTileData,
                 sizeTileData);
-            return 0;
         }
     }
 

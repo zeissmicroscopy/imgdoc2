@@ -311,13 +311,14 @@ ImgDoc2ErrorCode CreateOptions_GetIndexedDimensions(HandleCreateOptions handle, 
 }
 
 ImgDoc2ErrorCode IDocWrite2d_AddTile(
-    HandleDocWrite2D handle, 
-    const TileCoordinateInterop* tile_coordinate_interop, 
+    HandleDocWrite2D handle,
+    const TileCoordinateInterop* tile_coordinate_interop,
     const LogicalPositionInfoInterop* logical_position_info_interop,
     const TileBaseInfoInterop* tile_base_info_interop,
     std::uint8_t data_type_interop,
     const void* ptr_data,
     std::uint64_t size_data,
+    imgdoc2::dbIndex* result_pk,
     ImgDoc2ErrorInformation* error_information)
 {
     if (tile_coordinate_interop == nullptr)
@@ -343,7 +344,7 @@ ImgDoc2ErrorCode IDocWrite2d_AddTile(
         const void* p_;
         size_t s_;
     public:
-        GetDataObject(const void* p, size_t s):p_(p),s_(s){}
+        GetDataObject(const void* p, size_t s) :p_(p), s_(s) {}
         virtual void GetData(const void** p, size_t* s) const override
         {
             if (p != nullptr)
@@ -361,13 +362,17 @@ ImgDoc2ErrorCode IDocWrite2d_AddTile(
     try
     {
         const GetDataObject data_object(ptr_data, size_data);
-        writer2d->AddTile(
+        auto pk = writer2d->AddTile(
             &tile_coordinate,
             &logical_position_info,
             &tile_info,
             data_type,
             TileDataStorageType::BlobInDatabase,
             &data_object);
+        if (result_pk != nullptr)
+        {
+            *result_pk = pk;
+        }
     }
     catch (exception& exception)
     {

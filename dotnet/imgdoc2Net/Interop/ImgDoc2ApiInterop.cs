@@ -469,7 +469,7 @@
             this.destroyWriter2d(handleWriter);
         }
 
-        public void Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo, DataType dataType, IntPtr pointerData, long dataSize)
+        public long Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo, DataType dataType, IntPtr pointerData, long dataSize)
         {
             byte[] tileCoordinateInterop = ConvertToTileCoordinateInterop(coordinate);
             LogicalPositionInfoInterop logicalPositionInfoInterop = new LogicalPositionInfoInterop(in logicalPosition);
@@ -477,6 +477,7 @@
 
             int returnCode;
             ImgDoc2ErrorInformation errorInformation;
+            long resultPk;
 
             unsafe
             {
@@ -490,11 +491,13 @@
                         (byte)dataType,
                         pointerData,
                         dataSize,
+                        &resultPk,
                         &errorInformation);
                 }
             }
 
             this.HandleErrorCases(returnCode, in errorInformation);
+            return resultPk;
         }
 
         public QueryResult Reader2dQuery(IntPtr read2dHandle, IDimensionQueryClause clause)
@@ -774,7 +777,7 @@
         private unsafe delegate int IDoc_GetObjectDelegate(IntPtr documentHandle, IntPtr* reader2dHandle, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, TileBaseInfoInterop* tileBaseInfo, byte dataType, IntPtr dataPtr, long size, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, TileBaseInfoInterop* tileBaseInfo, byte dataType, IntPtr dataPtr, long size, long* resultPk, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);

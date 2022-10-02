@@ -1,15 +1,10 @@
-﻿using ImgDoc2Net;
-using ImgDoc2Net.Implementation;
-using ImgDoc2Net.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.VisualBasic;
-
-namespace ImgDoc2Net_UnitTests
+﻿namespace ImgDoc2Net_UnitTests
 {
+    using ImgDoc2Net;
+    using ImgDoc2Net.Implementation;
+    using ImgDoc2Net.Interfaces;
+    using System;
+
     public class Read2dWrite2dTests
     {
         [Fact]
@@ -23,7 +18,7 @@ namespace ImgDoc2Net_UnitTests
 
             LogicalPosition logicalPosition = new LogicalPosition() { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
             var testData = new byte[] { 8, 4, 3, 2, 85, 32, 9, 4, 1, 58 };
-            writer2d.AddTile(
+            long pkOfAddedTile = writer2d.AddTile(
                 new TileCoordinate(new[] { Tuple.Create(new Dimension('A'), 1) }),
                 in logicalPosition,
                 new Tile2dBaseInfo(1, 2, PixelType.Gray8),
@@ -35,6 +30,8 @@ namespace ImgDoc2Net_UnitTests
 
             var result = reader2d.Query(dimensionQueryClause);
             Assert.Single(result);
+
+            Assert.Equal(result[0], pkOfAddedTile);
 
             var blob = reader2d.ReadTileData(result[0]);
 

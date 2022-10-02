@@ -68,6 +68,7 @@ EXTERNAL_API(ImgDoc2ErrorCode) IDocWrite2d_AddTile(
     std::uint8_t data_type,
     const void* ptr_data,
     std::uint64_t size_data,
+    imgdoc2::dbIndex* result_pk,
     ImgDoc2ErrorInformation* error_information);
 
 EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_Query(
