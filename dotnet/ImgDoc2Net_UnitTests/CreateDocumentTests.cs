@@ -189,16 +189,8 @@
 
             LogicalPosition logicalPosition = new LogicalPosition() { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
             Tile2dBaseInfo tile2dBaseInfo = new Tile2dBaseInfo(1, 2, PixelType.Gray8);
-            unsafe
-            {
-                byte* data = stackalloc byte[5];
-                data[0] = 1;
-                data[1] = 2;
-                data[2] = 3;
-                data[3] = 4;
-                data[4] = 5;
-                instance.Writer2dAddTile(writer2dHandle, coordinate, in logicalPosition, tile2dBaseInfo, DataType.Zero, new IntPtr(data), 5);
-            }
+            byte[] tileData = new byte[5] {1, 2, 3, 4, 5};
+            instance.Writer2dAddTile(writer2dHandle, coordinate, in logicalPosition, tile2dBaseInfo, DataType.UncompressedBitmap, tileData);
 
             // now, query for "tiles with A=1" (where there is obviously one)
             var dimensionQueryClause = new DimensionQueryClause();
@@ -212,7 +204,7 @@
 
             var blob = instance.Reader2dReadTileData(reader2dHandle, queryResult.Keys[0]);
             Assert.True(blob.Length == 5);
-            Assert.True(blob[0] == 1 && blob[1] == 2 && blob[2] == 3 && blob[3] == 4 && blob[4] == 5);
+            Assert.True(blob[0] == tileData[0] && blob[1] == tileData[1] && blob[2] == tileData[2] && blob[3] == tileData[3] && blob[4] == tileData[4]);
 
             instance.DestroyCreateOptions(createOptionsHandle);
             instance.DestroyDocument(documentHandle);

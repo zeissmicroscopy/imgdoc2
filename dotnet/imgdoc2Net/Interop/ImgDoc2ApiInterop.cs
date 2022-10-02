@@ -544,6 +544,30 @@
         }
     }
 
+    /// <content> 
+    /// Here we gather "simple overloads" of the interface functions.
+    /// </content>
+    public partial class ImgDoc2ApiInterop
+    {
+        public void Writer2dAddTile(IntPtr write2dHandle, ITileCoordinate coordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo, DataType dataType, byte[] data)
+        {
+            if (data != null && data.Length > 0)
+            {
+                unsafe
+                {
+                    fixed (byte* pointer = &data[0])
+                    {
+                        this.Writer2dAddTile(write2dHandle, coordinate, in logicalPosition, tile2dBaseInfo, dataType, new IntPtr(pointer), data.Length);
+                    }
+                }
+            }
+            else
+            {
+                this.Writer2dAddTile(write2dHandle, coordinate, in logicalPosition, tile2dBaseInfo, dataType, IntPtr.Zero, 0);
+            }
+        }
+    }
+
     public partial class ImgDoc2ApiInterop
     {
         public class QueryResult
@@ -562,6 +586,12 @@
         }
     }
 
+
+
+    /// <content> 
+    /// This part is concerned with "Blob-output"-implementation - which is a mechanism for returning binary blobs
+    /// from the native code, where we allocation of the memory is to take place in the managed code.
+    /// </summary>
     public partial class ImgDoc2ApiInterop
     {
         /// <summary>
@@ -591,6 +621,7 @@
 
         static bool BlobOutputSetSizeFunction(IntPtr blobOutputObjectHandle, ulong size)
         {
+            // TODO(Jbl) - add error-handling, we must not throw exceptions from here
             GCHandle gcHandle = GCHandle.FromIntPtr(blobOutputObjectHandle);
             IBlobOutput blobOutput = gcHandle.Target as IBlobOutput;
             return blobOutput.SetSize(size);
@@ -598,6 +629,7 @@
 
         static bool BlobOutputSetDataFunction(IntPtr blobOutputObjectHandle, ulong offset, ulong size, IntPtr pointerToData)
         {
+            // TODO(Jbl) - add error-handling, we must not throw exceptions from here
             GCHandle gcHandle = GCHandle.FromIntPtr(blobOutputObjectHandle);
             IBlobOutput blobOutput = gcHandle.Target as IBlobOutput;
             return blobOutput.SetData(offset, size, pointerToData);
