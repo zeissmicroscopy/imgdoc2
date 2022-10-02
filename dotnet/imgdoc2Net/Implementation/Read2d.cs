@@ -4,6 +4,7 @@ namespace ImgDoc2Net.Implementation
     using ImgDoc2Net.Interfaces;
     using ImgDoc2Net.Interop;
     using System;
+    using System.Collections.Generic;
 
     internal partial class Read2d : IRead2d
     {
@@ -16,6 +17,19 @@ namespace ImgDoc2Net.Implementation
         public Read2d(IntPtr handle)
         {
             this.reader2dObjectHandle = handle;
+        }
+
+        public List<long> Query(IDimensionQueryClause queryClause)
+        {
+            // TODO(Jbl): error-handling
+            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQuery(this.reader2dObjectHandle, queryClause);
+            return queryResult.Keys;
+        }
+
+        public byte[] ReadTileData(long key)
+        {
+            // TODO(Jbl): error-handling
+            return ImgDoc2ApiInterop.Instance.Reader2dReadTileData(this.reader2dObjectHandle, key);
         }
     }
 

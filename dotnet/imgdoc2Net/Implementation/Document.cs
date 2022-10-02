@@ -29,6 +29,17 @@ namespace ImgDoc2Net
 
             return null;
         }
+
+        public IWrite2d Get2dWriter()
+        {
+            var writerHandle = ImgDoc2ApiInterop.Instance.DocumentGetWriter2d(this.documentHandle);
+            if (writerHandle != IntPtr.Zero)
+            {
+                return new Write2d(writerHandle);
+            }
+
+            return null;
+        }
     }
 
     public partial class Document
