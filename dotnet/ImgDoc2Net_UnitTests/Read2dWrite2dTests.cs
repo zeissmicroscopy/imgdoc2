@@ -22,7 +22,7 @@
                 new TileCoordinate(new[] { Tuple.Create(new Dimension('A'), 1) }),
                 in logicalPosition,
                 new Tile2dBaseInfo(1, 2, PixelType.Gray8),
-                DataType.Zero,
+                DataType.UncompressedBitmap,
                 testData);
 
             var dimensionQueryClause = new DimensionQueryClause();
@@ -37,6 +37,49 @@
 
             Assert.Equal(testData.Length, blob.Length);
             Assert.Equal(testData, blob);
+        }
+
+
+        [Fact]
+        public void CreateDocumentAndAddTenTilesAndReadTilesAndCompareData()
+        {
+            using var createOptions = new CreateOptions() { Filename = ":memory:", UseBlobTable = true };
+            createOptions.AddDimension(new Dimension('A'));
+            using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+            using var reader2d = document.Get2dReader();
+            using var writer2d = document.Get2dWriter();
+
+            LogicalPosition logicalPosition = new LogicalPosition() { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
+            List<long> pkOfAddedTiles = new List<long>(10);
+            for (int a = 0; a < 10; ++a)
+            {
+                var testData = Enumerable.Range(0, 20).Select(i => (byte)(a + i)).ToArray();
+                long pkOfAddedTile = writer2d.AddTile(
+                    new TileCoordinate(new[] { Tuple.Create(new Dimension('A'), a) }),
+                    in logicalPosition,
+                    new Tile2dBaseInfo(1, 2, PixelType.Gray8),
+                    DataType.UncompressedBitmap,
+                    testData);
+                pkOfAddedTiles.Add(pkOfAddedTile);
+            }
+
+            // now, query for the tiles we just added, and check that we get the same tile (or: its pk) as above
+            for (int a = 0; a < 10; ++a)
+            {
+                var dimensionQueryClause = new DimensionQueryClause();
+                dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = a, RangeEnd = a });
+                var result = reader2d.Query(dimensionQueryClause);
+                Assert.Single(result);
+                Assert.Equal(result[0], pkOfAddedTiles[a]);
+            }
+
+            // and finally, read the TileData and check it for correctness
+            for (int a = 0; a < 10; ++a)
+            {
+                var blob = reader2d.ReadTileData(pkOfAddedTiles[a]);
+                Assert.Equal(20, blob.Length);
+                Assert.Equal(blob, Enumerable.Range(0, 20).Select(i => (byte)(a + i)).ToArray());
+            }
         }
     }
 }
