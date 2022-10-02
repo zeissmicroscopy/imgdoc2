@@ -80,6 +80,6 @@ EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_ReadTileData(
     HandleDocRead2D handle,
     long pk,
     std::intptr_t blob_output_handle,
-    bool(__stdcall* pfnReserve)(std::intptr_t blob_output_handle, std::uint64_t size),
-    bool(__stdcall* pfnSetData)(std::intptr_t blob_output_handle, std::uint64_t offset, std::uint64_t size, const void* data),
+    bool(LIBIMGDOC2_STDCALL* pfnReserve)(std::intptr_t blob_output_handle, std::uint64_t size),
+    bool(LIBIMGDOC2_STDCALL* pfnSetData)(std::intptr_t blob_output_handle, std::uint64_t offset, std::uint64_t size, const void* data),
     ImgDoc2ErrorInformation* error_information);

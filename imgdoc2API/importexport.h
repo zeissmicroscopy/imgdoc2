@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef __GNUC__
+ #define LIBIMGDOC2_STDCALL __attribute__((stdcall))
+#else
+ #define LIBIMGDOC2_STDCALL __stdcall
+#endif
+
 #ifdef LIBIMGDOC2_EXPORTS
 #ifdef __GNUC__
 #define LIBIMGDOC2_API __attribute__ ((visibility ("default")))

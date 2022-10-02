@@ -1,7 +1,7 @@
 #pragma once
 
 #include <imgdoc2.h>
-
+#include "importexport.h"
 #include "logicalpositioninfointerop.h"
 #include "tilecoordinateinterop.h"
 #include "dimcoordinatequeryclauseinterop.h"
@@ -19,8 +19,8 @@ public:
     class BlobOutputOnFunctionsDecorator : public imgdoc2::IBlobOutput
     {
     public:
-        typedef bool(__stdcall* fnReserve)(std::intptr_t blob_output_handle, std::uint64_t size);
-        typedef bool(__stdcall* fnSetData)(std::intptr_t blob_output_handle, std::uint64_t offset, std::uint64_t size, const void* data);
+        typedef bool(LIBIMGDOC2_STDCALL* fnReserve)(std::intptr_t blob_output_handle, std::uint64_t size);
+        typedef bool(LIBIMGDOC2_STDCALL* fnSetData)(std::intptr_t blob_output_handle, std::uint64_t offset, std::uint64_t size, const void* data);
         BlobOutputOnFunctionsDecorator(std::intptr_t blob_output_handle, fnReserve fpnReserve, fnSetData fpnSetData) :
             blob_output_handle_(blob_output_handle), fpnReserve_(fpnReserve), fpnSetData_(fpnSetData)
         {}
