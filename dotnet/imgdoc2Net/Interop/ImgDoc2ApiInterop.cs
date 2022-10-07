@@ -638,6 +638,10 @@
             return blobOutput.SetData(offset, size, pointerToData);
         }
 
+        /// <summary>   
+        /// This interface is used for "returning data from the unmanaged code". The idea is that the
+        /// actual memory allocation is done on the managed side.
+        /// </summary>
         private interface IBlobOutput
         {
             bool SetSize(ulong size);
