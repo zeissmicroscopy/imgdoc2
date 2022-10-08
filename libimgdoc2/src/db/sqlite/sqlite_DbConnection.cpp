@@ -7,13 +7,13 @@
 using namespace std;
 using namespace imgdoc2;
 
-/*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteCreateNewDatabase(const char* filename)
+/*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteCreateNewDatabase(const char* filename, std::shared_ptr<imgdoc2::IHostingEnvironment> environment)
 {
     sqlite3* database = nullptr;
     int return_value = sqlite3_open_v2(
         filename,
         &database,
-        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI |SQLITE_OPEN_EXRESCODE,
+        SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_URI | SQLITE_OPEN_EXRESCODE,
         nullptr);
 
     if (return_value != SQLITE_OK)
@@ -28,16 +28,16 @@ using namespace imgdoc2;
         throw database_exception("Error from 'sqlite3_open_v2'", return_value);
     }
 
-    return make_shared<SqliteDbConnection>(database);
+    return make_shared<SqliteDbConnection>(database, environment);
 }
 
-/*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteOpenExistingDatabase(const char* filename, bool readonly)
+/*static*/std::shared_ptr<IDbConnection> SqliteDbConnection::SqliteOpenExistingDatabase(const char* filename, bool readonly, std::shared_ptr<imgdoc2::IHostingEnvironment> environment)
 {
     sqlite3* database = nullptr;
     int return_value = sqlite3_open_v2(
         filename,
         &database,
-        (readonly ? SQLITE_OPEN_READONLY: SQLITE_OPEN_READWRITE) | SQLITE_OPEN_URI | SQLITE_OPEN_EXRESCODE,
+        (readonly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE) | SQLITE_OPEN_URI | SQLITE_OPEN_EXRESCODE,
         nullptr);
 
     if (return_value != SQLITE_OK)
@@ -52,11 +52,11 @@ using namespace imgdoc2;
         throw database_exception("Error from 'sqlite3_open_v2'", return_value);
     }
 
-    return make_shared<SqliteDbConnection>(database);
+    return make_shared<SqliteDbConnection>(database, environment);
 }
 
-SqliteDbConnection::SqliteDbConnection(sqlite3* database)
-    : database_(database), transaction_count_(0)
+SqliteDbConnection::SqliteDbConnection(sqlite3* database, std::shared_ptr<imgdoc2::IHostingEnvironment> environment/*=nullptr*/)
+    : environment_(environment), database_(database), transaction_count_(0)
 {
     SqliteCustomFunctions::SetupCustomQueries(database);
 }
@@ -84,7 +84,7 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
         throw invalid_argument("The argument 'statement' must not be null.");
     }
 
-    auto *sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
+    auto* sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
     if (sqlite_statement == nullptr)
     {
         throw imgdoc2_exception("Incorrect type encountered - object does not implement 'ISqliteDbStatement'-interface.");
@@ -132,7 +132,7 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
 /*virtual*/bool SqliteDbConnection::StepStatement(IDbStatement* statement)
 {
     // try to cast "statement" to ISqliteStatement
-    auto *sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
+    auto* sqlite_statement = dynamic_cast<ISqliteDbStatement*>(statement);
     if (sqlite_statement == nullptr)
     {
         throw runtime_error("incorrect type");
@@ -170,7 +170,7 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
         throw database_exception("Call to 'EndTransaction' where there is no pending transaction.");
     }
 
-    const char* sql_command = (commit  ? "COMMIT;" : "ROLLBACK;");
+    const char* sql_command = (commit ? "COMMIT;" : "ROLLBACK;");
 
     this->Execute(sql_command);
     this->transaction_count_--;
@@ -213,4 +213,9 @@ SqliteDbConnection::SqliteDbConnection(sqlite3* database)
     }
 
     return result;
+}
+
+/*virtual*/const std::shared_ptr<imgdoc2::IHostingEnvironment>& SqliteDbConnection::GetHostingEnvironment() const
+{
+    return this->environment_;
 }

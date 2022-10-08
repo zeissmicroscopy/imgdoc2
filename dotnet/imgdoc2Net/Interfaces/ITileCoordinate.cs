@@ -1,9 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ImgDoc2Net.Interfaces
+﻿namespace ImgDoc2Net.Interfaces
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
+    /// <summary>   
+    /// This interface is used to represent the "tile-coordinate" of a tile. 
+    /// </summary>
     public interface ITileCoordinate : IEquatable<ITileCoordinate>
 
     {

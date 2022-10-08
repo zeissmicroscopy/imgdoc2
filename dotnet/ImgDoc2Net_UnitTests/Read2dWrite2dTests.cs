@@ -53,8 +53,8 @@
             using var reader2d = document.Get2dReader();
             using var writer2d = document.Get2dWriter();
 
-            LogicalPosition logicalPosition = new LogicalPosition()
-                {PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0};
+            // add ten tiles (with coordinates "A0" to "A9"), each tile with some bitmap data (diffent for each tile), all other parameters do not matter here
+            LogicalPosition logicalPosition = new LogicalPosition() { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
             List<long> pkOfAddedTiles = new List<long>(10);
             for (int a = 0; a < 10; ++a)
             {

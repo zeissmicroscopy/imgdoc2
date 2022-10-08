@@ -3,6 +3,7 @@
 #include <memory>
 #include "ICreateOptions.h"
 #include "IOpenExistingOptions.h"
+#include "IEnvironment.h"
 
 namespace imgdoc2
 {
@@ -33,8 +34,8 @@ namespace imgdoc2
         /// \param [in] create_options  The options controlling the operation.
         ///
         /// \returns    The newly created imgdoc2-document.
-        static std::shared_ptr<imgdoc2::IDoc> CreateNew(imgdoc2::ICreateOptions* create_options);
+        static std::shared_ptr<imgdoc2::IDoc> CreateNew(imgdoc2::ICreateOptions* create_options, std::shared_ptr<IHostingEnvironment> environment = nullptr);
 
-        static std::shared_ptr<imgdoc2::IDoc> OpenExisting(imgdoc2::IOpenExistingOptions* open_existing_options);
+        static std::shared_ptr<imgdoc2::IDoc> OpenExisting(imgdoc2::IOpenExistingOptions* open_existing_options, std::shared_ptr<IHostingEnvironment> environment = nullptr);
     };
 }

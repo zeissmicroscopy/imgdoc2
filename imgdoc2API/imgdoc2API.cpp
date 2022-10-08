@@ -33,6 +33,11 @@ ImgDoc2ErrorCode MapExceptionToReturnValue(const exception& exception)
         return ImgDoc2_ErrorCode_InvalidArgument;
     }
 
+    if (typeid(exception) == typeid(non_existing_tile_exception))
+    {
+        return ImgDoc2_Invalid_TileId;
+    }
+
     // TODO(Jbl) - add additional exception types
 
     return ImgDoc2_ErrorCode_UnspecifiedError;

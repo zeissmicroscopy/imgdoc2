@@ -57,7 +57,7 @@ set(LibImgDoc2_Srcfiles
          "inc/IOpenExistingOptions.h"
          "src/public/OpenExistingOptions.cpp"
          "inc/impl/BlobOutputImplementations.h"
- "inc/impl/DataObjectImplementations.h")
+ "inc/impl/DataObjectImplementations.h" "inc/IEnvironment.h")
 
 add_library(libimgdoc2 STATIC
                 ${LibImgDoc2_Srcfiles}

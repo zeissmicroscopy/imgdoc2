@@ -11,6 +11,9 @@ static constexpr ImgDoc2ErrorCode ImgDoc2_ErrorCode_OK = 0;
 /// An invalid argument was supplied to the function.
 static constexpr ImgDoc2ErrorCode ImgDoc2_ErrorCode_InvalidArgument = 1;
 
+/// An invalid id was specified when reading/accessing a tile.
+static constexpr ImgDoc2ErrorCode ImgDoc2_Invalid_TileId = 5;   
+
 /// An unspecified error occurred.
 static constexpr ImgDoc2ErrorCode ImgDoc2_ErrorCode_UnspecifiedError = 50;
 

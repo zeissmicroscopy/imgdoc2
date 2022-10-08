@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include "IDbStatement.h"
+#include "IEnvironment.h"
 
 /// This interface gathers the "database operation" we use in libimgdoc2. The goal is that
 /// this interface is database-agnostic, i.e. can be implemented for different databases, and
@@ -31,7 +32,7 @@ public:
 public:
 
     /// Executes the given SQL statement and does *not* read any data returned from the database.
-    /// \param  {const char*} sql_statement The SQL statement (in UTF8).
+    /// \param  sql_statement The SQL statement (in UTF8).
     virtual void Execute(const char* sql_statement) = 0;
 
     virtual void Execute(IDbStatement* statement) = 0;
@@ -39,8 +40,8 @@ public:
 
     /// Prepare a SQL statement - the statement is compiled into an internal representation, and a
     /// statement-object is returned.
-    /// \param  {const std::string&} sql_statement The SQL statement (in UTF8).
-    /// \returns {std::shared_ptr{IDbStatement}} The newly constructed statement-object.
+    /// \param sql_statement The SQL statement (in UTF8).
+    /// \returns The newly constructed statement-object.
     virtual std::shared_ptr<IDbStatement> PrepareStatement(const std::string& sql_statement) = 0;
 
     virtual bool StepStatement(IDbStatement* statement) = 0;
@@ -53,8 +54,8 @@ public:
     /// TODO: Note that (in current implementation) this method returns an empty vector in case that the
     /// table does not exists (so an empty table and a non-existing table is undistinguishable).
     /// 
-    /// \param  {const char*} table_name Name of the table.
-    /// \returns {std::vector{ColumnInfo}} The table information - a vector describing the columns of the table.
+    /// \param  table_name Name of the table.
+    /// \returns The table information - a vector describing the columns of the table.
     virtual std::vector<ColumnInfo> GetTableInfo(const char* table_name) = 0;
 
     /// Gets a list of existing indices for the specified table.
@@ -65,6 +66,8 @@ public:
     virtual std::vector<IDbConnection::IndexInfo> GetIndicesOfTable(const char* table_name) = 0;
 
     virtual ~IDbConnection() = default;
+
+    [[nodiscard]] virtual const std::shared_ptr<imgdoc2::IHostingEnvironment>& GetHostingEnvironment() const = 0;
 
 public:
     // no copy and no move (-> https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c21-if-you-define-or-delete-any-copy-move-or-destructor-function-define-or-delete-them-all )

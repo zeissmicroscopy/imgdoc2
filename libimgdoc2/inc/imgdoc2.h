@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "IEnvironment.h"
 #include "TileDataStorageType.h"
 #include "ICreateOptions.h"
 #include "ClassFactory.h"

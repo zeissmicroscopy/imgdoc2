@@ -8,6 +8,6 @@ namespace ImgDoc2Net.Interfaces
         Gray16,
         Bgr24,
         Bgr48,
-        GrayFloat
+        Gray32Float
     }
 }

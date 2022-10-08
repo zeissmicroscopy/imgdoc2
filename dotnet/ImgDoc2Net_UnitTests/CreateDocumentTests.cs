@@ -171,6 +171,7 @@
             var instance = ImgDoc2ApiInterop.Instance;
             var createOptionsHandle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(createOptionsHandle, ":memory:");
+            ////instance.CreateOptionsSetFilename(createOptionsHandle, "N:\\test.db");
             instance.CreateOptionsSetUseBlobTable(createOptionsHandle, true);
             instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('A'));
             instance.CreateOptionsAddDimension(createOptionsHandle, new Dimension('Z'));

@@ -29,6 +29,7 @@ namespace imgdoc2
         virtual std::shared_ptr<imgdoc2::IDocRead2d> GetReader2d() = 0;
 
         virtual ~IDoc() = default;
+
     public:
         // no copy and no move (-> https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md#c21-if-you-define-or-delete-any-copy-move-or-destructor-function-define-or-delete-them-all )
         IDoc() = default;

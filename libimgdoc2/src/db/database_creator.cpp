@@ -11,6 +11,7 @@
 
 using namespace std;
 
+#if 0
 /*static*/std::shared_ptr<imgdoc2::IDoc> imgdoc2::ClassFactory::CreateNew(imgdoc2::ICreateOptions* create_options)
 {
     // TODO(JBL): here would be the place where we'd allow for "other databases than Sqlite", for the time being,
@@ -35,6 +36,7 @@ using namespace std;
 
     return {};
 }
+#endif
 
 std::shared_ptr< DatabaseConfigurationCommon> DbCreator::CreateTables(const imgdoc2::ICreateOptions* create_options)
 {
@@ -230,6 +232,7 @@ void DbCreator::SetBlobTableNameInGeneralTable(const DatabaseConfiguration2D* da
 
 // ----------------------------------------------------------------------------
 
+#if 0
 /*static*/std::shared_ptr<imgdoc2::IDoc> imgdoc2::ClassFactory::OpenExisting(imgdoc2::IOpenExistingOptions* open_existing_options)
 {
     // TODO(JBL): here would be the place where we'd allow for "other databases than Sqlite", for the time being,
@@ -249,3 +252,4 @@ void DbCreator::SetBlobTableNameInGeneralTable(const DatabaseConfiguration2D* da
 
     return {};
 }
+#endif
