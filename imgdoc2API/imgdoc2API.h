@@ -8,16 +8,27 @@
 #include "queryresultinterop.h"
 #include "dimcoordinatequeryclauseinterop.h"
 #include "tilebaseinfointerop.h"
+#include "statisticsinterop.h"
 
 typedef std::intptr_t ObjectHandle;
 
 static constexpr ObjectHandle kInvalidOjectHandle = 0;
 
+typedef ObjectHandle HandleEnvironmentObject;
 typedef ObjectHandle HandleCreateOptions;
 typedef ObjectHandle HandleOpenExistingOptions;
 typedef ObjectHandle HandleDoc;
 typedef ObjectHandle HandleDocRead2D;
 typedef ObjectHandle HandleDocWrite2D;
+
+EXTERNAL_API(void)GetStatistics(ImgDoc2StatisticsInterop* statistics_interop);
+
+EXTERNAL_API(HandleEnvironmentObject) CreateEnvironmentObject(
+    std::intptr_t user_parameter, 
+    void (*pfn_log)(std::intptr_t userparam, int level, const char* szMessage),
+    bool (*pfn_is_level_active)(std::intptr_t userparam, int level),
+    void (*pfn_report_fatal_error_and_exit)(std::intptr_t userparam, const char* szMessage));
+EXTERNAL_API(void) DestroyEnvironmentObject(HandleEnvironmentObject handle);
 
 // factory methods
 EXTERNAL_API(HandleCreateOptions) CreateCreateOptions();
@@ -26,8 +37,8 @@ EXTERNAL_API(void) DestroyCreateOptions(HandleCreateOptions handle);
 EXTERNAL_API(HandleOpenExistingOptions) CreateOpenExistingOptions();
 EXTERNAL_API(void) DestroyOpenExistingOptions(HandleOpenExistingOptions handle);
 
-EXTERNAL_API(ImgDoc2ErrorCode) CreateNewDocument(HandleCreateOptions create_options, HandleDoc* document, ImgDoc2ErrorInformation* error_information);
-EXTERNAL_API(ImgDoc2ErrorCode) OpenExistingDocument(HandleOpenExistingOptions open_existing_options, HandleDoc* document, ImgDoc2ErrorInformation* error_information);
+EXTERNAL_API(ImgDoc2ErrorCode) CreateNewDocument(HandleCreateOptions create_options, HandleEnvironmentObject handle_environment_object, HandleDoc* document, ImgDoc2ErrorInformation* error_information);
+EXTERNAL_API(ImgDoc2ErrorCode) OpenExistingDocument(HandleOpenExistingOptions open_existing_options, HandleEnvironmentObject handle_environment_object, HandleDoc* document, ImgDoc2ErrorInformation* error_information);
 EXTERNAL_API(void) DestroyDocument(HandleDoc handle);
 
 EXTERNAL_API(ImgDoc2ErrorCode) IDoc_GetReader2d(HandleDoc handle_document, HandleDocRead2D* document_read2d, ImgDoc2ErrorInformation* error_information);
@@ -45,12 +56,12 @@ EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_SetUseBlobTable(HandleCreateOptions
 /// On input, 'size' specifies the size of the buffer pointed to 'filename_utf8' in bytes. On return, the actual
 /// number of bytes required is put here (including the terminating zero character).
 /// If 'filename_utf8' is non-null, then at most as many bytes as indicated by 'size' (on input) are written.
-/// \param          {HandleCreateOptions} handle Handle identifying an CreateOptions-object.
-/// \param [in,out] {char*} filename_utf8        If non-null, the buffer where the string will be placed.
-/// \param [in,out] {size_t*} size               On input, the size of the buffer pointed to by 'filename_utf8'; on output the number of bytes actually required.
-/// \param [out]    {ImgDoc2ErrorInformation*] error_information      If non-null, in case of an error, additional information describing the error are put here.
+/// \param          handle Handle identifying an CreateOptions-object.
+/// \param [in,out] filename_utf8        If non-null, the buffer where the string will be placed.
+/// \param [in,out] size                On input, the size of the buffer pointed to by 'filename_utf8'; on output the number of bytes actually required.
+/// \param [out]    error_information      If non-null, in case of an error, additional information describing the error are put here.
 ///
-/// \returns {ImgDoc2ErrorCode} An errorcode indicating success or failure of the operation.
+/// \returns An errorcode indicating success or failure of the operation.
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetFilename(HandleCreateOptions handle, char* filename_utf8, size_t* size, ImgDoc2ErrorInformation* error_information);
 
 EXTERNAL_API(ImgDoc2ErrorCode) CreateOptions_GetUseSpatialIndex(HandleCreateOptions handle, bool* use_spatial_index, ImgDoc2ErrorInformation* error_information);

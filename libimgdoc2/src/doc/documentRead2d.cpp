@@ -95,13 +95,9 @@ using namespace imgdoc2;
     // if we found multiple "blobs" with above query, this is a fatal error
     if (this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
     {
-        auto site = this->GetHostingEnvironment();
-        if (site)
-        {
-            ostringstream ss;
-            ss << "Multiple results from 'ReadTileData'-query, which must not happen.";
-            site->ReportFatalErrorAndExit(ss.str().c_str());
-        }
+        ostringstream ss;
+        ss << "Multiple results from 'ReadTileData'-query, which must not happen.";
+        this->GetHostingEnvironment()->ReportFatalErrorAndExit(ss.str().c_str());
     }
 }
 

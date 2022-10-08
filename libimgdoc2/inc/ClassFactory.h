@@ -29,6 +29,16 @@ namespace imgdoc2
 
         static imgdoc2::IOpenExistingOptions* CreateOpenExistingOptions();
 
+        static std::shared_ptr<IHostingEnvironment> CreateStandardHostingEnvironment();
+
+        static std::shared_ptr<IHostingEnvironment> CreateNullHostingEnvironment();
+
+        static std::shared_ptr<IHostingEnvironment> CreateHostingEnvironmentForFunctionPointers(
+            std::intptr_t userparam,
+            void (*pfnLog)(std::intptr_t userparam, int level, const char* szMessage),
+            bool (*pfnIsLevelActive)(std::intptr_t userparam, int level),
+            void (*pfnReportFatalErrorAndExit)(std::intptr_t userparam, const char* szMessage));
+
         /// Creates a new imgdoc2-document. A new database is constructed.
         ///
         /// \param [in] create_options  The options controlling the operation.

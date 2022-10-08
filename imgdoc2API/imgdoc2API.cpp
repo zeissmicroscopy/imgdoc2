@@ -1,11 +1,34 @@
 #include <memory>
 #include <algorithm>
+#include <atomic>
 #include <imgdoc2.h>
 #include "imgdoc2API.h"
 #include "utilities.h"
 
 using namespace imgdoc2;
 using namespace std;
+
+struct ImgDoc2ApiStatistics
+{
+    atomic_uint32_t number_of_createoptions_objects_active;
+    atomic_uint32_t number_of_openexistingoptions_objects_active;
+    atomic_uint32_t number_of_document_objects_active;
+    atomic_uint32_t number_of_reader2d_objects_active;
+    atomic_uint32_t number_of_writer2d_objects_active;
+
+    ImgDoc2StatisticsInterop GetInteropStruct()
+    {
+        ImgDoc2StatisticsInterop interop;
+        interop.number_of_createoptions_objects_active = this->number_of_createoptions_objects_active.load();
+        interop.number_of_openexistingoptions_objects_active = this->number_of_openexistingoptions_objects_active.load();
+        interop.number_of_document_objects_active = this->number_of_document_objects_active.load();
+        interop.number_of_reader2d_objects_active = this->number_of_reader2d_objects_active.load();
+        interop.number_of_writer2d_objects_active = this->number_of_writer2d_objects_active.load();
+        return interop;
+    }
+};
+
+static ImgDoc2ApiStatistics gImgDoc2ApiStatistics;
 
 template <typename t>
 struct SharedPtrWrapper
@@ -26,7 +49,7 @@ static void FillOutErrorInformation(const exception& exception, ImgDoc2ErrorInfo
     }
 }
 
-ImgDoc2ErrorCode MapExceptionToReturnValue(const exception& exception)
+static ImgDoc2ErrorCode MapExceptionToReturnValue(const exception& exception)
 {
     if (typeid(exception) == typeid(invalid_argument))
     {
@@ -43,8 +66,38 @@ ImgDoc2ErrorCode MapExceptionToReturnValue(const exception& exception)
     return ImgDoc2_ErrorCode_UnspecifiedError;
 }
 
+void GetStatistics(ImgDoc2StatisticsInterop* statistics_interop)
+{
+    if (statistics_interop != nullptr)
+    {
+        *statistics_interop = gImgDoc2ApiStatistics.GetInteropStruct();
+    }
+}
+
+HandleEnvironmentObject CreateEnvironmentObject(
+    std::intptr_t user_parameter,
+    void (*pfn_log)(std::intptr_t userparam, int level, const char* szMessage),
+    bool (*pfn_is_level_active)(std::intptr_t userparam, int level),
+    void (*pfn_report_fatal_error_and_exit)(std::intptr_t userparam, const char* szMessage))
+{
+    const auto environment = ClassFactory::CreateHostingEnvironmentForFunctionPointers(
+        user_parameter,
+        pfn_log,
+        pfn_is_level_active,
+        pfn_report_fatal_error_and_exit);
+    auto shared_environment_wrappping_object = new SharedPtrWrapper<IHostingEnvironment>{ environment };
+    return reinterpret_cast<HandleEnvironmentObject>(shared_environment_wrappping_object);
+}
+
+void DestroyEnvironmentObject(HandleEnvironmentObject handle)
+{
+    const auto object = reinterpret_cast<SharedPtrWrapper<IHostingEnvironment>*>(handle);  // NOLINT(performance-no-int-to-ptr)
+    delete object;
+}
+
 HandleCreateOptions CreateCreateOptions()
 {
+    ++gImgDoc2ApiStatistics.number_of_createoptions_objects_active;
     return reinterpret_cast<HandleCreateOptions>(ClassFactory::CreateCreateOptionsPtr());
 }
 
@@ -52,10 +105,12 @@ void DestroyCreateOptions(HandleCreateOptions handle)
 {
     const auto object = reinterpret_cast<ICreateOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
     delete object;
+    --gImgDoc2ApiStatistics.number_of_createoptions_objects_active;
 }
 
 HandleOpenExistingOptions CreateOpenExistingOptions()
 {
+    ++gImgDoc2ApiStatistics.number_of_openexistingoptions_objects_active;
     return reinterpret_cast<HandleOpenExistingOptions>(ClassFactory::CreateOpenExistingOptions());
 }
 
@@ -63,9 +118,10 @@ void DestroyOpenExistingOptions(HandleOpenExistingOptions handle)
 {
     const auto object = reinterpret_cast<IOpenExistingOptions*>(handle);  // NOLINT(performance-no-int-to-ptr)
     delete object;
+    --gImgDoc2ApiStatistics.number_of_openexistingoptions_objects_active;
 }
 
-ImgDoc2ErrorCode CreateNewDocument(HandleCreateOptions create_options, HandleDoc* document, ImgDoc2ErrorInformation* error_information)
+ImgDoc2ErrorCode CreateNewDocument(HandleCreateOptions create_options, HandleEnvironmentObject handle_environment_object, HandleDoc* document, ImgDoc2ErrorInformation* error_information)
 {
     if (document == nullptr)
     {
@@ -73,9 +129,15 @@ ImgDoc2ErrorCode CreateNewDocument(HandleCreateOptions create_options, HandleDoc
     }
 
     shared_ptr<imgdoc2::IDoc> imgdoc2;
+    shared_ptr<imgdoc2::IHostingEnvironment> hosting_environment;
+    if (handle_environment_object != kInvalidOjectHandle)
+    {
+        hosting_environment = reinterpret_cast<SharedPtrWrapper<IHostingEnvironment>*>(handle_environment_object)->shared_ptr_;
+    }
+
     try
     {
-        imgdoc2 = ClassFactory::CreateNew(reinterpret_cast<ICreateOptions*>(create_options));  // NOLINT(performance-no-int-to-ptr)
+        imgdoc2 = ClassFactory::CreateNew(reinterpret_cast<ICreateOptions*>(create_options), hosting_environment);  // NOLINT(performance-no-int-to-ptr)
     }
     catch (exception& exception)
     {
@@ -85,19 +147,37 @@ ImgDoc2ErrorCode CreateNewDocument(HandleCreateOptions create_options, HandleDoc
 
     auto shared_imgdoc_wrappping_object = new SharedPtrWrapper<IDoc>{ imgdoc2 };
     *document = reinterpret_cast<HandleDoc>(shared_imgdoc_wrappping_object);
+    ++gImgDoc2ApiStatistics.number_of_document_objects_active;
     return ImgDoc2_ErrorCode_OK;
 }
 
-ImgDoc2ErrorCode OpenExistingDocument(HandleOpenExistingOptions open_existing_options, HandleDoc* document, ImgDoc2ErrorInformation* error_information)
+ImgDoc2ErrorCode OpenExistingDocument(HandleOpenExistingOptions open_existing_options, HandleEnvironmentObject handle_environment_object, HandleDoc* document, ImgDoc2ErrorInformation* error_information)
 {
     if (document == nullptr)
     {
         return ImgDoc2_ErrorCode_InvalidArgument;
     }
 
-    auto imgdoc2 = ClassFactory::OpenExisting(reinterpret_cast<IOpenExistingOptions*>(open_existing_options));  // NOLINT(performance-no-int-to-ptr)
+    shared_ptr<imgdoc2::IDoc> imgdoc2;
+    shared_ptr<imgdoc2::IHostingEnvironment> hosting_environment;
+    if (handle_environment_object != kInvalidOjectHandle)
+    {
+        hosting_environment = reinterpret_cast<SharedPtrWrapper<IHostingEnvironment>*>(handle_environment_object)->shared_ptr_;
+    }
+
+    try
+    {
+        imgdoc2 = ClassFactory::OpenExisting(reinterpret_cast<IOpenExistingOptions*>(open_existing_options), hosting_environment);  // NOLINT(performance-no-int-to-ptr)
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
+
     auto shared_imgdoc_wrappping_object = new SharedPtrWrapper<IDoc>{ imgdoc2 };
     *document = reinterpret_cast<HandleDoc>(shared_imgdoc_wrappping_object);
+    ++gImgDoc2ApiStatistics.number_of_document_objects_active;
     return ImgDoc2_ErrorCode_OK;
 }
 
@@ -105,6 +185,7 @@ void DestroyDocument(HandleDoc handle)
 {
     const auto object = reinterpret_cast<SharedPtrWrapper<IDoc>*>(handle);  // NOLINT(performance-no-int-to-ptr)
     delete object;
+    --gImgDoc2ApiStatistics.number_of_document_objects_active;
 }
 
 ImgDoc2ErrorCode IDoc_GetReader2d(HandleDoc handle_document, HandleDocRead2D* reader, ImgDoc2ErrorInformation* error_information)
@@ -119,6 +200,7 @@ ImgDoc2ErrorCode IDoc_GetReader2d(HandleDoc handle_document, HandleDocRead2D* re
     {
         auto shared_reader2d_wrappping_object = new SharedPtrWrapper<IDocRead2d>{ spReader2d };
         *reader = reinterpret_cast<HandleDocRead2D>(shared_reader2d_wrappping_object);
+        ++gImgDoc2ApiStatistics.number_of_reader2d_objects_active;
     }
     else
     {
@@ -132,6 +214,7 @@ void DestroyReader2d(HandleDocRead2D handle)
 {
     const auto object = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle);  // NOLINT(performance-no-int-to-ptr)
     delete object;
+    --gImgDoc2ApiStatistics.number_of_reader2d_objects_active;
 }
 
 ImgDoc2ErrorCode IDoc_GetWriter2d(HandleDoc handle_document, HandleDocWrite2D* document_writer2d, ImgDoc2ErrorInformation* error_information)
@@ -146,6 +229,7 @@ ImgDoc2ErrorCode IDoc_GetWriter2d(HandleDoc handle_document, HandleDocWrite2D* d
     {
         auto shared_writer2d_wrappping_object = new SharedPtrWrapper<IDocWrite2d>{ spWriter2d };
         *document_writer2d = reinterpret_cast<HandleDocWrite2D>(shared_writer2d_wrappping_object);
+        ++gImgDoc2ApiStatistics.number_of_writer2d_objects_active;
     }
     else
     {
@@ -159,6 +243,7 @@ void DestroyWriter2d(HandleDocWrite2D handle)
 {
     const auto object = reinterpret_cast<SharedPtrWrapper<IDocWrite2d>*>(handle);  // NOLINT(performance-no-int-to-ptr)
     delete object;
+    --gImgDoc2ApiStatistics.number_of_writer2d_objects_active;
 }
 
 ImgDoc2ErrorCode CreateOptions_SetFilename(HandleCreateOptions handle, const char* filename_utf8, ImgDoc2ErrorInformation* error_information)

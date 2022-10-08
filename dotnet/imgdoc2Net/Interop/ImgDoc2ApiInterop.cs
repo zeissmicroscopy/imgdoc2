@@ -67,6 +67,7 @@
 
             try
             {
+                this.createEnvironmentObject = this.GetProcAddressThrowIfNotFound<CreateEnvironmentObjectDelegate>("CreateEnvironmentObject");
                 this.createCreateOptions = this.GetProcAddressThrowIfNotFound<VoidAndReturnIntPtrDelegate>("CreateCreateOptions");
                 this.destroyCreateOptions = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyCreateOptions");
                 this.createOpenExistingOptions = this.GetProcAddressThrowIfNotFound<VoidAndReturnIntPtrDelegate>("CreateOpenExistingOptions");
@@ -97,6 +98,8 @@
 
                 this.funcPtrBlobOutputSetSizeForwarder = Marshal.GetFunctionPointerForDelegate<BlobOutputSetSizeDelegate>(ImgDoc2ApiInterop.BlobOutputSetSizeDelegateObj);
                 this.funcPtrBlobOutputSetDataForwarder = Marshal.GetFunctionPointerForDelegate<BlobOutputSetDataDelegate>(ImgDoc2ApiInterop.BlobOutputSetDataDelegateObj);
+
+                this.InitializeEnvironmentObject();
             }
             catch (InvalidOperationException exception)
             {
@@ -412,7 +415,7 @@
             ImgDoc2ErrorInformation errorInformation;
             unsafe
             {
-                returnCode = this.createNewDocument(handleCreateOptions, &documentHandle, &errorInformation);
+                returnCode = this.createNewDocument(handleCreateOptions,this.environmentObjectHandle, &documentHandle, &errorInformation);
             }
 
             this.HandleErrorCases(returnCode, in errorInformation);
@@ -596,7 +599,7 @@
     /// <content> 
     /// This part is concerned with "Blob-output"-implementation - which is a mechanism for returning binary blobs
     /// from the native code, where we allocation of the memory is to take place in the managed code.
-    /// </summary>
+    /// </content>
     public partial class ImgDoc2ApiInterop
     {
         /// <summary>
@@ -669,6 +672,54 @@
                 Marshal.Copy(pointerToData, this.buffer, (int)offset, (int)size);
                 return true;
             }
+        }
+    }
+
+    /// <content> 
+    /// This part is concerned with constructing and implementing the "environment object".
+    /// </content>
+    public partial class ImgDoc2ApiInterop
+    {
+        private IntPtr environmentObjectHandle;
+
+        private IntPtr funcPtrEnvironmentLog;
+        private IntPtr funcPtrEnvironmentIsLevelActive;
+        private IntPtr funcPtrEnvironmentReportFatalErrorAndExit;
+
+        private delegate void EnvironmentCallbackFunctionLogDelegate(IntPtr userParameter, int level, IntPtr messageUtf8);
+        private delegate bool EnvironmentCallbackFunctionIsLevelActiveDelegate(IntPtr userParameter, int level);
+        private delegate void EnvironmentCallbackFunctionReportFatalErrorAndExitDelegate(IntPtr userParameter, IntPtr messageUtf8);
+
+        private static readonly EnvironmentCallbackFunctionLogDelegate EnvironmentCallbackFunctionLogDelegateObj = ImgDoc2ApiInterop.EnvironmentCallbackFunctionLog;
+        private static readonly EnvironmentCallbackFunctionIsLevelActiveDelegate EnvironmentCallbackFunctionIsLevelActiveDelegateObj = ImgDoc2ApiInterop.EnvironmentCallbackFunctionIsLevelActive;
+        private static readonly EnvironmentCallbackFunctionReportFatalErrorAndExitDelegate EnvironmentCallbackFunctionReportFatalErrorAndExitDelegateObj = ImgDoc2ApiInterop.EnvironmentCallbackFunctionReportFatalErrorAndExit;
+
+        private void InitializeEnvironmentObject()
+        {
+            this.funcPtrEnvironmentLog = Marshal.GetFunctionPointerForDelegate(EnvironmentCallbackFunctionLogDelegateObj);
+            this.funcPtrEnvironmentIsLevelActive = Marshal.GetFunctionPointerForDelegate(EnvironmentCallbackFunctionIsLevelActiveDelegateObj);
+            this.funcPtrEnvironmentReportFatalErrorAndExit = Marshal.GetFunctionPointerForDelegate(EnvironmentCallbackFunctionReportFatalErrorAndExitDelegateObj);
+
+            this.environmentObjectHandle = this.createEnvironmentObject(
+                IntPtr.Zero,
+                this.funcPtrEnvironmentLog,
+                this.funcPtrEnvironmentIsLevelActive,
+                this.funcPtrEnvironmentReportFatalErrorAndExit);
+        }
+
+        private static void EnvironmentCallbackFunctionLog(IntPtr userParameter, int level, IntPtr messageUtf8)
+        {
+
+        }
+
+        private static bool EnvironmentCallbackFunctionIsLevelActive(IntPtr userParameter, int level)
+        {
+            return true;
+        }
+
+        private static void EnvironmentCallbackFunctionReportFatalErrorAndExit(IntPtr userParameter, IntPtr messageUtf8)
+        {
+
         }
     }
 
@@ -747,6 +798,8 @@
         private readonly IDocRead2d_QueryDelegate idocread2dQuery;
         private readonly IDocRead2d_ReadTileDataDelegate idocread2dReadTileData;
 
+        private readonly CreateEnvironmentObjectDelegate createEnvironmentObject;
+
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate IntPtr VoidAndReturnIntPtrDelegate();
 
@@ -772,7 +825,7 @@
         private unsafe delegate int CreateOptions_GetDimensionsDelegate(IntPtr handle, byte* dim, IntPtr dimElementCount, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int CreateNewDocumentDelegate(IntPtr handleCreateOptions, IntPtr* documentHandle, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int CreateNewDocumentDelegate(IntPtr handleCreateOptions, IntPtr handleEnvironmentObject, IntPtr* documentHandle, ImgDoc2ErrorInformation* errorInformation);
 
         /// <summary>   Delegate used for the GetReader/GetWriter-methods of IDocument. </summary>
         /// <param name="documentHandle" type="IntPtr">                     Handle of the document. </param>
@@ -790,6 +843,9 @@
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_ReadTileDataDelegate(IntPtr read2dHandle, long pk, IntPtr blobOutputHandle, IntPtr functionPointerSetSize, IntPtr functionPointerSetData, ImgDoc2ErrorInformation* errorInformation);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate IntPtr CreateEnvironmentObjectDelegate(IntPtr userParameter, IntPtr pfnLog, IntPtr pfnIsLevelActive, IntPtr reportFatalErrorAndExit);
 
         private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 
@@ -849,6 +905,16 @@
             public uint PixelHeight;
             public byte PixelType;
         }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        struct ImgDoc2StatisticsInterop
+        {
+            public uint NumberOfCreateOptions_objectsActive;
+            public uint numberOfOpenExistingOptions_objectsActive;
+            public uint numberOfDocumentObjectsActive;
+            public uint numberOfReader2dObjectsActive;
+            public uint numberOfWriter2dObjectsActive;
+        };
     }
 
     /// <summary>   
