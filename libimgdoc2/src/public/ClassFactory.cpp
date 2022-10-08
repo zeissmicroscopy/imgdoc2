@@ -21,7 +21,7 @@ public:
         return true;
     }
 
-    void ReportFatalErrorAndExit(const char* message)
+    void ReportFatalErrorAndExit(const char* message) override
     {
         abort();
     }
@@ -39,7 +39,7 @@ public:
         return false;
     }
 
-    void ReportFatalErrorAndExit(const char* message)
+    void ReportFatalErrorAndExit(const char* message) override
     {
         abort();
     }
@@ -57,15 +57,15 @@ public:
         void (*pfnLog)(std::intptr_t userparam, int level, const char* szMessage),
         bool (*pfnIsLevelActive)(std::intptr_t userparam, int level),
         void (*pfnReportFatalErrorAndExit)(std::intptr_t userparam, const char* szMessage))
-              : userparam_(userparam),
-                pfnLog_(pfnLog),
-                pfnIsLevelActive_(pfnIsLevelActive),
-                pfnReportFatalErrorAndExit_(pfnReportFatalErrorAndExit)
+        : userparam_(userparam),
+        pfnLog_(pfnLog),
+        pfnIsLevelActive_(pfnIsLevelActive),
+        pfnReportFatalErrorAndExit_(pfnReportFatalErrorAndExit)
     {}
 
     void Log(int level, const char* message) override
     {
-        if (this->pfnLog_!=nullptr)
+        if (this->pfnLog_ != nullptr)
         {
             this->pfnLog_(this->userparam_, level, message);
         }
@@ -73,7 +73,7 @@ public:
 
     bool IsLogLevelActive(int level) override
     {
-        if (this->pfnIsLevelActive_==nullptr)
+        if (this->pfnIsLevelActive_ != nullptr)
         {
             return this->pfnIsLevelActive_(this->userparam_, level);
         }
@@ -81,10 +81,10 @@ public:
         return false;
     }
 
-    void ReportFatalErrorAndExit(const char* message)
+    void ReportFatalErrorAndExit(const char* message) override
     {
 
-        if (this->pfnReportFatalErrorAndExit_ == nullptr)
+        if (this->pfnReportFatalErrorAndExit_ != nullptr)
         {
             this->pfnReportFatalErrorAndExit_(this->userparam_, message);
         }

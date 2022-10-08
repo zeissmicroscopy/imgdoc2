@@ -909,11 +909,11 @@
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         struct ImgDoc2StatisticsInterop
         {
-            public uint NumberOfCreateOptions_objectsActive;
-            public uint numberOfOpenExistingOptions_objectsActive;
-            public uint numberOfDocumentObjectsActive;
-            public uint numberOfReader2dObjectsActive;
-            public uint numberOfWriter2dObjectsActive;
+            public uint NumberOfCreateOptionsObjectsActive;
+            public uint NumberOfOpenExistingOptionsObjectsActive;
+            public uint NumberOfDocumentObjectsActive;
+            public uint NumberOfReader2dObjectsActive;
+            public uint NumberOfWriter2dObjectsActive;
         };
     }
 
