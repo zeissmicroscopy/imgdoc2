@@ -8,6 +8,7 @@ namespace ImgDoc2Net_UnitTests
     using System;
     using System.Reflection.Metadata;
 
+    [Collection(NonParallelCollectionDefinitionClass.Name)]
     public class Read2dTests
     {
         [Fact]

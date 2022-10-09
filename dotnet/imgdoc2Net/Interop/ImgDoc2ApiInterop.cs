@@ -67,6 +67,7 @@
 
             try
             {
+                this.getStatistics = this.GetProcAddressThrowIfNotFound<GetStatisticsDelegate>("GetStatistics");
                 this.createEnvironmentObject = this.GetProcAddressThrowIfNotFound<CreateEnvironmentObjectDelegate>("CreateEnvironmentObject");
                 this.createCreateOptions = this.GetProcAddressThrowIfNotFound<VoidAndReturnIntPtrDelegate>("CreateCreateOptions");
                 this.destroyCreateOptions = this.GetProcAddressThrowIfNotFound<IntPtrAndReturnVoidDelegate>("DestroyCreateOptions");
@@ -185,6 +186,26 @@
     /// </content>
     public partial class ImgDoc2ApiInterop
     {
+        public ImgDoc2Statistics GetStatistics()
+        {
+            this.ThrowIfNotInitialized();
+
+            unsafe
+            {
+                ImgDoc2StatisticsInterop statisticsInterop = default(ImgDoc2StatisticsInterop);
+                this.getStatistics(&statisticsInterop);
+
+                return new ImgDoc2Statistics()
+                {
+                    NumberOfCreateOptionsObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfCreateOptionsObjectsActive),
+                    NumberOfOpenExistingOptionsObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfOpenExistingOptionsObjectsActive),
+                    NumberOfDocumentObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfDocumentObjectsActive),
+                    NumberOfReader2dObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfReader2dObjectsActive),
+                    NumberOfWriter2dObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfWriter2dObjectsActive),
+                };
+            }
+        }
+
         public IntPtr CreateCreateOptions()
         {
             this.ThrowIfNotInitialized();
@@ -415,7 +436,7 @@
             ImgDoc2ErrorInformation errorInformation;
             unsafe
             {
-                returnCode = this.createNewDocument(handleCreateOptions,this.environmentObjectHandle, &documentHandle, &errorInformation);
+                returnCode = this.createNewDocument(handleCreateOptions, this.environmentObjectHandle, &documentHandle, &errorInformation);
             }
 
             this.HandleErrorCases(returnCode, in errorInformation);
@@ -769,6 +790,7 @@
         private const int ImgDoc2_ErrorCode_InvalidArgument = 1;
         private const int ImgDoc2_ErrorCode_UnspecifiedError = 50;
 
+        private readonly GetStatisticsDelegate getStatistics;
         private readonly VoidAndReturnIntPtrDelegate createCreateOptions;
         private readonly IntPtrAndReturnVoidDelegate destroyCreateOptions;
 
@@ -799,6 +821,9 @@
         private readonly IDocRead2d_ReadTileDataDelegate idocread2dReadTileData;
 
         private readonly CreateEnvironmentObjectDelegate createEnvironmentObject;
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate void GetStatisticsDelegate(ImgDoc2StatisticsInterop* statisticsInterop);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate IntPtr VoidAndReturnIntPtrDelegate();
@@ -850,13 +875,13 @@
         private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        unsafe struct ImgDoc2ErrorInformation
+        private unsafe struct ImgDoc2ErrorInformation
         {
             public fixed byte message[ImgDoc2ErrorInformationMessageMaxLength];
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        unsafe struct DimensionAndValueInterop
+        private unsafe struct DimensionAndValueInterop
         {
             byte dimension;
             int value;
@@ -869,7 +894,7 @@
         /// is specifying.
         /// </summary>
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        unsafe struct TileCoordinateInterop
+        private unsafe struct TileCoordinateInterop
         {
             public int number_of_elements;
 
@@ -880,7 +905,7 @@
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        unsafe struct LogicalPositionInfoInterop
+        private unsafe struct LogicalPositionInfoInterop
         {
             public LogicalPositionInfoInterop(in LogicalPosition logicalPosition)
             {
@@ -899,7 +924,7 @@
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        struct TileBaseInfoInterop
+        private struct TileBaseInfoInterop
         {
             public uint PixelWidth;
             public uint PixelHeight;
@@ -907,7 +932,7 @@
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        struct ImgDoc2StatisticsInterop
+        private struct ImgDoc2StatisticsInterop
         {
             public uint NumberOfCreateOptionsObjectsActive;
             public uint NumberOfOpenExistingOptionsObjectsActive;

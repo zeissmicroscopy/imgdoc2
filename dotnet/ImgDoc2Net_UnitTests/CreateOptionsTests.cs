@@ -3,6 +3,7 @@
     using ImgDoc2Net;
     using ImgDoc2Net.Interop;
 
+    [Collection(NonParallelCollectionDefinitionClass.Name)]
     public class CreateOptionsTests
     {
         [Fact]
@@ -11,6 +12,10 @@
             const string Filename = "TESTTEXT";
             var instance = ImgDoc2ApiInterop.Instance;
 
+            // we get the "statistics" before running our test - the statistics contains counters of active objects,
+            //  and we check before leaving the test that it is where is was before (usually zero)
+            var statisticsBeforeTest = instance.GetStatistics();
+
             var handle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(handle, Filename);
 
@@ -18,6 +23,8 @@
 
             Assert.Equal(s, Filename);
             instance.DestroyCreateOptions(handle);
+
+            Assert.True(Utilities.IsActiveObjectCountEqual(statisticsBeforeTest, instance.GetStatistics()), "orphaned native imgdoc2-objects detected");
         }
 
         [Fact]
