@@ -19,6 +19,11 @@
         {
             // this test is operating on "interop"-level
             var instance = ImgDoc2ApiInterop.Instance;
+
+            // we get the "statistics" before running our test - the statistics contains counters of active objects,
+            //  and we check before leaving the test that it is where is was before (usually zero)
+            var statisticsBeforeTest = instance.GetStatistics();
+
             var createOptionsHandle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(createOptionsHandle, ":memory:");
             var documentHandle = instance.CreateNewDocument(createOptionsHandle);
@@ -28,6 +33,8 @@
             instance.DestroyCreateOptions(createOptionsHandle);
             instance.DestroyDocument(documentHandle);
             instance.DestroyReader2d(reader2dHandle);
+
+            Assert.True(Utilities.IsActiveObjectCountEqual(statisticsBeforeTest, instance.GetStatistics()), "orphaned native imgdoc2-objects detected");
         }
 
         [Fact]
@@ -55,6 +62,11 @@
         {
             // this test is operating on "interop"-level
             var instance = ImgDoc2ApiInterop.Instance;
+
+            // we get the "statistics" before running our test - the statistics contains counters of active objects,
+            //  and we check before leaving the test that it is where is was before (usually zero)
+            var statisticsBeforeTest = instance.GetStatistics();
+
             var createOptionsHandle = instance.CreateCreateOptions();
             instance.CreateOptionsSetFilename(createOptionsHandle, ":memory:");
             instance.CreateOptionsSetUseBlobTable(createOptionsHandle, true);
@@ -86,6 +98,8 @@
 
             Assert.True(queryResult.ResultComplete);
             Assert.True(queryResult.Keys.Count == 1, "We expect to find one tile as result of the query.");
+            
+            instance.DestroyReader2d(reader2dHandle);
 
             // now, query for "tiles with A=5" (where there is obviously none)
             dimensionQueryClause = new DimensionQueryClause();
@@ -100,6 +114,8 @@
             instance.DestroyDocument(documentHandle);
             instance.DestroyReader2d(reader2dHandle);
             instance.DestroyWriter2d(writer2dHandle);
+
+            Assert.True(Utilities.IsActiveObjectCountEqual(statisticsBeforeTest, instance.GetStatistics()), "orphaned native imgdoc2-objects detected");
         }
 
         [Fact]
