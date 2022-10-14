@@ -1,5 +1,6 @@
 ﻿namespace ImgDoc2Net_UnitTests
 {
+    using FluentAssertions;
     using ImgDoc2Net;
     using ImgDoc2Net.Implementation;
     using ImgDoc2Net.Interfaces;
@@ -302,14 +303,21 @@
             Assert.True(Utilities.IsActiveObjectCountEqual(statisticsBeforeTest, ImgDoc2ApiInterop.Instance.GetStatistics()), "orphaned native imgdoc2-objects detected");
         }
 
-        [Fact]
-        public void CreateNewDocumentWithoutSpatialIndexAndAdd10by10TilesUseSpatialQueryAndCheckResult()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void CreateNewDocumentWithAndWithoutSpatialIndexAndAdd10by10TilesUseSpatialQueryAndCheckResult(bool useSpatialIndex)
         {
+
+            // we get the "statistics" before running our test - the statistics contains counters of active objects,
+            //  and we check before leaving the test that it is where is was before (usually zero)
+            var statisticsBeforeTest = ImgDoc2ApiInterop.Instance.GetStatistics();
+
             {
                 using var createOptions = new CreateOptions();
 
                 createOptions.Filename = ":memory:";
-                createOptions.UseSpatialIndex = false;
+                createOptions.UseSpatialIndex = useSpatialIndex;
                 createOptions.UseBlobTable = true;
                 createOptions.AddDimension(new Dimension('M'));
 
@@ -332,7 +340,7 @@
                         Tile2dBaseInfo tile2dBaseInfo = new Tile2dBaseInfo(1, 1, PixelType.Gray8);
                         byte[] tileData = new byte[5] { 1, 2, 3, 4, 5 };
                         long pk = writer.AddTile(coordinate, logicalPosition, tile2dBaseInfo, DataType.UncompressedBitmap, tileData);
-                        if (x >= 0 && x < 2 && y >= 0 && y < 2)
+                        if (x >= 0 && x <= 2 && y >= 0 && y <= 2)
                         {
                             expectedTiles.Add(pk);
                         }
@@ -343,8 +351,10 @@
                 var listOfTiles = reader.GetTilesIntersectingRect(new Rectangle() { X = 0, Y = 0, Width = 2, Height = 2 }, null);
 
                 // check whether the two lists have the same content, irrespective of order
-                Assert.True(!expectedTiles.Except(listOfTiles).Any() && listOfTiles.Count == expectedTiles.Count);
+                expectedTiles.Should().BeEquivalentTo(listOfTiles);
             }
+
+            Assert.True(Utilities.IsActiveObjectCountEqual(statisticsBeforeTest, ImgDoc2ApiInterop.Instance.GetStatistics()), "orphaned native imgdoc2-objects detected");
         }
     }
 }
