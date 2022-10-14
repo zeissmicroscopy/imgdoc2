@@ -31,6 +31,13 @@ namespace ImgDoc2Net.Implementation
             // TODO(Jbl): error-handling
             return ImgDoc2ApiInterop.Instance.Reader2dReadTileData(this.reader2dObjectHandle, key);
         }
+
+        public List<long> GetTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause)
+        {
+            // TODO(Jbl): error-handling
+            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dGetTilesIntersectingRect(this.reader2dObjectHandle, rectangle, queryClause);
+            return queryResult.Keys;
+        }
     }
 
     /// <content>

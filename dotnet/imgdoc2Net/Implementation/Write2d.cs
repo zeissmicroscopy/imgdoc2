@@ -8,6 +8,12 @@ namespace ImgDoc2Net.Implementation
     using ImgDoc2Net.Interfaces;
     using ImgDoc2Net.Interop;
 
+    /// <summary>   
+    /// Implementation of the "IWrite2d" interface. 
+    /// </summary>
+    /// <remarks>
+    /// TODO: guard against multiple dispose-calls
+    /// </remarks>
     internal partial class Write2d : IWrite2d
     {
         private IntPtr writer2dObjectHandle;

@@ -56,3 +56,8 @@ using namespace imgdoc2;
     // TODO: add error handling
     return static_cast<imgdoc2::DataTypes>(data_type_interop);
 }
+
+/*static*/imgdoc2::RectangleD Utilities::ConvertRectangleDoubleInterop(const RectangleDoubleInterop& rectangle_interop)
+{
+    return RectangleD(rectangle_interop.x, rectangle_interop.y, rectangle_interop.width, rectangle_interop.height);
+}

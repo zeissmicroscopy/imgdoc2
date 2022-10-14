@@ -10,7 +10,8 @@ add_library(imgdoc2API  SHARED
                 "queryresultinterop.h" 
                 "dimcoordinatequeryclauseinterop.h" 
                 "tilebaseinfointerop.h" 
-                "statisticsinterop.h")
+                "statisticsinterop.h"
+                "rectangledoubleinterop.h")
 
 target_link_libraries(imgdoc2API PRIVATE libimgdoc2)
 

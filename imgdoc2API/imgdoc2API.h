@@ -9,6 +9,7 @@
 #include "dimcoordinatequeryclauseinterop.h"
 #include "tilebaseinfointerop.h"
 #include "statisticsinterop.h"
+#include "rectangledoubleinterop.h"
 
 typedef std::intptr_t ObjectHandle;
 
@@ -94,4 +95,11 @@ EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_ReadTileData(
     std::intptr_t blob_output_handle,
     bool(LIBIMGDOC2_STDCALL* pfnReserve)(std::intptr_t blob_output_handle, std::uint64_t size),
     bool(LIBIMGDOC2_STDCALL* pfnSetData)(std::intptr_t blob_output_handle, std::uint64_t offset, std::uint64_t size, const void* data),
+    ImgDoc2ErrorInformation* error_information);
+
+EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_GetTilesIntersectingRect(
+    HandleDocRead2D handle,
+    const RectangleDoubleInterop* query_rectangle,
+    const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop,
+    QueryResultInterop* result,
     ImgDoc2ErrorInformation* error_information);

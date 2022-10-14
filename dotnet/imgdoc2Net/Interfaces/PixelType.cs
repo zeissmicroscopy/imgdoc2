@@ -2,6 +2,9 @@
 
 namespace ImgDoc2Net.Interfaces
 {
+    /// <summary>   
+    /// This enumeration lists the pixel types. 
+    /// </summary>
     public enum PixelType 
     {
         Gray8,

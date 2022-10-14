@@ -95,6 +95,7 @@
 
                 this.idocwrite2dAddTile = this.GetProcAddressThrowIfNotFound<IDocWrite2d_AddTileDelegate>("IDocWrite2d_AddTile");
                 this.idocread2dQuery = this.GetProcAddressThrowIfNotFound<IDocRead2d_QueryDelegate>("IDocRead2d_Query");
+                this.idocread2dGetTilesIntersectingRect = this.GetProcAddressThrowIfNotFound<IDocRead2d_GetTilesIntersectingRect>("IDocRead2d_GetTilesIntersectingRect");
                 this.idocread2dReadTileData = this.GetProcAddressThrowIfNotFound<IDocRead2d_ReadTileDataDelegate>("IDocRead2d_ReadTileData");
 
                 this.funcPtrBlobOutputSetSizeForwarder = Marshal.GetFunctionPointerForDelegate<BlobOutputSetSizeDelegate>(ImgDoc2ApiInterop.BlobOutputSetSizeDelegateObj);
@@ -197,11 +198,11 @@
 
                 return new ImgDoc2Statistics()
                 {
-                    NumberOfCreateOptionsObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfCreateOptionsObjectsActive),
-                    NumberOfOpenExistingOptionsObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfOpenExistingOptionsObjectsActive),
-                    NumberOfDocumentObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfDocumentObjectsActive),
-                    NumberOfReader2dObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfReader2dObjectsActive),
-                    NumberOfWriter2dObjectsActive = Convert.ToInt32(statisticsInterop.NumberOfWriter2dObjectsActive),
+                    NumberOfCreateOptionsObjectsActive = (int)statisticsInterop.NumberOfCreateOptionsObjectsActive,
+                    NumberOfOpenExistingOptionsObjectsActive = (int)statisticsInterop.NumberOfOpenExistingOptionsObjectsActive,
+                    NumberOfDocumentObjectsActive = (int)statisticsInterop.NumberOfDocumentObjectsActive,
+                    NumberOfReader2dObjectsActive = (int)statisticsInterop.NumberOfReader2dObjectsActive,
+                    NumberOfWriter2dObjectsActive = (int)statisticsInterop.NumberOfWriter2dObjectsActive,
                 };
             }
         }
@@ -547,6 +548,42 @@
             return result;
         }
 
+        public QueryResult Reader2dGetTilesIntersectingRect(IntPtr read2dHandle, Rectangle rectangle, IDimensionQueryClause dimensionQueryClause)
+        {
+            byte[] dimensionQueryClauseInterop = dimensionQueryClause != null ? ConvertToTileCoordinateInterop(dimensionQueryClause) : null;
+            byte[] queryResultInterop = CreateQueryResultInterop(50);
+
+            int returnCode;
+            ImgDoc2ErrorInformation errorInformation;
+
+            unsafe
+            {
+                if (dimensionQueryClauseInterop == null)
+                {
+                    fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
+                    {
+                        RectangleDoubleInterop rectangleDoubleInterop = new RectangleDoubleInterop() { X = rectangle.X, Y = rectangle.Y, Width = rectangle.Width, Height = rectangle.Height };
+                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, IntPtr.Zero, new IntPtr(pointerQueryResultInterop), &errorInformation);
+                    }
+                }
+                else
+                {
+                    fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
+                    fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
+                    {
+                        RectangleDoubleInterop rectangleDoubleInterop = new RectangleDoubleInterop() { X = rectangle.X, Y = rectangle.Y, Width = rectangle.Width, Height = rectangle.Height };
+                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, new IntPtr(pointerDimensionQueryClauseInterop), new IntPtr(pointerQueryResultInterop), &errorInformation);
+                    }
+                }
+            }
+
+            this.HandleErrorCases(returnCode, in errorInformation);
+
+            QueryResult result = ConvertToQueryResult(queryResultInterop);
+            return result;
+
+        }
+
         public byte[] Reader2dReadTileData(IntPtr read2dHandle, long pk)
         {
             int returnCode;
@@ -818,6 +855,7 @@
 
         private readonly IDocWrite2d_AddTileDelegate idocwrite2dAddTile;
         private readonly IDocRead2d_QueryDelegate idocread2dQuery;
+        private readonly IDocRead2d_GetTilesIntersectingRect idocread2dGetTilesIntersectingRect;
         private readonly IDocRead2d_ReadTileDataDelegate idocread2dReadTileData;
 
         private readonly CreateEnvironmentObjectDelegate createEnvironmentObject;
@@ -865,6 +903,9 @@
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int IDocRead2d_GetTilesIntersectingRect(IntPtr read2dHandle, RectangleDoubleInterop* rectangle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_ReadTileDataDelegate(IntPtr read2dHandle, long pk, IntPtr blobOutputHandle, IntPtr functionPointerSetSize, IntPtr functionPointerSetData, ImgDoc2ErrorInformation* errorInformation);
@@ -940,6 +981,15 @@
             public uint NumberOfReader2dObjectsActive;
             public uint NumberOfWriter2dObjectsActive;
         };
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct RectangleDoubleInterop
+        {
+            public double X;
+            public double Y;
+            public double Width;
+            public double Height;
+        }
     }
 
     /// <summary>   

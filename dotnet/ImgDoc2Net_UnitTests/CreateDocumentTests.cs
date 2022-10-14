@@ -10,6 +10,8 @@
     using System.Reflection.Metadata;
     using System.Text;
     using System.Threading.Tasks;
+    using static ImgDoc2Net.Interop.ImgDoc2ApiInterop;
+    using static System.Reflection.Metadata.BlobBuilder;
 
     [Collection(NonParallelCollectionDefinitionClass.Name)]
     public class CreateDocumentTests
@@ -98,7 +100,7 @@
 
             Assert.True(queryResult.ResultComplete);
             Assert.True(queryResult.Keys.Count == 1, "We expect to find one tile as result of the query.");
-            
+
             instance.DestroyReader2d(reader2dHandle);
 
             // now, query for "tiles with A=5" (where there is obviously none)
@@ -244,6 +246,105 @@
             }
 
             Assert.True(Utilities.IsActiveObjectCountEqual(statisticsBeforeTest, instance.GetStatistics()), "orphaned native imgdoc2-objects detected");
+        }
+
+        [Fact]
+        public void CreateNewDocumentAndAddATileWithTileDataAndReadTileDataBack()
+        {
+            // this is the same operation as the test above ("CreateNewDocumentAndAddATileWithTileDataAndReadTileDataBackAndCompareAtInteropLevel"), 
+            // but operating on "interface level"
+
+            // we get the "statistics" before running our test - the statistics contains counters of active objects,
+            //  and we check before leaving the test that it is where is was before (usually zero)
+            var statisticsBeforeTest = ImgDoc2ApiInterop.Instance.GetStatistics();
+
+            {
+                using var createOptions = new CreateOptions();
+
+                createOptions.Filename = ":memory:";
+                createOptions.UseSpatialIndex = true;
+                createOptions.UseBlobTable = true;
+                createOptions.AddDimension(new Dimension('A'));
+                createOptions.AddDimension(new Dimension('Z'));
+
+                using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+                using var writer = document.Get2dWriter();
+
+                // add one tile with coordinate "A1Z2"
+                TileCoordinate coordinate = new TileCoordinate(
+                    new[]
+                    {
+                    Tuple.Create(new Dimension('A'), 1) ,
+                    Tuple.Create(new Dimension('Z'), 2)
+                    });
+
+                LogicalPosition logicalPosition = new LogicalPosition() { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
+                Tile2dBaseInfo tile2dBaseInfo = new Tile2dBaseInfo(1, 2, PixelType.Gray8);
+                byte[] tileData = new byte[5] { 1, 2, 3, 4, 5 };
+
+                writer.AddTile(coordinate, logicalPosition, tile2dBaseInfo, DataType.UncompressedBitmap, tileData);
+
+                using var reader = document.Get2dReader();
+                var dimensionQueryClause = new DimensionQueryClause();
+                dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
+                var listOfTiles = reader.Query(dimensionQueryClause);
+                Assert.True(listOfTiles.Count == 1, "We expect to find one tile as result of the query.");
+
+                var tileDataReadFromDocument = reader.ReadTileData(listOfTiles[0]);
+                Assert.True(tileDataReadFromDocument.Length == 5);
+                Assert.True(tileDataReadFromDocument[0] == tileData[0] &&
+                                tileDataReadFromDocument[1] == tileData[1] &&
+                                tileDataReadFromDocument[2] == tileData[2] &&
+                                tileDataReadFromDocument[3] == tileData[3] &&
+                                tileDataReadFromDocument[4] == tileData[4]);
+            }
+
+            Assert.True(Utilities.IsActiveObjectCountEqual(statisticsBeforeTest, ImgDoc2ApiInterop.Instance.GetStatistics()), "orphaned native imgdoc2-objects detected");
+        }
+
+        [Fact]
+        public void CreateNewDocumentWithoutSpatialIndexAndAdd10by10TilesUseSpatialQueryAndCheckResult()
+        {
+            {
+                using var createOptions = new CreateOptions();
+
+                createOptions.Filename = ":memory:";
+                createOptions.UseSpatialIndex = false;
+                createOptions.UseBlobTable = true;
+                createOptions.AddDimension(new Dimension('M'));
+
+                using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+                using var writer = document.Get2dWriter();
+
+                List<long> expectedTiles = new List<long>();
+
+                for (int x = 0; x < 10; ++x)
+                {
+                    for (int y = 0; y < 10; ++y)
+                    {
+                        TileCoordinate coordinate = new TileCoordinate(
+                                                              new[]
+                                                              {
+                                                                Tuple.Create(new Dimension('M'), y*10+x) ,
+                                                              });
+
+                        LogicalPosition logicalPosition = new LogicalPosition() { PositionX = x, PositionY = y, Width = 1, Height = 1, PyramidLevel = 0 };
+                        Tile2dBaseInfo tile2dBaseInfo = new Tile2dBaseInfo(1, 1, PixelType.Gray8);
+                        byte[] tileData = new byte[5] { 1, 2, 3, 4, 5 };
+                        long pk = writer.AddTile(coordinate, logicalPosition, tile2dBaseInfo, DataType.UncompressedBitmap, tileData);
+                        if (x >= 0 && x < 2 && y >= 0 && y < 2)
+                        {
+                            expectedTiles.Add(pk);
+                        }
+                    }
+                }
+
+                using var reader = document.Get2dReader();
+                var listOfTiles = reader.GetTilesIntersectingRect(new Rectangle() { X = 0, Y = 0, Width = 2, Height = 2 }, null);
+
+                // check whether the two lists have the same content, irrespective of order
+                Assert.True(!expectedTiles.Except(listOfTiles).Any() && listOfTiles.Count == expectedTiles.Count);
+            }
         }
     }
 }

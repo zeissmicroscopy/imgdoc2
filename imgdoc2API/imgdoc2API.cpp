@@ -511,6 +511,54 @@ ImgDoc2ErrorCode IDocRead2d_Query(HandleDocRead2D handle, const DimensionQueryCl
     return ImgDoc2_ErrorCode_OK;
 }
 
+ImgDoc2ErrorCode IDocRead2d_GetTilesIntersectingRect(
+    HandleDocRead2D handle,
+    const RectangleDoubleInterop* query_rectangle,
+    const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop,
+    QueryResultInterop* result,
+    ImgDoc2ErrorInformation* error_information)
+{
+    auto reader2d = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle)->shared_ptr_;
+    CDimCoordinateQueryClause dimension_coordinate_query_clause;
+    if (dim_coordinate_query_clause_interop != nullptr)
+    {
+        dimension_coordinate_query_clause = Utilities::ConvertDimensionQueryRangeClauseInteropToImgdoc2(dim_coordinate_query_clause_interop);
+    }
+
+    RectangleD rectangle = Utilities::ConvertRectangleDoubleInterop(*query_rectangle);
+    uint32_t results_retrieved_count = 0;
+    result->more_results_available = 0;
+
+    try
+    {
+        reader2d->GetTilesIntersectingRect(
+            rectangle, 
+            dim_coordinate_query_clause_interop != nullptr ? &dimension_coordinate_query_clause : nullptr, 
+            nullptr,
+            [result, &results_retrieved_count](imgdoc2::dbIndex index)->bool
+            {
+                if (results_retrieved_count < result->element_count)
+                {
+                    result->indices[results_retrieved_count] = index;
+                    ++results_retrieved_count;
+                    return true;
+                }
+
+                result->more_results_available = 1;
+                return false;
+            });
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
+
+    result->element_count = results_retrieved_count;
+
+    return ImgDoc2_ErrorCode_OK;
+}
+
 ImgDoc2ErrorCode IDocRead2d_ReadTileData(
     HandleDocRead2D handle,
     long pk,
@@ -535,3 +583,4 @@ ImgDoc2ErrorCode IDocRead2d_ReadTileData(
 
     return ImgDoc2_ErrorCode_OK;
 }
+

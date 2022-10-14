@@ -6,6 +6,7 @@
 #include "tilecoordinateinterop.h"
 #include "dimcoordinatequeryclauseinterop.h"
 #include "tilebaseinfointerop.h"
+#include "rectangledoubleinterop.h"
 
 class Utilities
 {
@@ -15,6 +16,7 @@ public:
     static imgdoc2::CDimCoordinateQueryClause ConvertDimensionQueryRangeClauseInteropToImgdoc2(const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop);
     static imgdoc2::TileBaseInfo ConvertTileBaseInfoInteropToImgdoc2(const TileBaseInfoInterop& tile_base_info_interop);
     static imgdoc2::DataTypes ConvertDatatypeEnumInterop(std::uint8_t data_type_interop);
+    static imgdoc2::RectangleD ConvertRectangleDoubleInterop(const RectangleDoubleInterop& rectangle_interop);
 public:
     class BlobOutputOnFunctionsDecorator : public imgdoc2::IBlobOutput
     {
