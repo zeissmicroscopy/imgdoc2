@@ -306,7 +306,7 @@
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void CreateNewDocumentWithAndWithoutSpatialIndexAndAdd10by10TilesUseSpatialQueryAndCheckResult(bool useSpatialIndex)
+        public void CreateNewDocumentWithAndWithoutSpatialIndexAndAdd10By10TilesUseSpatialQueryAndCheckResult(bool useSpatialIndex)
         {
 
             // we get the "statistics" before running our test - the statistics contains counters of active objects,
@@ -324,7 +324,7 @@
                 using var document = ImgDoc2Net.Document.CreateNew(createOptions);
                 using var writer = document.Get2dWriter();
 
-                List<long> expectedTiles = new List<long>();
+                List<long> expectedTiles = new();
 
                 for (int x = 0; x < 10; ++x)
                 {
