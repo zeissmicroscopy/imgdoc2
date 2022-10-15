@@ -11,6 +11,7 @@
 #include "TileCoordinate.h"
 #include "exceptions.h"
 #include "DimCoordinateQueryClause.h"
+#include "TileInfoQueryClause.h"
 
 #include "impl/BlobOutputImplementations.h"
 #include "impl/DataObjectImplementations.h"

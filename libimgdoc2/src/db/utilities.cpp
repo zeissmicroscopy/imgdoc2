@@ -53,37 +53,72 @@ using namespace imgdoc2;
 
 /*static*/std::tuple<std::string, std::vector<Utilities::DataBindInfo>> Utilities::CreateWhereConditionForTileInfoQueryClause(const imgdoc2::ITileInfoQueryClause* clause, const std::string& column_name_pyramidlevel)
 {
-    ConditionalOperator conditional_operator{ ConditionalOperator::Invalid };
-    int value = -1;
-    if (!clause->GetPyramidLevelCondition(&conditional_operator, &value))
-    {
-        return make_tuple(string(), vector<Utilities::DataBindInfo>());
-    }
-
     ostringstream string_stream;
-    string_stream << "( [" << column_name_pyramidlevel << "] " << Utilities::ConditionalOperatorToString(conditional_operator) << " ?)";
-    return make_tuple(string_stream.str(), vector<Utilities::DataBindInfo>{DataBindInfo(value)});
+    string_stream << "(";
+    vector<Utilities::DataBindInfo> data_bind_infos;
+    for (int no = 0;; ++no)
+    {
+        int value = -1;
+        ComparisonOperation comparison_operator{ ComparisonOperation::Invalid };
+        LogicalOperator logical_operator{ LogicalOperator::Invalid };
+        const bool b = clause->GetPyramidLevelCondition(no, &logical_operator, &comparison_operator, &value);
+        if (!b)
+        {
+            if (no == 0)
+            {
+                return make_tuple(string(), vector<Utilities::DataBindInfo>());
+            }
+
+            string_stream << ")";
+            return make_tuple(string_stream.str(), data_bind_infos);
+        }
+
+        if (no > 0)
+        {
+            string_stream << " " << Utilities::LogicalOperatorToString(logical_operator) << " ";
+        }
+
+        string_stream << "( [" << column_name_pyramidlevel << "] " << Utilities::ComparisonOperatorToString(comparison_operator) << " ?)";
+        data_bind_infos.push_back({ DataBindInfo(value) });
+    }
 }
 
-/*static*/const char* Utilities::ConditionalOperatorToString(ConditionalOperator conditional_operator)
+/*static*/const char* Utilities::ComparisonOperatorToString(ComparisonOperation comparison_operator)
 {
-    switch (conditional_operator)
+    switch (comparison_operator)
     {
-    case ConditionalOperator::Equal:
+    case ComparisonOperation::Equal:
         return "=";
-    case ConditionalOperator::NotEqual:
+    case ComparisonOperation::NotEqual:
         return "<>";
-    case ConditionalOperator::LessThan:
+    case ComparisonOperation::LessThan:
         return "<";
-    case ConditionalOperator::LessThanOrEqual:
+    case ComparisonOperation::LessThanOrEqual:
         return "<=";
-    case ConditionalOperator::GreaterThan:
+    case ComparisonOperation::GreaterThan:
         return ">";
-    case ConditionalOperator::GreaterThanOrEqual:
+    case ComparisonOperation::GreaterThanOrEqual:
         return ">=";
+    case ComparisonOperation::Invalid:
     default:
         throw invalid_argument("invalid operator encountered");
     }
+}
+
+/*static*/const char* Utilities::LogicalOperatorToString(imgdoc2::LogicalOperator logical_operator)
+{
+    switch (logical_operator)
+    {
+    case LogicalOperator::And:
+        return "AND";
+    case LogicalOperator::Or:
+        return "OR";
+    case LogicalOperator::Invalid:
+    default:
+        throw invalid_argument("invalid operator encountered");
+
+    }
+
 }
 
 /*static*/std::tuple<std::string, std::vector<Utilities::DataBindInfo>> Utilities::CreateWhereStatement(const imgdoc2::IDimCoordinateQueryClause* dim_coordinate_query_clause, const imgdoc2::ITileInfoQueryClause* tileInfo_query_clause, const DatabaseConfiguration2D& database_configuration)

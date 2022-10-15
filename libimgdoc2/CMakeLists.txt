@@ -58,7 +58,8 @@ set(LibImgDoc2_Srcfiles
          "src/public/OpenExistingOptions.cpp"
          "inc/impl/BlobOutputImplementations.h"
          "inc/impl/DataObjectImplementations.h" 
-         "inc/IEnvironment.h")
+         "inc/IEnvironment.h" 
+         "inc/TileInfoQueryClause.h")
 
 add_library(libimgdoc2 STATIC
                 ${LibImgDoc2_Srcfiles}

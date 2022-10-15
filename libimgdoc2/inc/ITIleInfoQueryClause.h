@@ -5,7 +5,14 @@
 
 namespace imgdoc2
 {
-    enum class ConditionalOperator
+    enum class LogicalOperator
+    {
+        Invalid,
+        And,
+        Or,
+    };
+
+    enum class ComparisonOperation
     {
         Invalid = 0,
         Equal,
@@ -19,7 +26,14 @@ namespace imgdoc2
     class ITileInfoQueryClause
     {
     public:
-        virtual bool GetPyramidLevelCondition(ConditionalOperator* op, int* value) const = 0;
+        virtual bool GetPyramidLevelCondition(int no, LogicalOperator* logical_operator, ComparisonOperation* op, int* value) const = 0;
         virtual ~ITileInfoQueryClause() = default;
     };
+
+    //class ITileInfoQueryClause2
+    //{
+    //public:
+    //    virtual bool 
+    //};
+
 }

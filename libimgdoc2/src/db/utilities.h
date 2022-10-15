@@ -52,7 +52,8 @@ public:
 
     static void DeleteItemFromPropertyBag(IDbConnection* db_connection, const std::string& table_name, const std::string& key_column_name, const std::string& value_column_name, const std::string& key);
 private:
-    static const char* ConditionalOperatorToString(imgdoc2::ConditionalOperator conditional_operator);
+    static const char* ComparisonOperatorToString(imgdoc2::ComparisonOperation comparison_operator);
+    static const char* LogicalOperatorToString(imgdoc2::LogicalOperator logical_operator);
 
     static bool ProcessRangeClause(const std::string& column_name_for_dimension, const imgdoc2::IDimCoordinateQueryClause::RangeClause& rangeClause, std::vector<Utilities::DataBindInfo>& databind_info, std::ostringstream& string_stream);
 

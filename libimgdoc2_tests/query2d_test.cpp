@@ -90,44 +90,6 @@ INSTANTIATE_TEST_SUITE_P(
     WithAndWithoutSpatialIndexFixture1,
     testing::Values(true, false));
 
-/*
-TEST(Query2d, WithSpatialIndexQueryForRectAndCheckResult1)
-{
-    // Using the 10x10 checkerboard-document, we query for tiles overlapping with the ROI (0,0,15,15).
-    // We expect to find 4 tiles, with M=1, 2, 11, 12.
-    auto doc = CreateCheckerboardDocument(true);
-    auto reader = doc->GetReader2d();
-
-    vector<dbIndex> result_indices;
-    reader->GetTilesIntersectingRect(RectangleD{ 0,0,15,15 },
-        [&](dbIndex index)->bool
-        {
-            result_indices.emplace_back(index); return true;
-        });
-
-    const auto m_indices = GetMIndexOfItems(reader.get(), result_indices);
-    EXPECT_THAT(m_indices, UnorderedElementsAre(1, 11, 2, 12));
-}
-
-TEST(Query2d, WithoutSpatialIndexQueryForRectAndCheckResult1)
-{
-    // Using the 10x10 checkerboard-document, we query for tiles overlapping with the ROI (0,0,15,15).
-    // We expect to find 4 tiles, with M=1, 2, 11, 12.
-    auto doc = CreateCheckerboardDocument(false);
-    auto reader = doc->GetReader2d();
-
-    vector<dbIndex> result_indices;
-    reader->GetTilesIntersectingRect(RectangleD{ 0,0,15,15 },
-        [&](dbIndex index)->bool
-        {
-            result_indices.emplace_back(index); return true;
-        });
-
-    const auto m_indices = GetMIndexOfItems(reader.get(), result_indices);
-    EXPECT_THAT(m_indices, UnorderedElementsAre(1, 11, 2, 12));
-}
-*/
-
 struct WithAndWithoutSpatialIndexFixture2 : public testing::TestWithParam<bool> {};
 TEST_P(WithAndWithoutSpatialIndexFixture2, IndexQueryForRectAndCheckResult)
 {
