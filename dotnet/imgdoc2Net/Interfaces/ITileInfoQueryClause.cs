@@ -6,14 +6,20 @@
 
     public enum QueryLogicalOperator : byte
     {
-        Invalid,
+        Invalid = 0,
         And,
         Or
     }
 
     public enum QueryComparisonOperator : byte
     {
-
+        Invalid = 0,
+        Equal,
+        NotEqual,
+        LessThan,
+        LessThanOrEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
     }
 
     public struct QueryClause
