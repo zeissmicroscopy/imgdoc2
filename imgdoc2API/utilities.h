@@ -5,6 +5,7 @@
 #include "logicalpositioninfointerop.h"
 #include "tilecoordinateinterop.h"
 #include "dimcoordinatequeryclauseinterop.h"
+#include "tileinfoqueryclauseinterop.h"
 #include "tilebaseinfointerop.h"
 #include "rectangledoubleinterop.h"
 
@@ -14,6 +15,7 @@ public:
     static imgdoc2::TileCoordinate ConvertToTileCoordinate(const TileCoordinateInterop* tile_coordinate_interop);
     static imgdoc2::LogicalPositionInfo ConvertLogicalPositionInfoInteropToImgdoc2(const LogicalPositionInfoInterop& logical_position_info_interop);
     static imgdoc2::CDimCoordinateQueryClause ConvertDimensionQueryRangeClauseInteropToImgdoc2(const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop);
+    static imgdoc2::CTileInfoQueryClause ConvertTileInfoQueryClauseInteropToImgdoc2(const TileInfoQueryClauseInterop* tile_info_query_clause_interop);
     static imgdoc2::TileBaseInfo ConvertTileBaseInfoInteropToImgdoc2(const TileBaseInfoInterop& tile_base_info_interop);
     static imgdoc2::DataTypes ConvertDatatypeEnumInterop(std::uint8_t data_type_interop);
     static imgdoc2::RectangleD ConvertRectangleDoubleInterop(const RectangleDoubleInterop& rectangle_interop);
@@ -41,4 +43,7 @@ public:
         fnReserve fpnReserve_;
         fnSetData fpnSetData_;
     };
+
+    static imgdoc2::LogicalOperator ConvertToLogicalOperatorEnum(std::uint8_t value);
+    static imgdoc2::ComparisonOperation ConvertToComparisonOperationEnum(std::uint8_t value);
 };

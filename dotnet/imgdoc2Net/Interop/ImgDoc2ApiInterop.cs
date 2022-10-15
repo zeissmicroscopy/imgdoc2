@@ -525,9 +525,10 @@
             return resultPk;
         }
 
-        public QueryResult Reader2dQuery(IntPtr read2dHandle, IDimensionQueryClause clause)
+        public QueryResult Reader2dQuery(IntPtr read2dHandle, IDimensionQueryClause clause, ITileInfoQueryClause tileInfoQueryClause)
         {
-            byte[] dimensionQueryClauseInterop = ConvertToTileCoordinateInterop(clause);
+            byte[] dimensionQueryClauseInterop = (clause != null) ? ConvertToTileCoordinateInterop(clause) : null;
+            byte[] tileInfoQueryClauseInterop = (tileInfoQueryClause != null) ? ConvertToTileInfoQueryInterop(tileInfoQueryClause) : null;
             byte[] queryResultInterop = CreateQueryResultInterop(50);
 
             int returnCode;
@@ -535,10 +536,54 @@
 
             unsafe
             {
-                fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
                 fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
                 {
-                    returnCode = this.idocread2dQuery(read2dHandle, new IntPtr(pointerDimensionQueryClauseInterop), new IntPtr(pointerQueryResultInterop), &errorInformation);
+                    if (dimensionQueryClauseInterop != null && tileInfoQueryClauseInterop != null)
+                    {
+                        fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
+                        fixed (byte* pointerTileInfoQueryClauseInterop = &tileInfoQueryClauseInterop[0])
+                        {
+                            returnCode = this.idocread2dQuery(
+                                read2dHandle,
+                                new IntPtr(pointerDimensionQueryClauseInterop),
+                                new IntPtr(pointerTileInfoQueryClauseInterop),
+                                new IntPtr(pointerQueryResultInterop),
+                                &errorInformation);
+                        }
+                    }
+                    else if (dimensionQueryClauseInterop != null && tileInfoQueryClauseInterop == null)
+                    {
+                        fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
+                        {
+                            returnCode = this.idocread2dQuery(
+                                read2dHandle,
+                                new IntPtr(pointerDimensionQueryClauseInterop),
+                                IntPtr.Zero,
+                                new IntPtr(pointerQueryResultInterop),
+                                &errorInformation);
+                        }
+                    }
+                    else if (dimensionQueryClauseInterop == null && tileInfoQueryClauseInterop != null)
+                    {
+                        fixed (byte* pointerTileInfoQueryClauseInterop = &tileInfoQueryClauseInterop[0])
+                        {
+                            returnCode = this.idocread2dQuery(
+                                read2dHandle,
+                                IntPtr.Zero,
+                                new IntPtr(pointerTileInfoQueryClauseInterop),
+                                new IntPtr(pointerQueryResultInterop),
+                                &errorInformation);
+                        }
+                    }
+                    else
+                    {
+                        returnCode = this.idocread2dQuery(
+                            read2dHandle,
+                            IntPtr.Zero,
+                            IntPtr.Zero,
+                            new IntPtr(pointerQueryResultInterop),
+                            &errorInformation);
+                    }
                 }
             }
 
@@ -902,7 +947,7 @@
         private unsafe delegate int IDocWrite2d_AddTileDelegate(IntPtr handle, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, TileBaseInfoInterop* tileBaseInfo, byte dataType, IntPtr dataPtr, long size, long* resultPk, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr tileInfoQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_GetTilesIntersectingRect(IntPtr read2dHandle, RectangleDoubleInterop* rectangle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
@@ -1054,6 +1099,26 @@
                         writer.Write((byte)condition.Dimension.Id);
                         writer.Write(condition.RangeStart);
                         writer.Write(condition.RangeEnd);
+                    }
+                }
+
+                return stream.ToArray();
+            }
+        }
+
+        private static byte[] ConvertToTileInfoQueryInterop(ITileInfoQueryClause tileInfoQueryClause)
+        {
+            int numberOfPyramidLevelConditions = tileInfoQueryClause.PyramidLevelConditions.Count();
+            using (var stream = new MemoryStream())
+            {
+                using (var writer = new BinaryWriter(stream))
+                {
+                    writer.Write(numberOfPyramidLevelConditions);
+                    foreach (var queryClause in tileInfoQueryClause.PyramidLevelConditions)
+                    {
+                        writer.Write((byte)queryClause.LogicalOperator);
+                        writer.Write((byte)queryClause.ComparisonOperator);
+                        writer.Write(queryClause.Value);
                     }
                 }
 

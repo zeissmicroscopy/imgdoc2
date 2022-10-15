@@ -22,7 +22,7 @@ namespace ImgDoc2Net.Implementation
         public List<long> Query(IDimensionQueryClause queryClause)
         {
             // TODO(Jbl): error-handling
-            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQuery(this.reader2dObjectHandle, queryClause);
+            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQuery(this.reader2dObjectHandle, queryClause, null);
             return queryResult.Keys;
         }
 

@@ -474,19 +474,30 @@ ImgDoc2ErrorCode IDocWrite2d_AddTile(
     return ImgDoc2_ErrorCode_OK;
 }
 
-
-ImgDoc2ErrorCode IDocRead2d_Query(HandleDocRead2D handle, const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop, QueryResultInterop* result, ImgDoc2ErrorInformation* error_information)
+ImgDoc2ErrorCode IDocRead2d_Query(
+    HandleDocRead2D handle,
+    const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop,
+    const TileInfoQueryClauseInterop* tile_info_query_clause_interop,
+    QueryResultInterop* result,
+    ImgDoc2ErrorInformation* error_information)
 {
     auto reader2d = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle)->shared_ptr_;
 
-    auto dimension_coordinate_query_clause = Utilities::ConvertDimensionQueryRangeClauseInteropToImgdoc2(dim_coordinate_query_clause_interop);
+    auto dimension_coordinate_query_clause = dim_coordinate_query_clause_interop != nullptr ?
+        Utilities::ConvertDimensionQueryRangeClauseInteropToImgdoc2(dim_coordinate_query_clause_interop) :
+        CDimCoordinateQueryClause();
+    auto tile_info_query_clause = tile_info_query_clause_interop != nullptr ?
+        Utilities::ConvertTileInfoQueryClauseInteropToImgdoc2(tile_info_query_clause_interop) :
+        CTileInfoQueryClause();
 
     uint32_t results_retrieved_count = 0;
     result->more_results_available = 0;
 
     try
     {
-        reader2d->Query(&dimension_coordinate_query_clause, nullptr,
+        reader2d->Query(
+            dim_coordinate_query_clause_interop != nullptr ? &dimension_coordinate_query_clause : nullptr,
+            tile_info_query_clause_interop != nullptr ? &tile_info_query_clause : nullptr,
             [result, &results_retrieved_count](imgdoc2::dbIndex index)->bool
             {
                 if (results_retrieved_count < result->element_count)
@@ -532,8 +543,8 @@ ImgDoc2ErrorCode IDocRead2d_GetTilesIntersectingRect(
     try
     {
         reader2d->GetTilesIntersectingRect(
-            rectangle, 
-            dim_coordinate_query_clause_interop != nullptr ? &dimension_coordinate_query_clause : nullptr, 
+            rectangle,
+            dim_coordinate_query_clause_interop != nullptr ? &dimension_coordinate_query_clause : nullptr,
             nullptr,
             [result, &results_retrieved_count](imgdoc2::dbIndex index)->bool
             {

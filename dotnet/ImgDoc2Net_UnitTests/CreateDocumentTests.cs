@@ -97,7 +97,7 @@
             dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
 
             var reader2dHandle = instance.DocumentGetReader2d(documentHandle);
-            var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+            var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause, null);
 
             Assert.True(queryResult.ResultComplete);
             Assert.True(queryResult.Keys.Count == 1, "We expect to find one tile as result of the query.");
@@ -109,7 +109,7 @@
             dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 5, RangeEnd = 5 });
 
             reader2dHandle = instance.DocumentGetReader2d(documentHandle);
-            queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+            queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause, null);
             Assert.True(queryResult.ResultComplete);
             Assert.True(queryResult.Keys.Count == 0, "We expect to find no tile as result of the query.");
 
@@ -168,7 +168,7 @@
                 dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
 
                 var reader2dHandle = instance.DocumentGetReader2d(documentHandle);
-                var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+                var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause, null);
 
                 Assert.True(queryResult.ResultComplete);
                 Assert.True(queryResult.Keys.Count == 2, "We expect to find two tiles as result of the query.");
@@ -178,7 +178,7 @@
                 dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
                 dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('B'), RangeStart = 2, RangeEnd = 2 });
 
-                queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+                queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause, null);
                 Assert.True(queryResult.ResultComplete);
                 Assert.True(queryResult.Keys.Count == 1, "We expect to find one tile as result of the query.");
 
@@ -231,7 +231,7 @@
                 dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
 
                 var reader2dHandle = instance.DocumentGetReader2d(documentHandle);
-                var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause);
+                var queryResult = instance.Reader2dQuery(reader2dHandle, dimensionQueryClause, null);
 
                 Assert.True(queryResult.ResultComplete);
                 Assert.True(queryResult.Keys.Count == 1, "We expect to find one tile as result of the query.");
