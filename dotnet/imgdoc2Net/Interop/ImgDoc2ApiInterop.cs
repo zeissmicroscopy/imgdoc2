@@ -1118,6 +1118,7 @@
                     {
                         writer.Write((byte)queryClause.LogicalOperator);
                         writer.Write((byte)queryClause.ComparisonOperator);
+                        writer.Write((ushort)0);    // for alignment reasons
                         writer.Write(queryClause.Value);
                     }
                 }

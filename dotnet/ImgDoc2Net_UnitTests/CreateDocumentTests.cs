@@ -288,7 +288,7 @@
                 using var reader = document.Get2dReader();
                 var dimensionQueryClause = new DimensionQueryClause();
                 dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
-                var listOfTiles = reader.Query(dimensionQueryClause);
+                var listOfTiles = reader.Query(dimensionQueryClause, null);
                 Assert.True(listOfTiles.Count == 1, "We expect to find one tile as result of the query.");
 
                 var tileDataReadFromDocument = reader.ReadTileData(listOfTiles[0]);

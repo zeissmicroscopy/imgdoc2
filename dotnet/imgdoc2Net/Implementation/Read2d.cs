@@ -19,10 +19,10 @@ namespace ImgDoc2Net.Implementation
             this.reader2dObjectHandle = handle;
         }
 
-        public List<long> Query(IDimensionQueryClause queryClause)
+        public List<long> Query(IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause)
         {
             // TODO(Jbl): error-handling
-            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQuery(this.reader2dObjectHandle, queryClause, null);
+            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQuery(this.reader2dObjectHandle, queryClause, tileInfoQueryClause);
             return queryResult.Keys;
         }
 

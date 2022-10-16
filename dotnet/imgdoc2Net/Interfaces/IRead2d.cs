@@ -10,7 +10,7 @@
     /// </summary>
     public interface IRead2d : IDisposable
     {
-        List<long> Query(IDimensionQueryClause queryClause);
+        List<long> Query(IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause);
 
         byte[] ReadTileData(long key);
 

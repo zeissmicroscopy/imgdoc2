@@ -17,17 +17,17 @@
             //  and we check before leaving the test that it is where is was before (usually zero)
             var statisticsBeforeTest = ImgDoc2ApiInterop.Instance.GetStatistics();
             {
-                using var createOptions = new CreateOptions() {Filename = ":memory:", UseBlobTable = true};
+                using var createOptions = new CreateOptions() { Filename = ":memory:", UseBlobTable = true };
                 createOptions.AddDimension(new Dimension('A'));
                 using var document = ImgDoc2Net.Document.CreateNew(createOptions);
                 using var reader2d = document.Get2dReader();
                 using var writer2d = document.Get2dWriter();
 
                 LogicalPosition logicalPosition = new LogicalPosition()
-                    {PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0};
-                var testData = new byte[] {8, 4, 3, 2, 85, 32, 9, 4, 1, 58};
+                { PositionX = 0, PositionY = 1, Width = 2, Height = 3, PyramidLevel = 0 };
+                var testData = new byte[] { 8, 4, 3, 2, 85, 32, 9, 4, 1, 58 };
                 long pkOfAddedTile = writer2d.AddTile(
-                    new TileCoordinate(new[] {Tuple.Create(new Dimension('A'), 1)}),
+                    new TileCoordinate(new[] { Tuple.Create(new Dimension('A'), 1) }),
                     in logicalPosition,
                     new Tile2dBaseInfo(1, 2, PixelType.Gray8),
                     DataType.UncompressedBitmap,
@@ -35,9 +35,9 @@
 
                 var dimensionQueryClause = new DimensionQueryClause();
                 dimensionQueryClause.AddCondition(new DimensionCondition()
-                    {Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1});
+                { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });
 
-                var result = reader2d.Query(dimensionQueryClause);
+                var result = reader2d.Query(dimensionQueryClause, null);
                 Assert.Single(result);
 
                 Assert.Equal(result[0], pkOfAddedTile);
@@ -87,7 +87,7 @@
                     var dimensionQueryClause = new DimensionQueryClause();
                     dimensionQueryClause.AddCondition(new DimensionCondition()
                     { Dimension = new Dimension('A'), RangeStart = a, RangeEnd = a });
-                    var result = reader2d.Query(dimensionQueryClause);
+                    var result = reader2d.Query(dimensionQueryClause, null);
                     Assert.Single(result);
                     Assert.Equal(result[0], pkOfAddedTiles[a]);
                 }
