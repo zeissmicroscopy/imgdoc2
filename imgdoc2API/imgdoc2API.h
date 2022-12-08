@@ -103,5 +103,6 @@ EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_GetTilesIntersectingRect(
     HandleDocRead2D handle,
     const RectangleDoubleInterop* query_rectangle,
     const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop,
+    const TileInfoQueryClauseInterop* tile_info_query_clause_interop,
     QueryResultInterop* result,
     ImgDoc2ErrorInformation* error_information);

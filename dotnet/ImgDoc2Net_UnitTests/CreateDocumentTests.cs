@@ -348,7 +348,7 @@
                 }
 
                 using var reader = document.Get2dReader();
-                var listOfTiles = reader.GetTilesIntersectingRect(new Rectangle() { X = 0, Y = 0, Width = 2, Height = 2 }, null);
+                var listOfTiles = reader.GetTilesIntersectingRect(new Rectangle() { X = 0, Y = 0, Width = 2, Height = 2 }, null, null);
 
                 // check whether the two lists have the same content, irrespective of order
                 expectedTiles.Should().BeEquivalentTo(listOfTiles);

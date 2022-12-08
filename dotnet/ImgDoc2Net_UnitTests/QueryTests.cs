@@ -1,15 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
-using ImgDoc2Net;
-using ImgDoc2Net.Implementation;
-using ImgDoc2Net.Interfaces;
-
-namespace ImgDoc2Net_UnitTests
+﻿namespace ImgDoc2Net_UnitTests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using FluentAssertions;
+    using ImgDoc2Net;
+    using ImgDoc2Net.Implementation;
+    using ImgDoc2Net.Interfaces;
+
     [Collection(NonParallelCollectionDefinitionClass.Name)]
     public class QueryTests
     {
@@ -48,9 +48,6 @@ namespace ImgDoc2Net_UnitTests
                 }
             }
 
-            /*var dimensionQueryClause = new DimensionQueryClause();
-            dimensionQueryClause.AddCondition(new DimensionCondition()
-            { Dimension = new Dimension('A'), RangeStart = 1, RangeEnd = 1 });*/
             TileInfoQueryClause tileInfoQueryClause = new TileInfoQueryClause();
             tileInfoQueryClause.PyramidLevelConditionsModifiable.Add(
                 new QueryClause()
@@ -63,6 +60,155 @@ namespace ImgDoc2Net_UnitTests
             var result = reader2d.Query(null, tileInfoQueryClause);
             // check whether the two lists have the same content, irrespective of order
             indicesForPyramidLevel3.Should().BeEquivalentTo(result);
+        }
+
+        [Fact]
+        public void CreateDocumentWriteTilesReadWithSpatialQueryAndCompareData()
+        {
+            using var createOptions = new CreateOptions() { Filename = ":memory:", UseBlobTable = true };
+            createOptions.AddDimension(new Dimension('X'));
+            createOptions.AddDimension(new Dimension('Y'));
+            using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+            using var reader2d = document.Get2dReader();
+            using var writer2d = document.Get2dWriter();
+
+            // add a 10x10 grid of tiles, each tile 1x1 pixels
+            for (int x = 0; x < 10; ++x)
+            {
+                for (int y = 0; y < 10; ++y)
+                {
+
+                    LogicalPosition logicalPosition = new LogicalPosition()
+                    {
+                        PositionX = x,
+                        PositionY = y,
+                        Width = 1,
+                        Height = 1,
+                        PyramidLevel = 0
+                    };
+
+                    // we put the "x and y"-index into the pixel data here
+                    var testData = new byte[] { (byte)x, (byte)y };
+
+                    long pkOfAddedTile = writer2d.AddTile(
+                    new TileCoordinate(new[] { Tuple.Create(new Dimension('X'), x), Tuple.Create(new Dimension('Y'), y) }),
+                    in logicalPosition,
+                    new Tile2dBaseInfo(1, 1, PixelType.Gray8),
+                    DataType.UncompressedBitmap,
+                    testData);
+                }
+            }
+
+            // we expect to find 9 tiles
+            var list = reader2d.GetTilesIntersectingRect(new Rectangle { X = 0, Y = 0, Width = 2.1, Height = 2.1 }, null, null);
+            list.Should().NotBeEmpty().And.HaveCount(9);
+
+            // TODO: read "tile info" when API is available
+            List<byte[]> expected = new List<byte[]>
+            {
+                new byte[] { 0, 0 }, new byte[] { 1, 0 }, new byte[] { 2, 0 },
+                new byte[] { 0, 1 }, new byte[] { 1, 1 }, new byte[] { 2, 1 },
+                new byte[] { 0, 2 }, new byte[] { 1, 2 }, new byte[] { 2, 2 }
+            };
+
+            List<byte[]> result = new List<byte[]>();
+            foreach (var id in list)
+            {
+                result.Add(reader2d.ReadTileData(id));
+            }
+
+            result.Should().BeEquivalentTo(expected);
+        }
+
+        [Fact]
+        public void CreateDocumentWriteTilesReadWithSpatialQueryAndTileInfoClauseAndCompareData()
+        {
+            using var createOptions = new CreateOptions() { Filename = ":memory:", UseBlobTable = true };
+            createOptions.AddDimension(new Dimension('X'));
+            createOptions.AddDimension(new Dimension('Y'));
+            using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+            using var reader2d = document.Get2dReader();
+            using var writer2d = document.Get2dWriter();
+
+            // add a 10x10 grid of tiles, each tile 1x1 pixels
+            for (int x = 0; x < 10; ++x)
+            {
+                for (int y = 0; y < 10; ++y)
+                {
+                    LogicalPosition logicalPosition = new LogicalPosition()
+                    {
+                        PositionX = x,
+                        PositionY = y,
+                        Width = 1,
+                        Height = 1,
+                        PyramidLevel = y % 2 == 0 ? 0 : 1   // every second tile is "level 1"
+                    };
+
+                    // we put the "x and y"-index into the pixel data here
+                    var testData = new byte[] { (byte)x, (byte)y };
+
+                    long pkOfAddedTile = writer2d.AddTile(
+                    new TileCoordinate(new[] { Tuple.Create(new Dimension('X'), x), Tuple.Create(new Dimension('Y'), y) }),
+                    in logicalPosition,
+                    new Tile2dBaseInfo(1, 1, PixelType.Gray8),
+                    DataType.UncompressedBitmap,
+                    testData);
+                }
+            }
+
+            TileInfoQueryClause tileInfoQueryClause = new TileInfoQueryClause();
+            tileInfoQueryClause.PyramidLevelConditionsModifiable.Add(
+                new QueryClause()
+                {
+                    LogicalOperator = QueryLogicalOperator.Invalid,
+                    ComparisonOperator = QueryComparisonOperator.Equal,
+                    Value = 0
+                });
+
+            // we expect to find 6 tiles (tiles with y=1 have a pyramid-level=1, so they are not returned here by the query
+            var list = reader2d.GetTilesIntersectingRect(new Rectangle { X = 0, Y = 0, Width = 2.1, Height = 2.1 }, null, tileInfoQueryClause);
+            list.Should().NotBeEmpty().And.HaveCount(6);
+
+            // TODO: read "tile info" when API is available
+            List<byte[]> expected = new List<byte[]>
+            {
+                new byte[] { 0, 0 }, new byte[] { 1, 0 }, new byte[] { 2, 0 },
+                new byte[] { 0, 2 }, new byte[] { 1, 2 }, new byte[] { 2, 2 }
+            };
+
+            List<byte[]> result = new List<byte[]>();
+            foreach (var id in list)
+            {
+                result.Add(reader2d.ReadTileData(id));
+            }
+
+            result.Should().BeEquivalentTo(expected);
+
+            // and now we query for "pyramid-level=0", expecting to find 3 tiles then
+            tileInfoQueryClause = new TileInfoQueryClause();
+            tileInfoQueryClause.PyramidLevelConditionsModifiable.Add(
+                new QueryClause()
+                {
+                    LogicalOperator = QueryLogicalOperator.Invalid,
+                    ComparisonOperator = QueryComparisonOperator.Equal,
+                    Value = 1
+                });
+
+            list = reader2d.GetTilesIntersectingRect(new Rectangle { X = 0, Y = 0, Width = 2.1, Height = 2.1 }, null, tileInfoQueryClause);
+            list.Should().NotBeEmpty().And.HaveCount(3);
+
+            expected = new List<byte[]>
+            {
+                new byte[] { 0, 1 }, new byte[] { 1, 1 }, new byte[] { 2, 1 }
+            };
+
+            result = new List<byte[]>();
+            foreach (var id in list)
+            {
+                result.Add(reader2d.ReadTileData(id));
+            }
+
+            result.Should().BeEquivalentTo(expected);
         }
     }
 }

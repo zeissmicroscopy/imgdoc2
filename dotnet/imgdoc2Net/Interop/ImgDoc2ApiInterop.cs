@@ -1,5 +1,6 @@
 ﻿namespace ImgDoc2Net.Interop
 {
+    using ImgDoc2Net.Implementation;
     using ImgDoc2Net.Interfaces;
     using System;
     using System.Collections.Generic;
@@ -593,9 +594,16 @@
             return result;
         }
 
-        public QueryResult Reader2dGetTilesIntersectingRect(IntPtr read2dHandle, Rectangle rectangle, IDimensionQueryClause dimensionQueryClause)
+        /// <summary>   Execute a "spatial query" - which may also include a dimension-query-clause and a tile-info-query-clause. </summary>
+        /// <param name="read2dHandle" type="IntPtr">                           The read2d-object. </param>
+        /// <param name="rectangle" type="Rectangle">                           The query rectangle. </param>
+        /// <param name="dimensionQueryClause" type="IDimensionQueryClause">    The dimension query clause (may be null). </param>
+        /// <param name="tileInfoQueryClause" type="ITileInfoQueryClause">      The tile information query clause (may be null). </param>
+        /// <returns type="QueryResult">    The result of the query. </returns>
+        public QueryResult Reader2dGetTilesIntersectingRect(IntPtr read2dHandle, Rectangle rectangle, IDimensionQueryClause dimensionQueryClause, ITileInfoQueryClause tileInfoQueryClause)
         {
             byte[] dimensionQueryClauseInterop = dimensionQueryClause != null ? ConvertToTileCoordinateInterop(dimensionQueryClause) : null;
+            byte[] tileInfoQueryClauseInterop = (tileInfoQueryClause != null) ? ConvertToTileInfoQueryInterop(tileInfoQueryClause) : null;
             byte[] queryResultInterop = CreateQueryResultInterop(50);
 
             int returnCode;
@@ -603,21 +611,41 @@
 
             unsafe
             {
-                if (dimensionQueryClauseInterop == null)
+                // TODO(JBL): this code is quite lame, maybe there is a better way which prevents us from having to code all those cases...
+                if (dimensionQueryClauseInterop == null && tileInfoQueryClause == null)
                 {
                     fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
                     {
                         RectangleDoubleInterop rectangleDoubleInterop = new RectangleDoubleInterop() { X = rectangle.X, Y = rectangle.Y, Width = rectangle.Width, Height = rectangle.Height };
-                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, IntPtr.Zero, new IntPtr(pointerQueryResultInterop), &errorInformation);
+                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, IntPtr.Zero, IntPtr.Zero, new IntPtr(pointerQueryResultInterop), &errorInformation);
                     }
                 }
-                else
+                else if (dimensionQueryClauseInterop != null && tileInfoQueryClause == null)
                 {
                     fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
                     fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
                     {
                         RectangleDoubleInterop rectangleDoubleInterop = new RectangleDoubleInterop() { X = rectangle.X, Y = rectangle.Y, Width = rectangle.Width, Height = rectangle.Height };
-                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, new IntPtr(pointerDimensionQueryClauseInterop), new IntPtr(pointerQueryResultInterop), &errorInformation);
+                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, new IntPtr(pointerDimensionQueryClauseInterop), IntPtr.Zero, new IntPtr(pointerQueryResultInterop), &errorInformation);
+                    }
+                }
+                else if (dimensionQueryClauseInterop == null && tileInfoQueryClause != null)
+                {
+                    fixed (byte* pointerTileInfoQueryClause = &tileInfoQueryClauseInterop[0])
+                    fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
+                    {
+                        RectangleDoubleInterop rectangleDoubleInterop = new RectangleDoubleInterop() { X = rectangle.X, Y = rectangle.Y, Width = rectangle.Width, Height = rectangle.Height };
+                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, IntPtr.Zero, new IntPtr(pointerTileInfoQueryClause), new IntPtr(pointerQueryResultInterop), &errorInformation);
+                    }
+                }
+                else // if (dimensionQueryClauseInterop != null && tileInfoQueryClause != null)
+                {
+                    fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
+                    fixed (byte* pointerTileInfoQueryClause = &tileInfoQueryClauseInterop[0])
+                    fixed (byte* pointerQueryResultInterop = &queryResultInterop[0])
+                    {
+                        RectangleDoubleInterop rectangleDoubleInterop = new RectangleDoubleInterop() { X = rectangle.X, Y = rectangle.Y, Width = rectangle.Width, Height = rectangle.Height };
+                        returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, new IntPtr(pointerDimensionQueryClauseInterop), new IntPtr(pointerTileInfoQueryClause), new IntPtr(pointerQueryResultInterop), &errorInformation);
                     }
                 }
             }
@@ -950,7 +978,7 @@
         private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr tileInfoQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int IDocRead2d_GetTilesIntersectingRect(IntPtr read2dHandle, RectangleDoubleInterop* rectangle, IntPtr dimensionQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int IDocRead2d_GetTilesIntersectingRect(IntPtr read2dHandle, RectangleDoubleInterop* rectangle, IntPtr dimensionQueryClauseInterop, IntPtr tileInfoQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_ReadTileDataDelegate(IntPtr read2dHandle, long pk, IntPtr blobOutputHandle, IntPtr functionPointerSetSize, IntPtr functionPointerSetData, ImgDoc2ErrorInformation* errorInformation);

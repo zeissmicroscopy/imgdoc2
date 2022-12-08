@@ -526,15 +526,18 @@ ImgDoc2ErrorCode IDocRead2d_GetTilesIntersectingRect(
     HandleDocRead2D handle,
     const RectangleDoubleInterop* query_rectangle,
     const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop,
+    const TileInfoQueryClauseInterop* tile_info_query_clause_interop,
     QueryResultInterop* result,
     ImgDoc2ErrorInformation* error_information)
 {
     auto reader2d = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle)->shared_ptr_;
-    CDimCoordinateQueryClause dimension_coordinate_query_clause;
-    if (dim_coordinate_query_clause_interop != nullptr)
-    {
-        dimension_coordinate_query_clause = Utilities::ConvertDimensionQueryRangeClauseInteropToImgdoc2(dim_coordinate_query_clause_interop);
-    }
+
+    auto tile_info_query_clause = tile_info_query_clause_interop != nullptr ?
+        Utilities::ConvertTileInfoQueryClauseInteropToImgdoc2(tile_info_query_clause_interop) :
+        CTileInfoQueryClause();
+    auto dimension_coordinate_query_clause = dim_coordinate_query_clause_interop != nullptr ?
+        Utilities::ConvertDimensionQueryRangeClauseInteropToImgdoc2(dim_coordinate_query_clause_interop) :
+        CDimCoordinateQueryClause();
 
     RectangleD rectangle = Utilities::ConvertRectangleDoubleInterop(*query_rectangle);
     uint32_t results_retrieved_count = 0;
@@ -545,7 +548,7 @@ ImgDoc2ErrorCode IDocRead2d_GetTilesIntersectingRect(
         reader2d->GetTilesIntersectingRect(
             rectangle,
             dim_coordinate_query_clause_interop != nullptr ? &dimension_coordinate_query_clause : nullptr,
-            nullptr,
+            tile_info_query_clause_interop != nullptr ? &tile_info_query_clause : nullptr,
             [result, &results_retrieved_count](imgdoc2::dbIndex index)->bool
             {
                 if (results_retrieved_count < result->element_count)

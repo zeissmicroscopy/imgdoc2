@@ -14,6 +14,6 @@
 
         byte[] ReadTileData(long key);
 
-        List<long> GetTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause);
+        List<long> GetTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause);
     }
 }

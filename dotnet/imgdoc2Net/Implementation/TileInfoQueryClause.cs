@@ -4,7 +4,8 @@
     using System.Collections.Generic;
     using System.Text;
     using ImgDoc2Net.Interfaces;
-    public class TileInfoQueryClause:ITileInfoQueryClause
+
+    public class TileInfoQueryClause : ITileInfoQueryClause
     {
         public List<QueryClause> PyramidLevelConditionsModifiable { get; } = new List<QueryClause>();
 
