@@ -259,6 +259,65 @@
             list.Should().NotBeEmpty().And.HaveCount(100);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void CreateDocumentWriteTilesReadWithSpatialQueryAndDimensionClauseAndTileInfoClauseAndCheckResult(bool useSpatialIndex)
+        {
+            using var createOptions = new CreateOptions() { Filename = ":memory:", UseBlobTable = true, UseSpatialIndex = useSpatialIndex };
+            createOptions.AddDimension(new Dimension('X'));
+            createOptions.AddDimension(new Dimension('Y'));
+            using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+            using var reader2d = document.Get2dReader();
+            using var writer2d = document.Get2dWriter();
+
+            // add a 10x10 grid of tiles, each tile 1x1 pixels
+            for (int x = 0; x < 10; ++x)
+            {
+                for (int y = 0; y < 10; ++y)
+                {
+
+                    LogicalPosition logicalPosition = new LogicalPosition()
+                    {
+                        PositionX = x,
+                        PositionY = y,
+                        Width = 1,
+                        Height = 1,
+                        PyramidLevel = 0
+                    };
+
+                    // we put the "x and y"-index into the pixel data here
+                    var testData = new byte[] { (byte)x, (byte)y };
+
+                    long pkOfAddedTile = writer2d.AddTile(
+                    new TileCoordinate(new[] { Tuple.Create(new Dimension('X'), x), Tuple.Create(new Dimension('Y'), y) }),
+                    in logicalPosition,
+                    new Tile2dBaseInfo(1, 1, PixelType.Gray8),
+                    DataType.UncompressedBitmap,
+                    testData);
+                }
+            }
+
+            TileInfoQueryClause tileInfoQueryClause = new TileInfoQueryClause();
+            tileInfoQueryClause.PyramidLevelConditionsModifiable.Add(
+                new QueryClause()
+                {
+                    LogicalOperator = QueryLogicalOperator.Invalid,
+                    ComparisonOperator = QueryComparisonOperator.Equal,
+                    Value = 0
+                });
+
+            var dimensionQueryClause = new DimensionQueryClause();
+
+            // TODO(Jbl): look into... whether RangeStart/RangeEnd should be inclusive or non-inclusive or what
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('X'), RangeStart = 7, RangeEnd = 9 });
+            dimensionQueryClause.AddCondition(new DimensionCondition() { Dimension = new Dimension('Y'), RangeStart = 7, RangeEnd = 9 });
+
+            // we expect to find 6 tiles (tiles with y=1 have a pyramid-level=1, so they are not returned here by the query
+            var list = reader2d.QueryTilesIntersectingRect(new Rectangle { X = 0, Y = 0, Width = 10, Height = 10 }, dimensionQueryClause, tileInfoQueryClause);
+            list.Should().NotBeEmpty().And.HaveCount(1);
+        }
+
         [Fact]
         public void CreateDocumentQueryItAndCheckQueryOptions()
         {
