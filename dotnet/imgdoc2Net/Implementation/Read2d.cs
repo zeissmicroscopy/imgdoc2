@@ -19,10 +19,19 @@ namespace ImgDoc2Net.Implementation
             this.reader2dObjectHandle = handle;
         }
 
-        public List<long> Query(IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause)
+        public List<long> Query(IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause, QueryOptions queryOptions)
         {
             // TODO(Jbl): error-handling
-            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQuery(this.reader2dObjectHandle, queryClause, tileInfoQueryClause);
+            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQuery(
+                this.reader2dObjectHandle, 
+                queryClause, 
+                tileInfoQueryClause, 
+                queryOptions != null ? queryOptions.MaxNumbersOfResults : QueryOptions.DefaultMaxNumberOfResults);
+            if (queryOptions != null)
+            {
+                queryOptions.ResultWasComplete = queryResult.ResultComplete;
+            }
+
             return queryResult.Keys;
         }
 
@@ -32,10 +41,20 @@ namespace ImgDoc2Net.Implementation
             return ImgDoc2ApiInterop.Instance.Reader2dReadTileData(this.reader2dObjectHandle, key);
         }
 
-        public List<long> GetTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause)
+        public List<long> QueryTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause, QueryOptions queryOptions)
         {
             // TODO(Jbl): error-handling
-            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dGetTilesIntersectingRect(this.reader2dObjectHandle, rectangle, queryClause, tileInfoQueryClause);
+            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dGetTilesIntersectingRect(
+                this.reader2dObjectHandle, 
+                rectangle, 
+                queryClause, 
+                tileInfoQueryClause,
+                queryOptions != null ? queryOptions.MaxNumbersOfResults : QueryOptions.DefaultMaxNumberOfResults);
+            if (queryOptions != null)
+            {
+                queryOptions.ResultWasComplete = queryResult.ResultComplete;
+            }
+
             return queryResult.Keys;
         }
     }

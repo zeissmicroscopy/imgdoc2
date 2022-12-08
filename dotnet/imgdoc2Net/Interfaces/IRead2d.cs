@@ -10,10 +10,10 @@
     /// </summary>
     public interface IRead2d : IDisposable
     {
-        List<long> Query(IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause);
+        List<long> Query(IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause, QueryOptions queryOptions=null);
 
         byte[] ReadTileData(long key);
 
-        List<long> GetTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause);
+        List<long> QueryTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause, QueryOptions queryOptions = null);
     }
 }
