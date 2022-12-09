@@ -1,6 +1,4 @@
-﻿
-
-namespace ImgDoc2Net.Implementation
+﻿namespace ImgDoc2Net.Implementation
 {
     #region using directives
 

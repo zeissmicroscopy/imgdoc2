@@ -1,5 +1,4 @@
-﻿
-namespace ImgDoc2Net.Interop
+﻿namespace ImgDoc2Net.Interop
 {
     using System;
     using System.Collections.Generic;

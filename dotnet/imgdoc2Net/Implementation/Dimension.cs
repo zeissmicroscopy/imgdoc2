@@ -1,18 +1,17 @@
-﻿
-namespace ImgDoc2Net
+﻿namespace ImgDoc2Net
 {
     using System;
 
     /// <summary>   This structure is representing a 'dimension' in imgdoc2. </summary>
     public struct Dimension
     {
+        public char Id;
+
         public Dimension(char c)
         {
             Dimension.ThrowIfInvalidChar(c);
             this.Id = c;
         }
-
-        public char Id;
 
         private static void ThrowIfInvalidChar(char c)
         {

@@ -1,5 +1,4 @@
-﻿
-namespace ImgDoc2Net.Interfaces
+﻿namespace ImgDoc2Net.Interfaces
 {
     public class Tile2dBaseInfo
     {

@@ -1,5 +1,4 @@
-﻿
-namespace ImgDoc2Net.Interfaces
+﻿namespace ImgDoc2Net.Interfaces
 {
     /// <summary> 
     /// Values that represent the "imgdoc2-data types" of tiles.

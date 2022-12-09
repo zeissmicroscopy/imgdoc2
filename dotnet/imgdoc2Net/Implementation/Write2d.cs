@@ -1,6 +1,4 @@
-﻿
-
-namespace ImgDoc2Net.Implementation
+﻿namespace ImgDoc2Net.Implementation
 {
     using System;
     using System.Collections.Generic;
@@ -18,17 +16,22 @@ namespace ImgDoc2Net.Implementation
     {
         private IntPtr writer2dObjectHandle;
 
-        private Write2d()
-        {
-        }
-
         public Write2d(IntPtr handle)
         {
             this.writer2dObjectHandle = handle;
         }
 
-        public long AddTile(ITileCoordinate tileCoordinate, in LogicalPosition logicalPosition, Tile2dBaseInfo tile2dBaseInfo,
-            DataType dataType, IntPtr pointerTileData, long sizeTileData)
+        private Write2d()
+        {
+        }
+
+        public long AddTile(
+            ITileCoordinate tileCoordinate, 
+            in LogicalPosition logicalPosition, 
+            Tile2dBaseInfo tile2dBaseInfo,
+            DataType dataType, 
+            IntPtr pointerTileData, 
+            long sizeTileData)
         {
             return ImgDoc2ApiInterop.Instance.Writer2dAddTile(
                 this.writer2dObjectHandle,

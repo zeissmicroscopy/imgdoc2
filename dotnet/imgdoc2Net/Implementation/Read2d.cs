@@ -1,22 +1,23 @@
-﻿
-namespace ImgDoc2Net.Implementation
+﻿namespace ImgDoc2Net.Implementation
 {
-    using ImgDoc2Net.Interfaces;
-    using ImgDoc2Net.Interop;
     using System;
     using System.Collections.Generic;
+    using ImgDoc2Net.Interfaces;
+    using ImgDoc2Net.Interop;
 
     internal partial class Read2d : IRead2d
     {
         private IntPtr reader2dObjectHandle;
 
-        private Read2d()
-        {
-        }
-
+        /// <summary>   Initializes a new instance of the <see cref="Read2d"/> class. </summary>
+        /// <param name="handle" type="IntPtr"> The handle. </param>
         public Read2d(IntPtr handle)
         {
             this.reader2dObjectHandle = handle;
+        }
+
+        private Read2d()
+        {
         }
 
         public List<long> Query(IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause, QueryOptions queryOptions)

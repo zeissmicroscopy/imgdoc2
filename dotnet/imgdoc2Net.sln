@@ -9,7 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImgDoc2Playground_Framework
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImgDoc2Playground_NetCore", "ImgDoc2Playground_NetCore\ImgDoc2Playground_NetCore.csproj", "{25EE8543-5C43-4B7F-B6BE-6A0507FC5357}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImgDoc2Net_UnitTests", "ImgDoc2Net_UnitTests\ImgDoc2Net_UnitTests.csproj", "{B53AEBB2-CE5D-4E4C-BAC6-D7F22CF98EC5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImgDoc2Net_UnitTests", "ImgDoc2Net_UnitTests\ImgDoc2Net_UnitTests.csproj", "{B53AEBB2-CE5D-4E4C-BAC6-D7F22CF98EC5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7E7C3CC3-0592-42E8-B174-CE6E5464E236}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		CustomCodeAnalysisRules.ruleset = CustomCodeAnalysisRules.ruleset
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

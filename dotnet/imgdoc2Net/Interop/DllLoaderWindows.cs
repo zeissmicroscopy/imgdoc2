@@ -6,9 +6,13 @@
     using System.Text;
     using System.Xml.Linq;
 
+    /// <summary>   
+    /// This class is implementing "loading the native DLL" on Windows. 
+    /// </summary>
     internal partial class DllLoaderWindows : DllLoader
     {
-        public DllLoaderWindows(string filename) : base(filename)
+        public DllLoaderWindows(string filename) 
+            : base(filename)
         {
         }
 

@@ -1,10 +1,9 @@
-﻿
-namespace ImgDoc2Net.Implementation
+﻿namespace ImgDoc2Net.Implementation
 {
-    using ImgDoc2Net.Interfaces;
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using ImgDoc2Net.Interfaces;
 
     public class DimensionQueryClause : IDimensionQueryClause
     {

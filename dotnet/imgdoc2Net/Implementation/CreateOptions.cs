@@ -50,6 +50,7 @@
                 this.AddDimension(d);
             }
         }
+
         public void AddIndexedDimension(Dimension dimension)
         {
             ImgDoc2ApiInterop.Instance.CreateOptionsAddIndexedDimension(this.objectHandle, dimension);

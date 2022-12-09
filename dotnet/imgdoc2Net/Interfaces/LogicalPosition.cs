@@ -1,6 +1,4 @@
-﻿
-
-namespace ImgDoc2Net.Interfaces
+﻿namespace ImgDoc2Net.Interfaces
 {
     /// <summary>   
     /// This defines the logical position of a tile. 

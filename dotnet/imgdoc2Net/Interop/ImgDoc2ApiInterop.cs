@@ -1,13 +1,13 @@
 ﻿namespace ImgDoc2Net.Interop
 {
-    using ImgDoc2Net.Implementation;
-    using ImgDoc2Net.Interfaces;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Runtime.InteropServices;
     using System.Text;
+    using ImgDoc2Net.Implementation;
+    using ImgDoc2Net.Interfaces;
 
     /// <summary>   
     /// This class contains "the lowest level interop interface". 
@@ -148,7 +148,6 @@
         private T TryGetProcAddress<T>(string name)
             where T : Delegate
         {
-            //IntPtr addressOfFunctionToCall = ImgDoc2ApiInterop.GetProcAddress(this.dllHandle, GetMangledName(name));
             IntPtr addressOfFunctionToCall = this.dllLoader.GetProcAddress(GetMangledName(name));
             if (addressOfFunctionToCall == IntPtr.Zero)
             {
@@ -576,8 +575,9 @@
                                 &errorInformation);
                         }
                     }
-                    else // if (dimensionQueryClauseInterop != null && tileInfoQueryClauseInterop != null)
+                    else 
                     {
+                        // if (dimensionQueryClauseInterop != null && tileInfoQueryClauseInterop != null)
                         returnCode = this.idocread2dQuery(
                             read2dHandle,
                             IntPtr.Zero,
@@ -636,8 +636,9 @@
                             returnCode = this.idocread2dGetTilesIntersectingRect(read2dHandle, &rectangleDoubleInterop, IntPtr.Zero, new IntPtr(pointerTileInfoQueryClause), new IntPtr(pointerQueryResultInterop), &errorInformation);
                         }
                     }
-                    else // if (dimensionQueryClauseInterop != null && tileInfoQueryClauseInterop != null)
+                    else
                     {
+                        // if (dimensionQueryClauseInterop != null && tileInfoQueryClauseInterop != null)
                         fixed (byte* pointerDimensionQueryClauseInterop = &dimensionQueryClauseInterop[0])
                         fixed (byte* pointerTileInfoQueryClause = &tileInfoQueryClauseInterop[0])
                         {
@@ -708,8 +709,10 @@
     {
         public class QueryResult
         {
-            public QueryResult() : this(0)
-            { }
+            public QueryResult()
+                : this(0)
+            {
+            }
 
             public QueryResult(int reservedSize)
             {
@@ -721,8 +724,6 @@
             public List<long> Keys { get; }
         }
     }
-
-
 
     /// <content> 
     /// This part is concerned with "Blob-output"-implementation - which is a mechanism for returning binary blobs
@@ -741,6 +742,7 @@
         private IntPtr funcPtrBlobOutputSetDataForwarder;
 
         private delegate bool BlobOutputSetSizeDelegate(IntPtr blobOutputObjectHandle, ulong size);
+
         private delegate bool BlobOutputSetDataDelegate(IntPtr blobOutputObjectHandle, ulong offset, ulong size, IntPtr pointerToData);
 
         /// <summary>
@@ -755,7 +757,7 @@
         /// </summary>
         private static readonly BlobOutputSetDataDelegate BlobOutputSetDataDelegateObj = ImgDoc2ApiInterop.BlobOutputSetDataFunction;
 
-        static bool BlobOutputSetSizeFunction(IntPtr blobOutputObjectHandle, ulong size)
+        private static bool BlobOutputSetSizeFunction(IntPtr blobOutputObjectHandle, ulong size)
         {
             // TODO(Jbl) - add error-handling, we must not throw exceptions from here
             GCHandle gcHandle = GCHandle.FromIntPtr(blobOutputObjectHandle);
@@ -763,7 +765,7 @@
             return blobOutput.SetSize(size);
         }
 
-        static bool BlobOutputSetDataFunction(IntPtr blobOutputObjectHandle, ulong offset, ulong size, IntPtr pointerToData)
+        private static bool BlobOutputSetDataFunction(IntPtr blobOutputObjectHandle, ulong offset, ulong size, IntPtr pointerToData)
         {
             // TODO(Jbl) - add error-handling, we must not throw exceptions from here
             GCHandle gcHandle = GCHandle.FromIntPtr(blobOutputObjectHandle);
@@ -814,13 +816,15 @@
         private IntPtr funcPtrEnvironmentIsLevelActive;
         private IntPtr funcPtrEnvironmentReportFatalErrorAndExit;
 
-        private delegate void EnvironmentCallbackFunctionLogDelegate(IntPtr userParameter, int level, IntPtr messageUtf8);
-        private delegate bool EnvironmentCallbackFunctionIsLevelActiveDelegate(IntPtr userParameter, int level);
-        private delegate void EnvironmentCallbackFunctionReportFatalErrorAndExitDelegate(IntPtr userParameter, IntPtr messageUtf8);
-
         private static readonly EnvironmentCallbackFunctionLogDelegate EnvironmentCallbackFunctionLogDelegateObj = ImgDoc2ApiInterop.EnvironmentCallbackFunctionLog;
         private static readonly EnvironmentCallbackFunctionIsLevelActiveDelegate EnvironmentCallbackFunctionIsLevelActiveDelegateObj = ImgDoc2ApiInterop.EnvironmentCallbackFunctionIsLevelActive;
         private static readonly EnvironmentCallbackFunctionReportFatalErrorAndExitDelegate EnvironmentCallbackFunctionReportFatalErrorAndExitDelegateObj = ImgDoc2ApiInterop.EnvironmentCallbackFunctionReportFatalErrorAndExit;
+
+        private delegate void EnvironmentCallbackFunctionLogDelegate(IntPtr userParameter, int level, IntPtr messageUtf8);
+
+        private delegate bool EnvironmentCallbackFunctionIsLevelActiveDelegate(IntPtr userParameter, int level);
+
+        private delegate void EnvironmentCallbackFunctionReportFatalErrorAndExitDelegate(IntPtr userParameter, IntPtr messageUtf8);
 
         private void InitializeEnvironmentObject()
         {
@@ -837,7 +841,6 @@
 
         private static void EnvironmentCallbackFunctionLog(IntPtr userParameter, int level, IntPtr messageUtf8)
         {
-
         }
 
         private static bool EnvironmentCallbackFunctionIsLevelActive(IntPtr userParameter, int level)
@@ -847,7 +850,6 @@
 
         private static void EnvironmentCallbackFunctionReportFatalErrorAndExit(IntPtr userParameter, IntPtr messageUtf8)
         {
-
         }
     }
 
@@ -865,7 +867,7 @@
                 string errorMessage;
                 unsafe
                 {
-                    fixed (byte* messagePointerUtf8 = errorInformation.message)
+                    fixed (byte* messagePointerUtf8 = errorInformation.Message)
                     {
                         // we need to determine the length of the string (i.e. the position of the terminating '\0') in order
                         // to use 'Encoding.UTF8.GetString' for proper operation. .NET 7 seems to have 'Marshal.PtrToStringUtf8' which
@@ -893,9 +895,13 @@
     /// </summary>
     public partial class ImgDoc2ApiInterop
     {
+        private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
+
+#pragma warning disable SA1310 // Field names should not contain underscore
         private const int ImgDoc2_ErrorCode_OK = 0;
         private const int ImgDoc2_ErrorCode_InvalidArgument = 1;
         private const int ImgDoc2_ErrorCode_UnspecifiedError = 50;
+#pragma warning restore SA1310 // Field names should not contain underscore
 
         private readonly GetStatisticsDelegate getStatistics;
         private readonly VoidAndReturnIntPtrDelegate createCreateOptions;
@@ -983,20 +989,18 @@
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate IntPtr CreateEnvironmentObjectDelegate(IntPtr userParameter, IntPtr pfnLog, IntPtr pfnIsLevelActive, IntPtr reportFatalErrorAndExit);
 
-        private const int ImgDoc2ErrorInformationMessageMaxLength = 200;
-
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private unsafe struct ImgDoc2ErrorInformation
         {
-            public fixed byte message[ImgDoc2ErrorInformationMessageMaxLength];
+            public fixed byte Message[ImgDoc2ErrorInformationMessageMaxLength];
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private unsafe struct DimensionAndValueInterop
         {
-            byte dimension;
-            int value;
-        };
+            public byte Dimension;
+            public int Value;
+        }
 
         /// <summary>   
         /// This struct is used for transfering "tile-coordinate-information". The actual memory layout is that
@@ -1007,17 +1011,23 @@
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private unsafe struct TileCoordinateInterop
         {
-            public int number_of_elements;
+            public int NumberOfElements;
 
             /// <summary>   
             /// Here we have as many "DimensionAndValueInterop" structs directly following as "number_of_elements" is specifying.
             /// </summary>
-            public DimensionAndValueInterop values;
+            public DimensionAndValueInterop Values;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private unsafe struct LogicalPositionInfoInterop
         {
+            public double PositionX;
+            public double PositionY;
+            public double Width;
+            public double Height;
+            public int PyramidLevel;
+
             public LogicalPositionInfoInterop(in LogicalPosition logicalPosition)
             {
                 this.PositionX = logicalPosition.PositionX;
@@ -1026,12 +1036,6 @@
                 this.Height = logicalPosition.Height;
                 this.PyramidLevel = logicalPosition.PyramidLevel;
             }
-
-            public double PositionX;
-            public double PositionY;
-            public double Width;
-            public double Height;
-            public int PyramidLevel;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -1050,7 +1054,7 @@
             public uint NumberOfDocumentObjectsActive;
             public uint NumberOfReader2dObjectsActive;
             public uint NumberOfWriter2dObjectsActive;
-        };
+        }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
         private struct RectangleDoubleInterop
@@ -1089,7 +1093,7 @@
             }
 
             // calculate the required size
-            int size = numberOfElements * Marshal.SizeOf<DimensionAndValueInterop>() + Marshal.SizeOf<TileCoordinateInterop>();
+            int size = (numberOfElements * Marshal.SizeOf<DimensionAndValueInterop>()) + Marshal.SizeOf<TileCoordinateInterop>();
 
             using (var stream = new MemoryStream(size))
             {
@@ -1170,7 +1174,7 @@
             };
             */
 
-            int size = 8 + 8 * elementCount;
+            int size = 8 + (8 * elementCount);
             using (var stream = new MemoryStream(new byte[size]))
             {
                 using (var writer = new BinaryWriter(stream))
@@ -1190,7 +1194,7 @@
 
             for (int i = 0; i < count; ++i)
             {
-                queryResult.Keys.Add(BitConverter.ToInt64(queryResultInterop, 8 + i * 8));
+                queryResult.Keys.Add(BitConverter.ToInt64(queryResultInterop, 8 + (i * 8)));
             }
 
             return queryResult;

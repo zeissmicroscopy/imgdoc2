@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ImgDoc2Net.Interfaces
+﻿namespace ImgDoc2Net.Interfaces
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
     public interface IDocument : IDisposable
     {
         IRead2d Get2dReader();

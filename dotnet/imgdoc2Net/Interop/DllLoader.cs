@@ -1,21 +1,23 @@
-﻿
-namespace ImgDoc2Net.Interop
+﻿namespace ImgDoc2Net.Interop
 {
     using System;
 
+    /// <summary>   
+    /// This abstract class is used to handle loading a native DLL.
+    /// </summary>
     internal abstract class DllLoader 
     {
         private string filename;
         private IntPtr dllHandle = IntPtr.Zero;
 
-        public static DllLoader GetDllLoader(string filename)
+        /// <summary>   
+        /// Initializes a new instance of the <see cref="DllLoader"/> class.
+        /// Specialized constructor for use only by derived class. Here we store the filename of the dynamic library to be loaded. 
+        /// </summary>
+        /// <param name="filename" type="string">   Filename of the file. </param>
+        protected DllLoader(string filename)
         {
-            if (Utilities.IsLinux())
-            {
-                return new DllLoaderLinux(filename);
-            }
-
-            return new DllLoaderWindows(filename);
+            this.filename = filename;
         }
 
         protected IntPtr DllHandle
@@ -30,9 +32,19 @@ namespace ImgDoc2Net.Interop
             set { this.filename = value; }
         }
 
-        public DllLoader(string filename)
+        /// <summary>   
+        /// Gets an DLL-loader-instance (appropriate for the platform). 
+        /// </summary>
+        /// <param name="filename" type="string">   Filename of the file. </param>
+        /// <returns type="DllLoader">  The newly created DLL-loader instance. </returns>
+        public static DllLoader GetDllLoader(string filename)
         {
-            this.filename = filename;
+            if (Utilities.IsLinux())
+            {
+                return new DllLoaderLinux(filename);
+            }
+
+            return new DllLoaderWindows(filename);
         }
 
         public void Load()

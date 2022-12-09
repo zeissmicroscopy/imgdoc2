@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="StyleCop rules for imgdoc2Net" Description="Custom Rules" ToolsVersion="10.0">
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.CSharp.ReadabilityRules">
+    <Rule Id="SA1028" Action="Hidden" />
+    <Rule Id="SA1124" Action="Hidden" />
+  </Rules>
+</RuleSet>

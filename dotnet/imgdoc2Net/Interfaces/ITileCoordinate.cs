@@ -8,7 +8,6 @@
     /// This interface is used to represent the "tile-coordinate" of a tile. 
     /// </summary>
     public interface ITileCoordinate : IEquatable<ITileCoordinate>
-
     {
     /// <summary>
     /// Tries the get coordinate of the specified dimension.

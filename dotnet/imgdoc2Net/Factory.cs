@@ -1,9 +1,8 @@
-﻿using System;
-
-namespace ImgDoc2Net
+﻿namespace ImgDoc2Net
 {
+    using System;
+
     public class Factory
     {
-
     }
 }

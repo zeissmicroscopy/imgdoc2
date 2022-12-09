@@ -8,7 +8,7 @@
     {
         Invalid = 0,
         And,
-        Or
+        Or,
     }
 
     public enum QueryComparisonOperator : byte

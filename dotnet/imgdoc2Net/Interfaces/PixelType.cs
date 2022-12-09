@@ -1,6 +1,4 @@
-﻿
-
-namespace ImgDoc2Net.Interfaces
+﻿namespace ImgDoc2Net.Interfaces
 {
     /// <summary>   
     /// This enumeration lists the pixel types. 
@@ -11,6 +9,6 @@ namespace ImgDoc2Net.Interfaces
         Gray16,
         Bgr24,
         Bgr48,
-        Gray32Float
+        Gray32Float,
     }
 }
