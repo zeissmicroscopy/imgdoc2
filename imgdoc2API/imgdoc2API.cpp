@@ -598,3 +598,44 @@ ImgDoc2ErrorCode IDocRead2d_ReadTileData(
     return ImgDoc2_ErrorCode_OK;
 }
 
+ImgDoc2ErrorCode IDocRead2d_ReadTileInfo(
+    HandleDocRead2D handle,
+    long pk,
+    TileCoordinateInterop* tile_coordinate_interop,
+    LogicalPositionInfoInterop* logical_position_info_interop,
+    ImgDoc2ErrorInformation* error_information)
+{
+    auto reader2d = reinterpret_cast<SharedPtrWrapper<IDocRead2d>*>(handle)->shared_ptr_;
+
+    LogicalPositionInfo logical_position_info;
+    TileCoordinate tile_coordinate;
+
+    try
+    {
+        reader2d->ReadTileInfo(
+            pk,
+            &tile_coordinate,
+            &logical_position_info);
+    }
+    catch (exception& exception)
+    {
+        FillOutErrorInformation(exception, error_information);
+        return MapExceptionToReturnValue(exception);
+    }
+
+    if (tile_coordinate_interop != nullptr)
+    {
+        const bool b = Utilities::TryConvertToTileCoordinateInterop(&tile_coordinate, tile_coordinate_interop);
+        if (!b)
+        {
+            // TODO
+        }
+    }
+
+    if (logical_position_info_interop != nullptr)
+    {
+        *logical_position_info_interop = Utilities::ConvertImgDoc2LogicalPositionInfoToInterop(logical_position_info);
+    }
+
+    return ImgDoc2_ErrorCode_OK;
+}

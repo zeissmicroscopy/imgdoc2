@@ -15,5 +15,11 @@
         byte[] ReadTileData(long key);
 
         List<long> QueryTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause, QueryOptions queryOptions = null);
+
+        (ITileCoordinate coordinate, LogicalPosition logicalPosition) ReadTileInfo(long key);
+
+        ITileCoordinate ReadTileCoordinate(long key);
+
+        LogicalPosition ReadTileLogicalPosition(long key);
     }
 }

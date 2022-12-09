@@ -29,6 +29,17 @@ using namespace imgdoc2;
     return logical_position_info;
 }
 
+/*static*/LogicalPositionInfoInterop Utilities::ConvertImgDoc2LogicalPositionInfoToInterop(const LogicalPositionInfo& logical_position_info)
+{
+    LogicalPositionInfoInterop logical_position_info_interop;
+    logical_position_info_interop.position_x = logical_position_info.posX;
+    logical_position_info_interop.position_y = logical_position_info.posY;
+    logical_position_info_interop.width = logical_position_info.width;
+    logical_position_info_interop.height= logical_position_info.height;
+    logical_position_info_interop.pyramid_level = logical_position_info.pyrLvl;
+    return logical_position_info_interop;
+}
+
 /*static*/imgdoc2::CDimCoordinateQueryClause Utilities::ConvertDimensionQueryRangeClauseInteropToImgdoc2(const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop)
 {
     CDimCoordinateQueryClause query_clause;
@@ -63,6 +74,30 @@ using namespace imgdoc2;
     tile_base_info.pixelHeight = tile_base_info_interop.pixelHeight;
     tile_base_info.pixelType = tile_base_info_interop.pixelType;
     return tile_base_info;
+}
+
+/*static*/ bool Utilities::TryConvertToTileCoordinateInterop(const ITileCoordinate* tile_coordinate, TileCoordinateInterop* tile_coordinate_interop)
+{
+    int number_of_elements_in_source = 0;
+    tile_coordinate->EnumCoordinates(
+        [&](imgdoc2::Dimension dimension, int value)->bool
+        {
+            if (number_of_elements_in_source < tile_coordinate_interop->number_of_elements)
+            {
+                tile_coordinate_interop->values[number_of_elements_in_source] = DimensionAndValueInterop{ dimension, value };
+            }
+
+            ++number_of_elements_in_source;
+            return true;
+        });
+
+    if (number_of_elements_in_source >= tile_coordinate_interop->number_of_elements)
+    {
+        tile_coordinate_interop->number_of_elements = number_of_elements_in_source;
+        return true;
+    }
+
+    return false;
 }
 
 /*static*/imgdoc2::DataTypes Utilities::ConvertDatatypeEnumInterop(std::uint8_t data_type_interop)

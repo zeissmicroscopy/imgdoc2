@@ -14,11 +14,20 @@ class Utilities
 public:
     static imgdoc2::TileCoordinate ConvertToTileCoordinate(const TileCoordinateInterop* tile_coordinate_interop);
     static imgdoc2::LogicalPositionInfo ConvertLogicalPositionInfoInteropToImgdoc2(const LogicalPositionInfoInterop& logical_position_info_interop);
+    static LogicalPositionInfoInterop ConvertImgDoc2LogicalPositionInfoToInterop(const imgdoc2::LogicalPositionInfo& logical_position_info);
     static imgdoc2::CDimCoordinateQueryClause ConvertDimensionQueryRangeClauseInteropToImgdoc2(const DimensionQueryClauseInterop* dim_coordinate_query_clause_interop);
     static imgdoc2::CTileInfoQueryClause ConvertTileInfoQueryClauseInteropToImgdoc2(const TileInfoQueryClauseInterop* tile_info_query_clause_interop);
     static imgdoc2::TileBaseInfo ConvertTileBaseInfoInteropToImgdoc2(const TileBaseInfoInterop& tile_base_info_interop);
     static imgdoc2::DataTypes ConvertDatatypeEnumInterop(std::uint8_t data_type_interop);
     static imgdoc2::RectangleD ConvertRectangleDoubleInterop(const RectangleDoubleInterop& rectangle_interop);
+
+    /// Attempts to convert information from a tile-coordinate object into a tile-coordinate-interop-structure.
+    /// This method is expecting that the tile_coordinate_interop-struct is provided by the caller, and that the 
+    /// "number_of_elements"-member is giving the size of the allocation. 
+    /// \param          tile_coordinate         The tile coordinate object.
+    /// \param [in,out] tile_coordinate_interop The tile coordinate interop.
+    /// \returns {bool} True if it succeeds, false if it fails.
+    static bool TryConvertToTileCoordinateInterop(const imgdoc2::ITileCoordinate* tile_coordinate, TileCoordinateInterop* tile_coordinate_interop);
 public:
     class BlobOutputOnFunctionsDecorator : public imgdoc2::IBlobOutput
     {

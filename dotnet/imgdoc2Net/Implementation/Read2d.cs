@@ -45,7 +45,7 @@
         public List<long> QueryTilesIntersectingRect(Rectangle rectangle, IDimensionQueryClause queryClause, ITileInfoQueryClause tileInfoQueryClause, QueryOptions queryOptions)
         {
             // TODO(Jbl): error-handling
-            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dGetTilesIntersectingRect(
+            var queryResult = ImgDoc2ApiInterop.Instance.Reader2dQueryTilesIntersectingRect(
                 this.reader2dObjectHandle, 
                 rectangle, 
                 queryClause, 
@@ -57,6 +57,43 @@
             }
 
             return queryResult.Keys;
+        }
+
+        public (ITileCoordinate coordinate, LogicalPosition logicalPosition) ReadTileInfo(long key)
+        {
+            ImgDoc2ApiInterop.Instance.Reader2dReadTileInfo(
+                this.reader2dObjectHandle,
+                key,
+                true,
+                true,
+                out ITileCoordinate coordinate,
+                out LogicalPosition logicalPosition);
+            return (coordinate, logicalPosition);
+        }
+
+        public ITileCoordinate ReadTileCoordinate(long key)
+        {
+            ImgDoc2ApiInterop.Instance.Reader2dReadTileInfo(
+                this.reader2dObjectHandle,
+                key,
+                true,
+                false,
+                out ITileCoordinate coordinate,
+                out _);
+            return coordinate;
+
+        }
+
+        public LogicalPosition ReadTileLogicalPosition(long key)
+        {
+            ImgDoc2ApiInterop.Instance.Reader2dReadTileInfo(
+                this.reader2dObjectHandle,
+                key,
+                false,
+                true,
+                out _,
+                out LogicalPosition logicalPosition);
+            return logicalPosition;
         }
     }
 

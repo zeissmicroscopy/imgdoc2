@@ -106,3 +106,22 @@ EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_GetTilesIntersectingRect(
     const TileInfoQueryClauseInterop* tile_info_query_clause_interop,
     QueryResultInterop* result,
     ImgDoc2ErrorInformation* error_information);
+
+/// Retrieve the "tile-info" of the specified tile. This function is corresponding to the
+/// IDocRead2::ReadTileInfo-method.
+/// \param           handle                         The handle of the read2d-object.
+/// \param           pk                             The key of the tile to be read.
+/// \param [in,out] tile_coordinate_interop 
+/// If non-null, the retrieve tile-coordinate-information is put here.
+/// On input, the property "number_of_elements" of the TileCoordinateInterop-struct must be valid and indicate
+/// how much space is available. On output, the property "number_of_elements" is set to the actual number of 
+/// elements. If the space is insufficient, then the return value is "..." TODO
+/// \param [in,out] logical_position_info_interop   If non-null, the logical position information is put here.
+/// \param           error_information              If non-null, in case of an error, additional information describing the error are put here.
+/// \returns An errorcode indicating success or failure of the operation.
+EXTERNAL_API(ImgDoc2ErrorCode) IDocRead2d_ReadTileInfo(
+    HandleDocRead2D handle,
+    long pk,
+    TileCoordinateInterop* tile_coordinate_interop,
+    LogicalPositionInfoInterop* logical_position_info_interop,
+    ImgDoc2ErrorInformation* error_information);

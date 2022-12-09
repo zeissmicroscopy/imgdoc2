@@ -96,8 +96,9 @@
 
                 this.idocwrite2dAddTile = this.GetProcAddressThrowIfNotFound<IDocWrite2d_AddTileDelegate>("IDocWrite2d_AddTile");
                 this.idocread2dQuery = this.GetProcAddressThrowIfNotFound<IDocRead2d_QueryDelegate>("IDocRead2d_Query");
-                this.idocread2dGetTilesIntersectingRect = this.GetProcAddressThrowIfNotFound<IDocRead2d_GetTilesIntersectingRect>("IDocRead2d_GetTilesIntersectingRect");
+                this.idocread2dGetTilesIntersectingRect = this.GetProcAddressThrowIfNotFound<IDocRead2d_GetTilesIntersectingRectDelegate>("IDocRead2d_GetTilesIntersectingRect");
                 this.idocread2dReadTileData = this.GetProcAddressThrowIfNotFound<IDocRead2d_ReadTileDataDelegate>("IDocRead2d_ReadTileData");
+                this.idocread2ReadTileInfo = this.GetProcAddressThrowIfNotFound<IDocRead2d_ReadTileInfoDelegate>("IDocRead2d_ReadTileInfo");
 
                 this.funcPtrBlobOutputSetSizeForwarder = Marshal.GetFunctionPointerForDelegate<BlobOutputSetSizeDelegate>(ImgDoc2ApiInterop.BlobOutputSetSizeDelegateObj);
                 this.funcPtrBlobOutputSetDataForwarder = Marshal.GetFunctionPointerForDelegate<BlobOutputSetDataDelegate>(ImgDoc2ApiInterop.BlobOutputSetDataDelegateObj);
@@ -601,7 +602,7 @@
         /// <param name="tileInfoQueryClause" type="ITileInfoQueryClause">      The tile information query clause (may be null). </param>
         /// <param name="maxNumberOfResults" type="int">                        The max number of results. </param>
         /// <returns type="QueryResult">    The result of the query. </returns>
-        public QueryResult Reader2dGetTilesIntersectingRect(IntPtr read2dHandle, Rectangle rectangle, IDimensionQueryClause dimensionQueryClause, ITileInfoQueryClause tileInfoQueryClause, int maxNumberOfResults)
+        public QueryResult Reader2dQueryTilesIntersectingRect(IntPtr read2dHandle, Rectangle rectangle, IDimensionQueryClause dimensionQueryClause, ITileInfoQueryClause tileInfoQueryClause, int maxNumberOfResults)
         {
             byte[] dimensionQueryClauseInterop = dimensionQueryClause != null ? ConvertToTileCoordinateInterop(dimensionQueryClause) : null;
             byte[] tileInfoQueryClauseInterop = (tileInfoQueryClause != null) ? ConvertToTileInfoQueryInterop(tileInfoQueryClause) : null;
@@ -678,6 +679,21 @@
             this.HandleErrorCases(returnCode, in errorInformation);
 
             return blobOutput.Buffer;
+        }
+
+        public void Reader2dReadTileInfo(IntPtr read2dHandle, long pk, bool fillTileCoordinate, bool fillTileInfo, out ITileCoordinate coordinate, out LogicalPosition logicalPosition)
+        {
+            coordinate = null;
+            logicalPosition = default(LogicalPosition);
+
+            int returnCode;
+            unsafe
+            {
+                /*returnCode = this.idocread2ReadTileInfo(
+                    read2dHandle,
+                    pk,
+                    )*/
+            }
         }
     }
 
@@ -931,8 +947,9 @@
 
         private readonly IDocWrite2d_AddTileDelegate idocwrite2dAddTile;
         private readonly IDocRead2d_QueryDelegate idocread2dQuery;
-        private readonly IDocRead2d_GetTilesIntersectingRect idocread2dGetTilesIntersectingRect;
+        private readonly IDocRead2d_GetTilesIntersectingRectDelegate idocread2dGetTilesIntersectingRect;
         private readonly IDocRead2d_ReadTileDataDelegate idocread2dReadTileData;
+        private readonly IDocRead2d_ReadTileInfoDelegate idocread2ReadTileInfo;
 
         private readonly CreateEnvironmentObjectDelegate createEnvironmentObject;
 
@@ -981,7 +998,10 @@
         private unsafe delegate int IDocRead2d_QueryDelegate(IntPtr read2dHandle, IntPtr dimensionQueryClauseInterop, IntPtr tileInfoQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-        private unsafe delegate int IDocRead2d_GetTilesIntersectingRect(IntPtr read2dHandle, RectangleDoubleInterop* rectangle, IntPtr dimensionQueryClauseInterop, IntPtr tileInfoQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
+        private unsafe delegate int IDocRead2d_GetTilesIntersectingRectDelegate(IntPtr read2dHandle, RectangleDoubleInterop* rectangle, IntPtr dimensionQueryClauseInterop, IntPtr tileInfoQueryClauseInterop, IntPtr queryResultInterop, ImgDoc2ErrorInformation* errorInformation);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        private unsafe delegate int IDocRead2d_ReadTileInfoDelegate(IntPtr read2dHandle, long pk, IntPtr tileCoordinateInterop, LogicalPositionInfoInterop* logicalPositionInfoInterop, ImgDoc2ErrorInformation* errorInformation);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         private unsafe delegate int IDocRead2d_ReadTileDataDelegate(IntPtr read2dHandle, long pk, IntPtr blobOutputHandle, IntPtr functionPointerSetSize, IntPtr functionPointerSetData, ImgDoc2ErrorInformation* errorInformation);
@@ -1017,6 +1037,11 @@
             /// Here we have as many "DimensionAndValueInterop" structs directly following as "number_of_elements" is specifying.
             /// </summary>
             public DimensionAndValueInterop Values;
+
+            public static int CalculateSize(int numberOfElements) 
+            { 
+                return (numberOfElements * Marshal.SizeOf<DimensionAndValueInterop>()) + Marshal.SizeOf<TileCoordinateInterop>(); 
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -1093,7 +1118,7 @@
             }
 
             // calculate the required size
-            int size = (numberOfElements * Marshal.SizeOf<DimensionAndValueInterop>()) + Marshal.SizeOf<TileCoordinateInterop>();
+            int size = TileCoordinateInterop.CalculateSize(numberOfElements);
 
             using (var stream = new MemoryStream(size))
             {
