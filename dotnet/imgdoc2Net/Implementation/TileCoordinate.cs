@@ -39,6 +39,21 @@
             }
         }
 
+        ///// <summary>
+        ///// Initializes a new instance of the <see cref="TileCoordinate"/> class.
+        ///// </summary>
+        ///// <param name="initial">The initial.</param>
+        //public TileCoordinate(IEnumerable<ValueTuple<Dimension, int>> initial)
+        //{
+        //    if (initial != null)
+        //    {
+        //        foreach (var tuple in initial)
+        //        {
+        //            this.dict.Add(tuple.Item1, tuple.Item2);
+        //        }
+        //    }
+        //}
+
         /// <summary>
         /// Tries the get the specified coordinate.
         /// </summary>

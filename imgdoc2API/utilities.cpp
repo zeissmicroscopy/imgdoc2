@@ -91,7 +91,7 @@ using namespace imgdoc2;
             return true;
         });
 
-    if (number_of_elements_in_source >= tile_coordinate_interop->number_of_elements)
+    if (number_of_elements_in_source <= tile_coordinate_interop->number_of_elements)
     {
         tile_coordinate_interop->number_of_elements = number_of_elements_in_source;
         return true;

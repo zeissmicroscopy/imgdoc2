@@ -576,7 +576,7 @@
                                 &errorInformation);
                         }
                     }
-                    else 
+                    else
                     {
                         // if (dimensionQueryClauseInterop != null && tileInfoQueryClauseInterop != null)
                         returnCode = this.idocread2dQuery(
@@ -686,14 +686,31 @@
             coordinate = null;
             logicalPosition = default(LogicalPosition);
 
-            int returnCode;
+            ImgDoc2ErrorInformation errorInformation;
+            int returnCode = 0;
             unsafe
             {
-                /*returnCode = this.idocread2ReadTileInfo(
-                    read2dHandle,
-                    pk,
-                    )*/
+                TileCoordinateInterop* pointerToTileCoordinateInterop = null;
+                if (fillTileCoordinate && fillTileInfo)
+                {
+                    int sizeForTileCoordinateInterop = TileCoordinateInterop.CalculateSize(40);
+                    byte* data = stackalloc byte[sizeForTileCoordinateInterop];
+                    pointerToTileCoordinateInterop = (TileCoordinateInterop*)data;
+                    pointerToTileCoordinateInterop->NumberOfElements = 40;
+                    LogicalPositionInfoInterop logicalPositionInfoInterop;
+                    returnCode = this.idocread2ReadTileInfo(
+                        read2dHandle,
+                        pk,
+                        new IntPtr(pointerToTileCoordinateInterop),
+                        &logicalPositionInfoInterop,
+                        &errorInformation);
+
+                    coordinate = ConvertToTileCoordinate(pointerToTileCoordinateInterop);
+                    logicalPosition = ConvertToLogicalPosition(logicalPositionInfoInterop);
+                }
             }
+
+            this.HandleErrorCases(returnCode, in errorInformation);
         }
     }
 
@@ -1038,9 +1055,9 @@
             /// </summary>
             public DimensionAndValueInterop Values;
 
-            public static int CalculateSize(int numberOfElements) 
-            { 
-                return (numberOfElements * Marshal.SizeOf<DimensionAndValueInterop>()) + Marshal.SizeOf<TileCoordinateInterop>(); 
+            public static int CalculateSize(int numberOfElements)
+            {
+                return (numberOfElements * Marshal.SizeOf<DimensionAndValueInterop>()) + Marshal.SizeOf<TileCoordinateInterop>();
             }
         }
 
@@ -1232,6 +1249,31 @@
             tileBaseInfoInterop.PixelHeight = (uint)tile2dBaseInfo.PixelHeight;
             tileBaseInfoInterop.PixelType = 0;
             return tileBaseInfoInterop;
+        }
+
+        private static LogicalPosition ConvertToLogicalPosition(in LogicalPositionInfoInterop logicalPositionInfoInterop)
+        {
+            LogicalPosition logicalPosition = default(LogicalPosition);
+            logicalPosition.PositionX = logicalPositionInfoInterop.PositionX;
+            logicalPosition.PositionY = logicalPositionInfoInterop.PositionY;
+            logicalPosition.Width = logicalPositionInfoInterop.Width;
+            logicalPosition.Height = logicalPositionInfoInterop.Height;
+            logicalPosition.PyramidLevel = logicalPositionInfoInterop.PyramidLevel;
+            return logicalPosition;
+        }
+
+        private static unsafe TileCoordinate ConvertToTileCoordinate(TileCoordinateInterop* tileCoordinateInterop)
+        {
+            Tuple<Dimension, int>[] dimensionValueTuples = new Tuple<Dimension, int>[tileCoordinateInterop->NumberOfElements];
+            DimensionAndValueInterop* pointerDimensionAndValueInterop = &tileCoordinateInterop->Values;
+            for (int i = 0; i < tileCoordinateInterop->NumberOfElements; ++i)
+            {
+                dimensionValueTuples[i] = Tuple.Create(new Dimension((char)pointerDimensionAndValueInterop->Dimension), pointerDimensionAndValueInterop->Value);
+                ++pointerDimensionAndValueInterop;
+            }
+
+            TileCoordinate tileCoordinate = new TileCoordinate(dimensionValueTuples);
+            return tileCoordinate;
         }
     }
 }

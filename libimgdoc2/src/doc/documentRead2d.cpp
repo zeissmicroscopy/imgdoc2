@@ -106,6 +106,7 @@ shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_
     stringstream string_stream;
     string_stream << "SELECT ";
 
+    bool tile_coordinates_added = false;
     if (include_tile_coordinates)
     {
         const auto tile_dimension = this->document_->GetDataBaseConfiguration2d()->GetTileDimensions();
@@ -119,11 +120,17 @@ shared_ptr<IDbStatement> DocumentRead2d::GetReadTileInfo_Statement(bool include_
 
             string_stream << "[" << this->document_->GetDataBaseConfiguration2d()->GetDimensionsColumnPrefix() << dimension << "]";
             is_first = false;
+            tile_coordinates_added = true;
         }
     }
 
     if (include_logical_position_info)
     {
+        if (tile_coordinates_added)
+        {
+            string_stream << ',';
+        }
+
         string_stream << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileX) << "],"
             << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileY) << "],"
             << "[" << this->document_->GetDataBaseConfiguration2d()->GetColumnNameOfTilesInfoTableOrThrow(DatabaseConfiguration2D::kTilesInfoTable_Column_TileW) << "],"
