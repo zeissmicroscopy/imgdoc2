@@ -84,6 +84,8 @@ namespace ImgDoc2Net_UnitTests
             using var reader2d = document.Get2dReader();
 
             Assert.Throws<ImgDoc2Exception>(() => reader2d.ReadTileInfo(1234));
+            Assert.Throws<ImgDoc2Exception>(() => reader2d.ReadTileCoordinate(1234));
+            Assert.Throws<ImgDoc2Exception>(() => reader2d.ReadTileLogicalPosition(1234));
         }
     }
 }

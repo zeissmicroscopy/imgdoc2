@@ -687,18 +687,16 @@
             logicalPosition = default(LogicalPosition);
 
             ImgDoc2ErrorInformation errorInformation;
-            int returnCode = 0;
             unsafe
             {
-                TileCoordinateInterop* pointerToTileCoordinateInterop = null;
                 if (fillTileCoordinate && fillTileInfo)
                 {
                     int sizeForTileCoordinateInterop = TileCoordinateInterop.CalculateSize(40);
                     byte* data = stackalloc byte[sizeForTileCoordinateInterop];
-                    pointerToTileCoordinateInterop = (TileCoordinateInterop*)data;
+                    TileCoordinateInterop* pointerToTileCoordinateInterop = (TileCoordinateInterop*)data;
                     pointerToTileCoordinateInterop->NumberOfElements = 40;
                     LogicalPositionInfoInterop logicalPositionInfoInterop;
-                    returnCode = this.idocread2ReadTileInfo(
+                    int returnCode = this.idocread2ReadTileInfo(
                         read2dHandle,
                         pk,
                         new IntPtr(pointerToTileCoordinateInterop),
@@ -706,9 +704,48 @@
                         &errorInformation);
 
                     this.HandleErrorCases(returnCode, in errorInformation);
-
                     coordinate = ConvertToTileCoordinate(pointerToTileCoordinateInterop);
                     logicalPosition = ConvertToLogicalPosition(logicalPositionInfoInterop);
+                }
+                else if (!fillTileCoordinate && fillTileInfo)
+                {
+                    LogicalPositionInfoInterop logicalPositionInfoInterop;
+                    int returnCode = this.idocread2ReadTileInfo(
+                        read2dHandle,
+                        pk,
+                        IntPtr.Zero, 
+                        &logicalPositionInfoInterop,
+                        &errorInformation);
+
+                    this.HandleErrorCases(returnCode, in errorInformation);
+                    logicalPosition = ConvertToLogicalPosition(logicalPositionInfoInterop);
+                }
+                else if (fillTileCoordinate && !fillTileInfo)
+                {
+                    int sizeForTileCoordinateInterop = TileCoordinateInterop.CalculateSize(40);
+                    byte* data = stackalloc byte[sizeForTileCoordinateInterop];
+                    TileCoordinateInterop* pointerToTileCoordinateInterop = (TileCoordinateInterop*)data;
+                    pointerToTileCoordinateInterop->NumberOfElements = 40;
+                    int returnCode = this.idocread2ReadTileInfo(
+                        read2dHandle,
+                        pk,
+                        new IntPtr(pointerToTileCoordinateInterop),
+                        null,
+                        &errorInformation);
+
+                    this.HandleErrorCases(returnCode, in errorInformation);
+                    coordinate = ConvertToTileCoordinate(pointerToTileCoordinateInterop);
+                }
+                else
+                {
+                    int returnCode = this.idocread2ReadTileInfo(
+                        read2dHandle,
+                        pk,
+                        IntPtr.Zero,
+                        null,
+                        &errorInformation);
+
+                    this.HandleErrorCases(returnCode, in errorInformation);
                 }
             }
         }
