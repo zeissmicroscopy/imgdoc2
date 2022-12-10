@@ -8,10 +8,17 @@ using namespace imgdoc2;
 
 /*virtual*/void DocumentRead2d::ReadTileInfo(imgdoc2::dbIndex idx, imgdoc2::ITileCoordinateMutate* coord, imgdoc2::LogicalPositionInfo* info)
 {
-    const auto statement = this->GetReadTileInfo_Statement(coord != nullptr, info != nullptr);
-    statement->BindInt64(1, idx);
+    const auto query_statement = this->GetReadTileInfo_Statement(coord != nullptr, info != nullptr);
+    query_statement->BindInt64(1, idx);
 
-    this->document_->GetDatabase_connection()->StepStatement(statement.get());
+    // we are expecting exactly one result, or zero in case of "not found"
+    if (!this->document_->GetDatabase_connection()->StepStatement(query_statement.get()))
+    {
+        // this means that the tile with the specified index ('idx') was not found
+        ostringstream ss;
+        ss << "Request for reading tileinfo for an non-existing tile (with pk=" << idx << ")";
+        throw non_existing_tile_exception(ss.str(), idx);
+    }
 
     int no_of_tile_dimension_columns_in_result = 0;
     if (coord != nullptr)
@@ -19,18 +26,18 @@ using namespace imgdoc2;
         coord->Clear();
         for (auto dimension : this->document_->GetDataBaseConfiguration2d()->GetTileDimensions())
         {
-            coord->Set(dimension, statement->GetResultInt32(no_of_tile_dimension_columns_in_result));
+            coord->Set(dimension, query_statement->GetResultInt32(no_of_tile_dimension_columns_in_result));
             no_of_tile_dimension_columns_in_result++;
         }
     }
 
     if (info != nullptr)
     {
-        info->posX = statement->GetResultDouble(0 + no_of_tile_dimension_columns_in_result);
-        info->posY = statement->GetResultDouble(1 + no_of_tile_dimension_columns_in_result);
-        info->width = statement->GetResultDouble(2 + no_of_tile_dimension_columns_in_result);
-        info->height = statement->GetResultDouble(3 + no_of_tile_dimension_columns_in_result);
-        info->pyrLvl = statement->GetResultInt32(4 + no_of_tile_dimension_columns_in_result);
+        info->posX = query_statement->GetResultDouble(0 + no_of_tile_dimension_columns_in_result);
+        info->posY = query_statement->GetResultDouble(1 + no_of_tile_dimension_columns_in_result);
+        info->width = query_statement->GetResultDouble(2 + no_of_tile_dimension_columns_in_result);
+        info->height = query_statement->GetResultDouble(3 + no_of_tile_dimension_columns_in_result);
+        info->pyrLvl = query_statement->GetResultInt32(4 + no_of_tile_dimension_columns_in_result);
     }
 }
 

@@ -141,8 +141,7 @@
 
             foreach (var tuple in list)
             {
-                int value;
-                bool b = this.TryGetCoordinate(tuple.Item1, out value);
+                bool b = this.TryGetCoordinate(tuple.Item1, out int value);
                 if (b == false)
                 {
                     return false;

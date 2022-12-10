@@ -705,12 +705,12 @@
                         &logicalPositionInfoInterop,
                         &errorInformation);
 
+                    this.HandleErrorCases(returnCode, in errorInformation);
+
                     coordinate = ConvertToTileCoordinate(pointerToTileCoordinateInterop);
                     logicalPosition = ConvertToLogicalPosition(logicalPositionInfoInterop);
                 }
             }
-
-            this.HandleErrorCases(returnCode, in errorInformation);
         }
     }
 

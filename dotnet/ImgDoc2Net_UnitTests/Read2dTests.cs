@@ -1,4 +1,6 @@
 ﻿
+using FluentAssertions;
+
 namespace ImgDoc2Net_UnitTests
 {
     using ImgDoc2Net;
@@ -23,7 +25,7 @@ namespace ImgDoc2Net_UnitTests
         }
 
         [Fact]
-        public void ReadTileInfoTest()
+        public void CreateDocumentAddSingleTileReadTileInfoCheckForCorrectness()
         {
             using var createOptions = new CreateOptions() { Filename = ":memory:", UseBlobTable = true };
             createOptions.AddDimension(new Dimension('X'));
@@ -41,16 +43,20 @@ namespace ImgDoc2Net_UnitTests
                 PyramidLevel = 0
             };
 
-            // we put the "x and y"-index into the pixel data here
             var testData = new byte[] { 1, 2, 3 };
 
+            var tileCoordinate = new TileCoordinate(new[]
+                {Tuple.Create(new Dimension('X'), 11), Tuple.Create(new Dimension('Y'), 12)});
+
             long pkOfAddedTile = writer2d.AddTile(
-                new TileCoordinate(new[] { Tuple.Create(new Dimension('X'), 11), Tuple.Create(new Dimension('Y'), 12) }),
+                tileCoordinate,
                 in logicalPosition,
                 new Tile2dBaseInfo(1, 1, PixelType.Gray8),
                 DataType.UncompressedBitmap,
                 testData);
 
+            // TODO: Query without any clause will malfunction, that why we put together a query-clause here, but this
+            //        should be fixed I guess
             TileInfoQueryClause tileInfoQueryClause = new TileInfoQueryClause();
             tileInfoQueryClause.PyramidLevelConditionsModifiable.Add(
                 new QueryClause()
@@ -61,8 +67,23 @@ namespace ImgDoc2Net_UnitTests
                 });
 
             var keys = reader2d.Query(null, tileInfoQueryClause, null);
+            keys.Should().HaveCount(1);
 
             var tileInfo = reader2d.ReadTileInfo(keys[0]);
+            tileInfo.logicalPosition.Should().BeEquivalentTo(logicalPosition);
+            tileInfo.coordinate.Should().BeEquivalentTo(tileCoordinate);
+        }
+
+        [Fact]
+        public void CreateEmptyDocumentAndCallTileReadTileInfoForNonExistentTileExpectException()
+        {
+            using var createOptions = new CreateOptions() { Filename = ":memory:", UseBlobTable = true };
+            createOptions.AddDimension(new Dimension('a'));
+            createOptions.AddDimension(new Dimension('b'));
+            using var document = ImgDoc2Net.Document.CreateNew(createOptions);
+            using var reader2d = document.Get2dReader();
+
+            Assert.Throws<ImgDoc2Exception>(() => reader2d.ReadTileInfo(1234));
         }
     }
 }

@@ -35,7 +35,8 @@ add_executable( libimgdoc2_tests
  "dbdiscovery_test.cpp" 
  "propertybagutilities_test.cpp" 
  "blobdata_test.cpp" 
- "query_test.cpp")
+ "query_test.cpp" 
+ "read2d_test.cpp")
 
 target_include_directories(libimgdoc2_tests PRIVATE ${GTEST_INCLUDE_DIRS})
 

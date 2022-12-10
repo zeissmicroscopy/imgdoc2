@@ -1,0 +1,8 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=a17e97c2_002D1abe_002D429a_002D9e27_002Dae76a74f42cb/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="CreateNewDocumentAndAddATileWithTileDataAndReadTileDataBackAndCompareAtInteropLevel" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
+  &lt;TestAncestor&gt;&#xD;
+    &lt;TestId&gt;xUnit::B53AEBB2-CE5D-4E4C-BAC6-D7F22CF98EC5::net6.0::ImgDoc2Net_UnitTests.CreateDocumentTests.CreateNewDocumentAndAddATileWithTileDataAndReadTileDataBackAndCompareAtInteropLevel&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::B53AEBB2-CE5D-4E4C-BAC6-D7F22CF98EC5::net6.0::ImgDoc2Net_UnitTests.CreateDocumentTests.CreateNewDocumentAndAddTwoTilesAndRunQueriesAtInteropLevel&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;xUnit::B53AEBB2-CE5D-4E4C-BAC6-D7F22CF98EC5::net6.0::ImgDoc2Net_UnitTests.Read2dTests.CreateDocumentAddSingleTileReadTileInfoCheckForCorrectness&lt;/TestId&gt;&#xD;
+  &lt;/TestAncestor&gt;&#xD;
+&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>
